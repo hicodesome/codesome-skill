@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env bash
+#!/usr/bin/env bash
 set -euo pipefail
 
 DEFAULT_BASE_URL="https://gitee.com/bashi01/codesome-skill/releases/download/latest"
@@ -28,16 +28,16 @@ url="$BASE_URL/$bin_name"
 tmp="${TMPDIR:-/tmp}/$bin_name.$$"
 target="$INSTALL_DIR/codesome"
 
-step "安装 Codesome CLI for ${os_name}/${arch_name}"
-step "下载源：$BASE_URL"
+step "?? Codesome CLI for ${os_name}/${arch_name}"
+step "????$BASE_URL"
 mkdir -p "$INSTALL_DIR"
 
 if command -v curl >/dev/null 2>&1; then
-  curl -fL "$url" -o "$tmp" || { echo "下载失败：$url。闭源 CLI 二进制可能尚未发布，或下载源不可用。可设置 CODESOME_CLI_BASE_URL 指向国内镜像。" >&2; exit 1; }
+  curl -fL "$url" -o "$tmp" || { echo "?????$url??? CLI ????????????????????? CODESOME_CLI_BASE_URL ???????" >&2; exit 1; }
 elif command -v wget >/dev/null 2>&1; then
-  wget -O "$tmp" "$url" || { echo "下载失败：$url。闭源 CLI 二进制可能尚未发布，或下载源不可用。可设置 CODESOME_CLI_BASE_URL 指向国内镜像。" >&2; exit 1; }
+  wget -O "$tmp" "$url" || { echo "?????$url??? CLI ????????????????????? CODESOME_CLI_BASE_URL ???????" >&2; exit 1; }
 else
-  echo "需要 curl 或 wget。" >&2
+  echo "?? curl ? wget?" >&2
   exit 1
 fi
 
@@ -47,10 +47,10 @@ mv "$tmp" "$target"
 case ":$PATH:" in
   *":$INSTALL_DIR:"*) ;;
   *)
-    step "请把以下目录加入 PATH：$INSTALL_DIR"
-    step "例如：echo 'export PATH=\"$INSTALL_DIR:\$PATH\"' >> ~/.zshrc"
+    step "???????? PATH?$INSTALL_DIR"
+    step "???echo 'export PATH=\"$INSTALL_DIR:\$PATH\"' >> ~/.zshrc"
     ;;
 esac
 
-step "安装完成：$target"
+step "?????$target"
 "$target" version
