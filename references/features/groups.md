@@ -11,11 +11,7 @@ codesome group list --type subscription
 codesome group list --json
 ```
 
-Data source:
-
-- `/api/v1/groups/available`
-- `/api/v1/groups/rates`
-
+Implementation detail: data is fetched by the local `codesome` CLI.\n
 Output:
 
 - group name
@@ -27,3 +23,4 @@ Output:
 Safety:
 
 - Do not expose internal routing, account pool, cookie, or token details.
+

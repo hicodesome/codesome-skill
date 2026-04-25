@@ -1,7 +1,6 @@
-# Codesome Troubleshooting Reference
+﻿# Codesome Troubleshooting Reference
 
-Distilled from the synced Feishu docs under `C:\Users\joe\projects\codesome-feishu-docs`. Treat this as support guidance, not as a replacement for `codesome doctor`.
-
+Distilled from the Codesome support docs. Treat this as support guidance, not as a replacement for `codesome doctor`.\n
 ## Fast Triage
 
 1. Ask what client is failing: Claude Code, Codex CLI, Codex desktop, OpenClaw, Hermes, Trae, Cherry Studio, Claudian, or another Anthropic/OpenAI-compatible client.
@@ -44,3 +43,4 @@ Codesome/Codex side:
 - For heavy/stability-sensitive users, pay-as-you-go may be preferable if they understand cost implications.
 - After switching a key group, restart the terminal or client.
 - Before deleting a key, confirm the user understands every client using that key will fail.
+

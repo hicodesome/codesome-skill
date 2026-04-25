@@ -10,11 +10,7 @@ codesome subscription list
 codesome subscription active --json
 ```
 
-Data source:
-
-- `/api/v1/subscriptions/active`
-- `/api/v1/subscriptions`
-
+Implementation detail: data is fetched by the local `codesome` CLI.\n
 Output:
 
 - package/group name
@@ -22,3 +18,4 @@ Output:
 - expiry and days remaining
 - daily/weekly/monthly usage, limit, and remaining quota
 - rate multiplier
+

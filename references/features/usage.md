@@ -11,15 +11,11 @@ codesome usage recent --limit 10
 codesome usage recent --json
 ```
 
-Data source:
-
-- `/api/v1/usage/stats`
-- `/api/v1/usage`
-- `/api/v1/usage/dashboard/stats`
-
+Implementation detail: data is fetched by the local `codesome` CLI.\n
 Output:
 
 - total requests
 - total tokens when available
 - actual/standard cost
 - recent key name, model, billing mode, and cost
+

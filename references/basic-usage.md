@@ -1,11 +1,4 @@
-# Codesome Basic Usage Extract
-
-Sources:
-
-- Local Feishu mirror: `C:\Users\joe\projects\codesome-feishu-docs`
-- Raw extracts: `C:\Users\joe\projects\codesome-basic-usage-extract`
-- Main wiki: `https://zvgmnl1sw58.feishu.cn/wiki/Vaifwy0aAisdP8kDLPoc0jV5nCb`
-- Source UI repo: `C:\Users\joe\projects\sub2api`
+﻿# Codesome Basic Usage Extract
 
 ## Basic User Journey
 
@@ -50,3 +43,4 @@ Sources:
 - `Unable to connect to anthropic services` or references to `api.anthropic.com`: client may still point to official Anthropic rather than Codesome.
 - Claude Code login loops: user may need API/base URL config rather than official Claude login.
 - WSL Codex repeated login or TUI bootstrap failure: inspect WSL/client install and env vars before changing Codesome account settings.
+
