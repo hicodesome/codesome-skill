@@ -1,4 +1,4 @@
-﻿---
+---
 name: codesome
 description: Manage and troubleshoot Codesome user workflows via the local `codesome` CLI. Use when users ask to view balance, manage API keys, switch key groups, redeem codes, configure Codex or Claude Code with Codesome, clean conflicting Anthropic/Claude/Codex environment variables, or diagnose Codesome-related errors.
 metadata:
@@ -35,6 +35,7 @@ Use this skill to help users operate Codesome through the local `codesome` CLI. 
 | 查看余额 | `codesome balance show` |
 | 查看月卡/订阅 | `codesome subscription active` 或 `codesome subscription list` |
 | 查看用量 | `codesome usage stats` 或 `codesome usage recent` |
+| 查看某个 Key 用量 | `codesome usage key --name "<key_name>" --days 30` |
 | 查看 API Key | `codesome key list` |
 | 创建 API Key | `codesome key create --name "<name>" --group "<group>"` |
 | 编辑 API Key 名称 | `codesome key update --name "<name>" --new-name "<new-name>"` |
