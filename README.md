@@ -2,40 +2,73 @@
 
 这是 Codesome 的公开 Skill 仓库。
 
-## 快速安装 CLI
+## 快速安装技能
 
-> 当前仓库先提供安装脚本和 Skill 文档。闭源 CLI 二进制发布后，安装脚本会从国内下载源安装，不依赖 GitHub、npm、Homebrew、pip 等国外包管理器。
+> 这个仓库首先是 Codesome Skill 仓库。安装脚本会安装/更新本地 `codesome` CLI，因为这个技能实际执行操作时需要调用本地 CLI。
 
-### Windows PowerShell
+### 给人类看的
+
+复制并粘贴以下提示词到你的 LLM Agent（Claude Code、AmpCode、Cursor、Codex 等）：
+
+```text
+请帮我安装并配置 Codesome Skill。
+
+公开仓库地址：
+https://gitee.com/bashi01/codesome-skill
+
+请按我的系统安装本地 codesome CLI，因为这个 Skill 需要调用本地 CLI 才能执行余额查询、API Key 管理、用量查询等操作。
+
+安装方式：
+- Windows：运行 https://gitee.com/bashi01/codesome-skill/raw/main/install.ps1
+- Linux / WSL / macOS：运行 https://gitee.com/bashi01/codesome-skill/raw/main/install.sh
+
+安装后请验证：
+1. codesome version
+2. codesome auth status
+3. 如果未登录，执行 codesome auth login，并让我在浏览器里完成登录
+4. 登录后执行 codesome balance show 验证可用
+
+安全要求：不要输出 Cookie、Token、Session 或完整 API Key。
+```
+
+也可以自己手动执行下面的安装命令。但建议让 Agent 来做，减少复制命令和环境配置出错。
+
+### 给 LLM Agent 看的
+
+获取仓库 README 并照做：
+
+```bash
+curl -fsSL https://gitee.com/bashi01/codesome-skill/raw/main/README.md
+```
+
+Windows 环境优先使用：
 
 ```powershell
 iwr https://gitee.com/bashi01/codesome-skill/raw/main/install.ps1 -UseB | iex
 ```
 
-### macOS / Linux / WSL
+Linux / WSL / macOS 环境优先使用：
 
 ```bash
 curl -fsSL https://gitee.com/bashi01/codesome-skill/raw/main/install.sh | bash
 ```
 
-### 国内下载源
-
-安装脚本默认使用国内下载源。后续可以通过环境变量切换下载地址：
-
-Windows：
-
-```powershell
-$env:CODESOME_CLI_BASE_URL="https://download.codesome.cn/cli"
-iwr https://gitee.com/bashi01/codesome-skill/raw/main/install.ps1 -UseB | iex
-```
-
-macOS / Linux：
+安装完成后至少验证：
 
 ```bash
-CODESOME_CLI_BASE_URL="https://download.codesome.cn/cli" bash -c "$(curl -fsSL https://gitee.com/bashi01/codesome-skill/raw/main/install.sh)"
+codesome version
+codesome auth status
+codesome balance show
 ```
 
+### 当前真实下载源
 
+安装脚本默认从本仓库的 Gitee Release `latest` 下载闭源 CLI 二进制：
+
+- `https://gitee.com/bashi01/codesome-skill/releases/download/latest/codesome-windows-amd64.exe`
+- `https://gitee.com/bashi01/codesome-skill/releases/download/latest/codesome-linux-amd64`
+
+不要使用未验证的自定义域名。未来如果有新的官方镜像或 CDN，必须先真实发布并验证后再写入文档。
 ## 阶段验收报告
 
 给老板/技术同事验收当前进度，可以直接查看：
