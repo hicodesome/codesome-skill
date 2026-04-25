@@ -2,6 +2,39 @@
 
 这是 Codesome 的公开 Skill 仓库。
 
+## 快速安装 CLI
+
+> 当前仓库先提供安装脚本和 Skill 文档。闭源 CLI 二进制发布后，安装脚本会从国内下载源安装，不依赖 GitHub、npm、Homebrew、pip 等国外包管理器。
+
+### Windows PowerShell
+
+```powershell
+iwr https://gitee.com/bashi01/codesome-skill/raw/main/install.ps1 -UseB | iex
+```
+
+### macOS / Linux / WSL
+
+```bash
+curl -fsSL https://gitee.com/bashi01/codesome-skill/raw/main/install.sh | bash
+```
+
+### 国内下载源
+
+安装脚本默认使用国内下载源。后续可以通过环境变量切换下载地址：
+
+Windows：
+
+```powershell
+$env:CODESOME_CLI_BASE_URL="https://download.codesome.cn/cli"
+iwr https://gitee.com/bashi01/codesome-skill/raw/main/install.ps1 -UseB | iex
+```
+
+macOS / Linux：
+
+```bash
+CODESOME_CLI_BASE_URL="https://download.codesome.cn/cli" bash -c "$(curl -fsSL https://gitee.com/bashi01/codesome-skill/raw/main/install.sh)"
+```
+
 ## 作用
 
 这个 Skill 让 Agent 通过本地闭源 `codesome` CLI 帮用户完成 Codesome 相关操作，例如：
@@ -29,6 +62,9 @@
 ## 目录
 
 - `SKILL.md`：Skill 主说明。
+- `install.ps1`：Windows 一键安装脚本。
+- `install.sh`：macOS/Linux/WSL 一键安装脚本。
+- `checksums.txt`：二进制校验文件，正式发布时填写。
 - `references/basic-usage.md`：Codesome 基础使用说明。
 - `references/troubleshooting.md`：常见问题排查。
 - `references/features/`：各功能子参考。

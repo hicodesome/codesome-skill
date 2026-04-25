@@ -1,0 +1,8 @@
+﻿# Codesome CLI checksums
+
+# 正式发布闭源 CLI 二进制后，在这里填写 SHA256：
+# <sha256>  codesome-windows-amd64.exe
+# <sha256>  codesome-darwin-arm64
+# <sha256>  codesome-darwin-amd64
+# <sha256>  codesome-linux-amd64
+# <sha256>  codesome-linux-arm64
