@@ -1,4 +1,4 @@
-﻿# Codesome Skill
+# Codesome Skill
 
 这是 Codesome 的公开 Skill 仓库。
 
@@ -34,6 +34,15 @@ macOS / Linux：
 ```bash
 CODESOME_CLI_BASE_URL="https://download.codesome.cn/cli" bash -c "$(curl -fsSL https://gitee.com/bashi01/codesome-skill/raw/main/install.sh)"
 ```
+
+
+## 阶段验收报告
+
+给老板/技术同事验收当前进度，可以直接查看：
+
+- [ACCEPTANCE.md](./ACCEPTANCE.md)
+
+该报告列出了已发布内容、已验收环境、已验收功能、安全边界、已知限制和下一阶段建议。
 
 ## 作用
 
@@ -84,3 +93,4 @@ codesome <command>
 - Skill 可以公开审查。
 - 核心自动化实现不暴露。
 - 登录态、API Key、Cookie、Token 等敏感处理留在本地 CLI 中。
+
