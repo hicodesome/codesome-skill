@@ -23,6 +23,8 @@
 
 - `codesome-windows-amd64.exe`
 - `codesome-linux-amd64`
+- `codesome-darwin-amd64`
+- `codesome-darwin-arm64`
 - `checksums.txt`
 
 ## 已验收环境
@@ -31,7 +33,7 @@
 | --- | --- | --- |
 | Windows 原生 PowerShell | 已通过 | 已安装到 `~/.codesome/bin/codesome.exe` 并完成真实查询 |
 | WSL / Linux amd64 | 已通过 | Linux 二进制可执行；复制登录态后可查询 |
-| macOS | 暂未实机测试 | 当前按 Linux 类 Unix 处理，后续有机器再补测 |
+| macOS | 已补齐发布资产，暂未实机测试 | Release 已包含 darwin-amd64 / darwin-arm64；后续有机器再补实机功能测试 |
 
 ## 已验收功能
 
@@ -243,3 +245,4 @@ codesome usage key --name "codesome-claw" --start-date 2026-04-01 --end-date 202
 4. 增加 `usage key --daily`，支持按天看某个 Key 的异常消耗。
 5. 开始实现 `config codex` / `config claude-code`。
 6. 开始实现 `doctor codex` / `doctor claude-code`。
+

@@ -7,6 +7,15 @@ BASE_URL="${BASE_URL%/}"
 INSTALL_DIR="$HOME/.codesome/bin"
 
 step() { printf '[codesome] %s\n' "$*"; }
+fail_download() {
+  cat >&2 <<EOF
+[codesome] 下载失败：$url
+[codesome] 请确认 Gitee Release latest 已发布 $bin_name。
+[codesome] 如果你在 macOS 上安装，当前需要 Release 中存在 codesome-darwin-amd64 或 codesome-darwin-arm64。
+[codesome] 也可以设置 CODESOME_CLI_BASE_URL 指向你的国内镜像地址后重试。
+EOF
+  exit 1
+}
 
 os="$(uname -s | tr '[:upper:]' '[:lower:]')"
 arch="$(uname -m)"
@@ -28,16 +37,16 @@ url="$BASE_URL/$bin_name"
 tmp="${TMPDIR:-/tmp}/$bin_name.$$"
 target="$INSTALL_DIR/codesome"
 
-step "?? Codesome CLI for ${os_name}/${arch_name}"
-step "????$BASE_URL"
+step "安装 Codesome CLI for ${os_name}/${arch_name}"
+step "下载源：$BASE_URL"
 mkdir -p "$INSTALL_DIR"
 
 if command -v curl >/dev/null 2>&1; then
-  curl -fL "$url" -o "$tmp" || { echo "?????$url??? CLI ????????????????????? CODESOME_CLI_BASE_URL ???????" >&2; exit 1; }
+  curl -fL "$url" -o "$tmp" || fail_download
 elif command -v wget >/dev/null 2>&1; then
-  wget -O "$tmp" "$url" || { echo "?????$url??? CLI ????????????????????? CODESOME_CLI_BASE_URL ???????" >&2; exit 1; }
+  wget -O "$tmp" "$url" || fail_download
 else
-  echo "?? curl ? wget?" >&2
+  echo "缺少 curl 或 wget。" >&2
   exit 1
 fi
 
@@ -47,10 +56,10 @@ mv "$tmp" "$target"
 case ":$PATH:" in
   *":$INSTALL_DIR:"*) ;;
   *)
-    step "???????? PATH?$INSTALL_DIR"
-    step "???echo 'export PATH=\"$INSTALL_DIR:\$PATH\"' >> ~/.zshrc"
+    step "未检测到 PATH：$INSTALL_DIR"
+    step "可执行：echo 'export PATH=\"$INSTALL_DIR:\$PATH\"' >> ~/.zshrc"
     ;;
 esac
 
-step "?????$target"
+step "安装完成：$target"
 "$target" version

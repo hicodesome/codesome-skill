@@ -67,6 +67,8 @@ codesome balance show
 
 - `https://gitee.com/bashi01/codesome-skill/releases/download/latest/codesome-windows-amd64.exe`
 - `https://gitee.com/bashi01/codesome-skill/releases/download/latest/codesome-linux-amd64`
+- `https://gitee.com/bashi01/codesome-skill/releases/download/latest/codesome-darwin-amd64`
+- `https://gitee.com/bashi01/codesome-skill/releases/download/latest/codesome-darwin-arm64`
 
 不要使用未验证的自定义域名。未来如果有新的官方镜像或 CDN，必须先真实发布并验证后再写入文档。
 ## 阶段验收报告
@@ -126,4 +128,5 @@ codesome <command>
 - Skill 可以公开审查。
 - 核心自动化实现不暴露。
 - 登录态、API Key、Cookie、Token 等敏感处理留在本地 CLI 中。
+
 
