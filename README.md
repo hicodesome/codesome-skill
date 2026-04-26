@@ -61,6 +61,26 @@ codesome auth status
 codesome balance show
 ```
 
+### macOS 未签名提示
+
+当前 macOS 版 CLI 已提供下载资产：
+
+- `codesome-darwin-amd64`：Intel Mac
+- `codesome-darwin-arm64`：Apple Silicon / M 系列 Mac
+
+因为当前发布是在 Windows 环境交叉构建，macOS 二进制尚未在 Mac 真机上完成 `codesign` 签名和实机测试。部分 macOS 机器首次运行时，可能提示“无法验证开发者”或阻止启动。
+
+如果安装后 macOS 拦截运行，可以让 Agent 或用户在终端执行：
+
+```bash
+chmod +x ~/.codesome/bin/codesome
+codesign --sign - ~/.codesome/bin/codesome 2>/dev/null || true
+xattr -dr com.apple.quarantine ~/.codesome/bin/codesome 2>/dev/null || true
+codesome version
+```
+
+说明：`codesign --sign -` 是本机临时签名；`xattr -dr com.apple.quarantine` 是移除浏览器/下载器附加的隔离标记。后续拿到 Mac 真机后，会补正式的 macOS 实机验收记录。
+
 ### 当前真实下载源
 
 安装脚本默认从本仓库的 Gitee Release `latest` 下载闭源 CLI 二进制：
