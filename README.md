@@ -19,8 +19,10 @@ https://gitee.com/bashi01/codesome-skill
 请按我的系统安装本地 codesome CLI，因为这个 Skill 需要调用本地 CLI 才能执行余额查询、API Key 管理、用量查询等操作。
 
 安装方式：
-- Windows：运行 https://gitee.com/bashi01/codesome-skill/raw/main/install.ps1
-- Linux / WSL / macOS：运行 https://gitee.com/bashi01/codesome-skill/raw/main/install.sh
+- Windows：运行 https://gitee.com/bashi01/codesome-skill/raw/main/install.ps1，安装脚本会下载 `codesome-windows-amd64.exe`
+- Linux / WSL：运行 https://gitee.com/bashi01/codesome-skill/raw/main/install.sh，安装脚本会下载 `codesome-linux-amd64`
+- macOS Intel：运行 https://gitee.com/bashi01/codesome-skill/raw/main/install.sh，安装脚本会下载 `codesome-darwin-amd64`
+- macOS Apple Silicon / M 系列：运行 https://gitee.com/bashi01/codesome-skill/raw/main/install.sh，安装脚本会下载 `codesome-darwin-arm64`
 
 安装后请验证：
 1. codesome version
@@ -47,7 +49,11 @@ Windows 环境优先使用：
 iwr https://gitee.com/bashi01/codesome-skill/raw/main/install.ps1 -UseB | iex
 ```
 
-Linux / WSL / macOS 环境优先使用：
+Linux / WSL / macOS 环境优先使用同一个 `install.sh`，脚本会按系统和 CPU 架构自动选择二进制：
+
+- Linux / WSL amd64：`codesome-linux-amd64`
+- macOS Intel：`codesome-darwin-amd64`
+- macOS Apple Silicon / M 系列：`codesome-darwin-arm64`
 
 ```bash
 curl -fsSL https://gitee.com/bashi01/codesome-skill/raw/main/install.sh | bash
