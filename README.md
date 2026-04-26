@@ -20,7 +20,8 @@ https://gitee.com/bashi01/codesome-skill
 
 安装方式：
 - Windows：运行 https://gitee.com/bashi01/codesome-skill/raw/main/install.ps1，安装脚本会下载 `codesome-windows-amd64.exe`
-- Linux / WSL：运行 https://gitee.com/bashi01/codesome-skill/raw/main/install.sh，安装脚本会下载 `codesome-linux-amd64`
+- Linux / WSL amd64：运行 https://gitee.com/bashi01/codesome-skill/raw/main/install.sh，安装脚本会下载 `codesome-linux-amd64`
+- Linux ARM64 / aarch64：运行 https://gitee.com/bashi01/codesome-skill/raw/main/install.sh，安装脚本会下载 `codesome-linux-arm64`
 - macOS Intel：运行 https://gitee.com/bashi01/codesome-skill/raw/main/install.sh，安装脚本会下载 `codesome-darwin-amd64`
 - macOS Apple Silicon / M 系列：运行 https://gitee.com/bashi01/codesome-skill/raw/main/install.sh，安装脚本会下载 `codesome-darwin-arm64`
 
@@ -52,6 +53,7 @@ iwr https://gitee.com/bashi01/codesome-skill/raw/main/install.ps1 -UseB | iex
 Linux / WSL / macOS 环境优先使用同一个 `install.sh`，脚本会按系统和 CPU 架构自动选择二进制：
 
 - Linux / WSL amd64：`codesome-linux-amd64`
+- Linux ARM64 / aarch64：`codesome-linux-arm64`
 - macOS Intel：`codesome-darwin-amd64`
 - macOS Apple Silicon / M 系列：`codesome-darwin-arm64`
 
@@ -93,6 +95,7 @@ codesome version
 
 - `https://gitee.com/bashi01/codesome-skill/releases/download/latest/codesome-windows-amd64.exe`
 - `https://gitee.com/bashi01/codesome-skill/releases/download/latest/codesome-linux-amd64`
+- `https://gitee.com/bashi01/codesome-skill/releases/download/latest/codesome-linux-arm64`
 - `https://gitee.com/bashi01/codesome-skill/releases/download/latest/codesome-darwin-amd64`
 - `https://gitee.com/bashi01/codesome-skill/releases/download/latest/codesome-darwin-arm64`
 
