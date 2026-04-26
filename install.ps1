@@ -1,6 +1,6 @@
-﻿$ErrorActionPreference = "Stop"
+$ErrorActionPreference = "Stop"
 
-$DefaultBaseUrl = "https://gitee.com/bashi01/codesome-skill/releases/download/latest"
+$DefaultBaseUrl = "https://github.com/hicodesome/codesome-skill/releases/download/latest"
 $BaseUrl = if ($env:CODESOME_CLI_BASE_URL) { $env:CODESOME_CLI_BASE_URL.TrimEnd('/') } else { $DefaultBaseUrl }
 $InstallDir = Join-Path $HOME ".codesome\bin"
 $BinPath = Join-Path $InstallDir "codesome.exe"

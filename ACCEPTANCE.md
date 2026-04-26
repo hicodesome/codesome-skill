@@ -10,7 +10,7 @@
 
 公开仓库：
 
-- Gitee：`https://gitee.com/bashi01/codesome-skill`
+- GitHub：`https://github.com/hicodesome/codesome-skill`
 
 公开仓库包含：
 
@@ -19,7 +19,7 @@
 - `install.sh`：Linux / WSL / macOS 类 Unix 一键安装脚本。
 - `references/`：公开参考文档。
 
-闭源 CLI 通过 Gitee Release `latest` 分发：
+闭源 CLI 通过 GitHub Release `latest` 分发：
 
 - `codesome-windows-amd64.exe`
 - `codesome-linux-amd64`
@@ -47,8 +47,8 @@ codesome version
 
 验收结果：
 
-- Windows 安装脚本可从 Gitee Release 下载并安装 CLI。
-- Linux / WSL 安装脚本可从 Gitee Release 下载并安装 CLI。
+- Windows 安装脚本可从 GitHub Release 下载并安装 CLI。
+- Linux / WSL 安装脚本可从 GitHub Release 下载并安装 CLI。
 - Windows / Linux 二进制均可启动。
 
 ### 2. 登录态管理

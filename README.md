@@ -14,16 +14,16 @@
 请帮我安装并配置 Codesome Skill。
 
 公开仓库地址：
-https://gitee.com/bashi01/codesome-skill
+https://github.com/hicodesome/codesome-skill
 
 请按我的系统安装本地 codesome CLI，因为这个 Skill 需要调用本地 CLI 才能执行余额查询、API Key 管理、用量查询等操作。
 
 安装方式：
-- Windows：运行 https://gitee.com/bashi01/codesome-skill/raw/main/install.ps1，安装脚本会下载 `codesome-windows-amd64.exe`
-- Linux / WSL amd64：运行 https://gitee.com/bashi01/codesome-skill/raw/main/install.sh，安装脚本会下载 `codesome-linux-amd64`
-- Linux ARM64 / aarch64：运行 https://gitee.com/bashi01/codesome-skill/raw/main/install.sh，安装脚本会下载 `codesome-linux-arm64`
-- macOS Intel：运行 https://gitee.com/bashi01/codesome-skill/raw/main/install.sh，安装脚本会下载 `codesome-darwin-amd64`
-- macOS Apple Silicon / M 系列：运行 https://gitee.com/bashi01/codesome-skill/raw/main/install.sh，安装脚本会下载 `codesome-darwin-arm64`
+- Windows：运行 https://raw.githubusercontent.com/hicodesome/codesome-skill/main/install.ps1，安装脚本会下载 `codesome-windows-amd64.exe`
+- Linux / WSL amd64：运行 https://raw.githubusercontent.com/hicodesome/codesome-skill/main/install.sh，安装脚本会下载 `codesome-linux-amd64`
+- Linux ARM64 / aarch64：运行 https://raw.githubusercontent.com/hicodesome/codesome-skill/main/install.sh，安装脚本会下载 `codesome-linux-arm64`
+- macOS Intel：运行 https://raw.githubusercontent.com/hicodesome/codesome-skill/main/install.sh，安装脚本会下载 `codesome-darwin-amd64`
+- macOS Apple Silicon / M 系列：运行 https://raw.githubusercontent.com/hicodesome/codesome-skill/main/install.sh，安装脚本会下载 `codesome-darwin-arm64`
 
 安装后请验证：
 1. codesome version
@@ -41,13 +41,13 @@ https://gitee.com/bashi01/codesome-skill
 获取仓库 README 并照做：
 
 ```bash
-curl -fsSL https://gitee.com/bashi01/codesome-skill/raw/main/README.md
+curl -fsSL https://raw.githubusercontent.com/hicodesome/codesome-skill/main/README.md
 ```
 
 Windows 环境优先使用：
 
 ```powershell
-iwr https://gitee.com/bashi01/codesome-skill/raw/main/install.ps1 -UseB | iex
+iwr https://raw.githubusercontent.com/hicodesome/codesome-skill/main/install.ps1 -UseB | iex
 ```
 
 Linux / WSL / macOS 环境优先使用同一个 `install.sh`，脚本会按系统和 CPU 架构自动选择二进制：
@@ -58,7 +58,7 @@ Linux / WSL / macOS 环境优先使用同一个 `install.sh`，脚本会按系�
 - macOS Apple Silicon / M 系列：`codesome-darwin-arm64`
 
 ```bash
-curl -fsSL https://gitee.com/bashi01/codesome-skill/raw/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/hicodesome/codesome-skill/main/install.sh | bash
 ```
 
 安装完成后至少验证：
@@ -91,13 +91,13 @@ codesome version
 
 ### 当前真实下载源
 
-安装脚本默认从本仓库的 Gitee Release `latest` 下载闭源 CLI 二进制：
+安装脚本默认从本仓库的 GitHub Release `latest` 下载闭源 CLI 二进制：
 
-- `https://gitee.com/bashi01/codesome-skill/releases/download/latest/codesome-windows-amd64.exe`
-- `https://gitee.com/bashi01/codesome-skill/releases/download/latest/codesome-linux-amd64`
-- `https://gitee.com/bashi01/codesome-skill/releases/download/latest/codesome-linux-arm64`
-- `https://gitee.com/bashi01/codesome-skill/releases/download/latest/codesome-darwin-amd64`
-- `https://gitee.com/bashi01/codesome-skill/releases/download/latest/codesome-darwin-arm64`
+- `https://github.com/hicodesome/codesome-skill/releases/download/latest/codesome-windows-amd64.exe`
+- `https://github.com/hicodesome/codesome-skill/releases/download/latest/codesome-linux-amd64`
+- `https://github.com/hicodesome/codesome-skill/releases/download/latest/codesome-linux-arm64`
+- `https://github.com/hicodesome/codesome-skill/releases/download/latest/codesome-darwin-amd64`
+- `https://github.com/hicodesome/codesome-skill/releases/download/latest/codesome-darwin-arm64`
 
 不要使用未验证的自定义域名。未来如果有新的官方镜像或 CDN，必须先真实发布并验证后再写入文档。
 ## 阶段验收报告
