@@ -28,6 +28,13 @@ SKILL_TARGETS=(
   "$HOME_DIR/.openclaw/skills/$SKILL_NAME"
   "$HOME_DIR/.config/opencode/skill/$SKILL_NAME"
 )
+SKILL_TARGET_NOTES=(
+  "Codex official user skills / OpenClaw common"
+  "Claude Code / OpenCode compatible"
+  "Hermes Agent"
+  "OpenClaw user"
+  "OpenCode native"
+)
 
 step() { printf '[codesome] %s\n' "$*"; }
 mkdir_safe() {
@@ -119,8 +126,9 @@ install_skill_target() {
   done
 }
 
-for skill_dir in "${SKILL_TARGETS[@]}"; do
-  install_skill_target "$skill_dir"
+for i in "${!SKILL_TARGETS[@]}"; do
+  step "Target: ${SKILL_TARGET_NOTES[$i]}"
+  install_skill_target "${SKILL_TARGETS[$i]}"
 done
 
 step "CLI install completed: $target"

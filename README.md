@@ -24,12 +24,14 @@ Linux / macOS: ~/.codesome/bin/codesome
 Skill 默认安装/更新到这些用户级目录：
 
 ```text
-Codex / OpenClaw 通用: ~/.agents/skills/codesome/SKILL.md
+Codex 官方用户级 Skill: ~/.agents/skills/codesome/SKILL.md
 Claude Code / OpenCode 兼容: ~/.claude/skills/codesome/SKILL.md
 Hermes Agent: ~/.hermes/skills/codesome/SKILL.md
 OpenClaw 用户级: ~/.openclaw/skills/codesome/SKILL.md
 OpenCode 原生: ~/.config/opencode/skill/codesome/SKILL.md
 ```
+
+注意：`~/.codex` 主要用于 Codex 的全局规则，例如 `AGENTS.md`，不是当前 Codex 官方 Skill 搜索目录。Codex 用户级 Skill 应安装到 `~/.agents/skills/<skill-name>/SKILL.md`。
 
 项目级目录不会默认写入，避免污染用户当前仓库。如需项目级安装，可以复制到：
 

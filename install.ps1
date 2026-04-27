@@ -21,7 +21,7 @@ $SkillFiles = @(
   "references/features/usage.md"
 )
 $SkillTargets = @(
-  [pscustomobject]@{ Name = "Codex / OpenClaw common"; Path = Join-Path $UserHome ".agents\skills\$SkillName" },
+  [pscustomobject]@{ Name = "Codex official user skills / OpenClaw common"; Path = Join-Path $UserHome ".agents\skills\$SkillName" },
   [pscustomobject]@{ Name = "Claude Code / OpenCode compatible"; Path = Join-Path $UserHome ".claude\skills\$SkillName" },
   [pscustomobject]@{ Name = "Hermes Agent"; Path = Join-Path $UserHome ".hermes\skills\$SkillName" },
   [pscustomobject]@{ Name = "OpenClaw user"; Path = Join-Path $UserHome ".openclaw\skills\$SkillName" },
