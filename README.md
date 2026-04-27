@@ -2,6 +2,10 @@
 
 这是 Codesome 的公开 Skill 仓库。
 
+# 进群享受小白和技术答疑服务
+
+![codesome's genius 扣桑天才吧](<images/codesome｜Claude code 小白无门槛宝典-image-001.png>)
+
 ## 快速安装技能
 
 > 这个仓库首先是 Codesome Skill 仓库。安装脚本会安装/更新本地 `codesome` CLI，因为这个技能实际执行操作时需要调用本地 CLI。
@@ -157,5 +161,6 @@ codesome <command>
 - Skill 可以公开审查。
 - 核心自动化实现不暴露。
 - 登录态、API Key、Cookie、Token 等敏感处理留在本地 CLI 中。
+
 
 
