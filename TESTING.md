@@ -94,6 +94,25 @@ node ./scripts/verify-key-update-output.cjs <json-file> active
 node ./scripts/verify-key-usage-output.cjs <json-file> <expected-requests>
 ```
 
+## Key Configuration Mock Test
+
+Run:
+
+```bash
+npm run test:key-config
+```
+
+This uses a local mock API through the real CLI entry point. It covers:
+
+- custom key creation
+- `key show`
+- dry-run update preview
+- confirmed updates for quota, expiry, rate limits, IP whitelist, and IP blacklist
+- clearing expiry and IP lists
+- resetting usage counters
+- deleting the temporary key
+- JSON output redaction
+
 ## Account-Dependent Tests
 
 These tests require a local Codesome login session:
@@ -103,5 +122,17 @@ node ./bin/codesome.js auth status
 node ./bin/codesome.js balance show
 node ./bin/codesome.js key list
 ```
+
+For key configuration changes, use a disposable test key and verify both dry-run and confirmed writes:
+
+```bash
+node ./bin/codesome.js key show --name "<test-key>"
+node ./bin/codesome.js key update --name "<test-key>" --quota 10
+node ./bin/codesome.js key update --name "<test-key>" --quota 10 --confirm
+node ./bin/codesome.js key list --search "<test-key>"
+node ./bin/codesome.js key update --name "<test-key>" --quota 0 --confirm
+```
+
+Current real-backend coverage: quota, expiry, rate limits, IP whitelist/blacklist, clear operations, JSON redaction, and final cleanup passed on 2026-04-27. Remaining gaps: reset commands were only verified on zero usage counters, and macOS binaries still need signing plus real-machine execution.
 
 Do not paste Cookie, Token, session storage, or full API keys into issues, pull requests, logs, or chat.

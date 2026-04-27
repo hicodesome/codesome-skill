@@ -1,96 +1,167 @@
-﻿import { updateKey } from '../services/key-update.js'
+import { getKeyDetails, previewUpdateKey, updateKey } from '../services/key-update.js'
 import { getOption, hasFlag, printJson } from '../output/format.js'
 import { maskApiKey } from '../output/redact.js'
+import { accountJson, accountServiceOptions, printAccountLine, resolveCommandAccount } from './account-context.js'
 
-export async function handleKeyUpdate(args) {
-  const json = hasFlag(args, '--json')
-  const data = await updateKey({
+function makeSafe(data) {
+  return JSON.parse(JSON.stringify(data, (key, value) => {
+    if (key === 'user') return undefined
+    if (key === 'custom_key') return undefined
+    if (key === 'key' && typeof value === 'string') return maskApiKey(value)
+    return value
+  }))
+}
+
+function makeOptions(args, account) {
+  return {
+    ...accountServiceOptions(account),
     id: getOption(args, '--id'),
     name: getOption(args, '--name'),
+    baseUrl: getOption(args, '--base-url'),
     newName: getOption(args, '--new-name'),
     group: getOption(args, '--group'),
     groupId: getOption(args, '--group-id'),
-    status: getOption(args, '--status')
+    status: getOption(args, '--status'),
+    quota: getOption(args, '--quota'),
+    expiresAt: getOption(args, '--expires-at'),
+    expiresInDays: getOption(args, '--expires-in-days'),
+    clearExpiresAt: hasFlag(args, '--clear-expires-at') || hasFlag(args, '--no-expiry'),
+    rateLimit5h: getOption(args, '--rate-limit-5h'),
+    rateLimit1d: getOption(args, '--rate-limit-1d'),
+    rateLimit7d: getOption(args, '--rate-limit-7d'),
+    ipWhitelist: getOption(args, '--ip-whitelist'),
+    ipBlacklist: getOption(args, '--ip-blacklist'),
+    clearIpWhitelist: hasFlag(args, '--clear-ip-whitelist'),
+    clearIpBlacklist: hasFlag(args, '--clear-ip-blacklist'),
+    resetQuotaUsed: hasFlag(args, '--reset-quota-used'),
+    resetRateLimitUsage: hasFlag(args, '--reset-rate-limit-usage')
+  }
+}
+
+function formatValue(value) {
+  if (value === undefined || value === null || value === '') return '未设置'
+  if (Array.isArray(value)) return value.length ? value.join(', ') : '空'
+  if (typeof value === 'object') {
+    if ('name' in value || 'id' in value) return value.name ? `${value.name} (#${value.id})` : `#${value.id}`
+    return Object.entries(value).map(([key, item]) => `${key}=${formatValue(item)}`).join(', ')
+  }
+  return String(value)
+}
+
+function printChanges(changes) {
+  for (const change of changes) {
+    console.log(`${change.label}：${formatValue(change.before)} -> ${formatValue(change.after)}`)
+  }
+}
+
+function printKeyDetails(key, account) {
+  console.log(`Codesome API Key：${key.name}`)
+  printAccountLine(account)
+  console.log('')
+  console.log(`ID：${key.id}`)
+  console.log(`Key：${key.key || key.masked_key}`)
+  console.log(`分组：${key.group?.name || key.group_id || '-'}`)
+  console.log(`状态：${key.status || '-'}`)
+  console.log(`限额：${formatValue(key.quota ?? 0)}，已用：${formatValue(key.quota_used ?? 0)}`)
+  console.log(`过期时间：${formatValue(key.expires_at)}`)
+  console.log(`速率限制：5h=${formatValue(key.rate_limit_5h ?? 0)}，1d=${formatValue(key.rate_limit_1d ?? 0)}，7d=${formatValue(key.rate_limit_7d ?? 0)}`)
+  console.log(`速率窗口用量：5h=${formatValue(key.usage_5h ?? key.usage?.usage_5h ?? 0)}，1d=${formatValue(key.usage_1d ?? key.usage?.usage_1d ?? 0)}，7d=${formatValue(key.usage_7d ?? key.usage?.usage_7d ?? 0)}`)
+  console.log(`IP 白名单：${formatValue(key.ip_whitelist || [])}`)
+  console.log(`IP 黑名单：${formatValue(key.ip_blacklist || [])}`)
+  console.log(`最近使用：${formatValue(key.last_used_at)}`)
+  console.log(`创建时间：${formatValue(key.created_at)}`)
+  console.log(`更新时间：${formatValue(key.updated_at)}`)
+}
+
+export async function handleKeyShow(args) {
+  const json = hasFlag(args, '--json')
+  const account = await resolveCommandAccount(args)
+  const key = await getKeyDetails({
+    ...accountServiceOptions(account),
+    id: getOption(args, '--id'),
+    name: getOption(args, '--name'),
+    baseUrl: getOption(args, '--base-url')
   })
 
-  const safe = makeSafe(data)
+  const safe = makeSafe({ account: accountJson(account), key })
+  if (json) {
+    printJson(safe)
+    return
+  }
+  printKeyDetails(safe.key, account)
+}
+
+export async function handleKeyUpdate(args) {
+  const json = hasFlag(args, '--json')
+  const confirm = hasFlag(args, '--confirm')
+  const account = await resolveCommandAccount(args)
+  const options = makeOptions(args, account)
+  const data = confirm ? await updateKey(options) : await previewUpdateKey(options)
+  const safe = makeSafe({ account: accountJson(account), ...data })
+
   if (json) {
     printJson(safe)
     return
   }
 
-  console.log('API Key 更新成功')
-  console.log('')
-  console.log(`原名称：${data.before.name}`)
-  console.log(`新名称：${data.after.name}`)
-  if (data.group_resolution) {
-    console.log(`目标分组：${data.group_resolution.group?.name || data.group_resolution.group_id}`)
-  }
-  console.log(`状态：${data.after.status}`)
-}
-
-export async function handleKeySwitchGroup(args) {
-  const confirm = hasFlag(args, '--confirm')
-  const name = getOption(args, '--name')
-  const group = getOption(args, '--group')
-  const groupId = getOption(args, '--group-id')
   if (!confirm) {
-    console.log('即将切换 API Key 分组（预检）')
+    console.log('API Key 更新预检')
+    printAccountLine(account)
     console.log('')
-    console.log(`Key：${name || getOption(args, '--id') || '-'}`)
-    console.log(`目标分组：${group || groupId || '-'}`)
+    console.log(`名称：${safe.before.name}`)
+    console.log(`Key：${safe.before.key || safe.before.masked_key}`)
+    console.log(`ID：${safe.before.id}`)
     console.log('')
-    console.log('此操作可能改变计费方式（月卡/按量）。如确认执行，请追加 --confirm。')
+    console.log('将要修改：')
+    printChanges(safe.changes)
+    console.log('')
+    console.log('本次未写入。确认执行请追加 --confirm。')
     return
   }
 
-  await handleKeyUpdate(['--name', name, ...(group ? ['--group', group] : []), ...(groupId ? ['--group-id', groupId] : [])])
+  console.log('API Key 更新成功')
+  printAccountLine(account)
+  console.log('')
+  console.log(`名称：${safe.after.name}`)
+  console.log(`Key：${safe.after.key || safe.after.masked_key}`)
+  console.log(`ID：${safe.after.id}`)
+  console.log('')
+  console.log('已修改：')
+  printChanges(safe.changes)
 }
 
-function makeSafe(data) {
-  const safe = JSON.parse(JSON.stringify(data, (key, value) => {
-    if (key === 'key' && typeof value === 'string') return maskApiKey(value)
-    if (key === 'user') return undefined
-    return value
-  }))
-  if (safe.after) {
-    safe.after = {
-      id: safe.after.id,
-      name: safe.after.name,
-      key: safe.after.key,
-      group_id: safe.after.group_id,
-      group: safe.after.group ? {
-        id: safe.after.group.id,
-        name: safe.after.group.name,
-        platform: safe.after.group.platform,
-        subscription_type: safe.after.group.subscription_type,
-        rate_multiplier: safe.after.group.rate_multiplier,
-        status: safe.after.group.status
-      } : undefined,
-      status: safe.after.status,
-      quota: safe.after.quota,
-      quota_used: safe.after.quota_used,
-      expires_at: safe.after.expires_at,
-      last_used_at: safe.after.last_used_at,
-      rate_limit_5h: safe.after.rate_limit_5h,
-      rate_limit_1d: safe.after.rate_limit_1d,
-      rate_limit_7d: safe.after.rate_limit_7d,
-      updated_at: safe.after.updated_at
-    }
+export async function handleKeySwitchGroup(args) {
+  await handleKeyUpdate(args)
+  if (!hasFlag(args, '--confirm') && !hasFlag(args, '--json')) {
+    console.log('提醒：切换分组可能改变计费方式（月卡/按量）。')
   }
-  return safe
 }
 
 export function printKeyUpdateHelp() {
   console.log(`Codesome key update
 
 Usage:
-  codesome key update --name <name> --new-name <new-name>
-  codesome key update --name <name> --group <group-name>
-  codesome key update --name <name> --status active|inactive
-  codesome key switch-group --name <name> --group <group-name> --confirm
+  codesome key show [--account <alias>] --name <name> [--json]
+  codesome key show [--account <alias>] --id <id> [--json]
+  codesome key update [--account <alias>] --name <name> --new-name <new-name> [--confirm]
+  codesome key update [--account <alias>] --name <name> --group <group-name> [--confirm]
+  codesome key update [--account <alias>] --name <name> --status active|inactive [--confirm]
+  codesome key update [--account <alias>] --name <name> --quota <usd> [--confirm]
+  codesome key update [--account <alias>] --name <name> --expires-at <iso|none> [--confirm]
+  codesome key update [--account <alias>] --name <name> --expires-in-days <days> [--confirm]
+  codesome key update [--account <alias>] --name <name> --rate-limit-5h <usd> --rate-limit-1d <usd> --rate-limit-7d <usd> [--confirm]
+  codesome key update [--account <alias>] --name <name> --ip-whitelist <a,b> --ip-blacklist <a,b> [--confirm]
+  codesome key switch-group [--account <alias>] --name <name> --group <group-name> [--confirm]
+
+Options:
+  --clear-expires-at       Clear key expiry
+  --clear-ip-whitelist     Set IP whitelist to empty
+  --clear-ip-blacklist     Set IP blacklist to empty
+  --reset-quota-used       Reset quota used counter
+  --reset-rate-limit-usage Reset rate-limit usage windows
 
 Notes:
-  switch-group without --confirm is a dry-run warning.
+  Without --confirm, update and switch-group only query the current key and print a dry-run diff.
+  JSON and text output always mask key values.
 `)
 }

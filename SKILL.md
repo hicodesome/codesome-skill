@@ -1,6 +1,6 @@
 ---
 name: codesome
-description: Manage and troubleshoot Codesome user workflows via the local `codesome` CLI. Use when users ask to view balance, manage API keys, switch key groups, redeem codes, configure Codex or Claude Code with Codesome, clean conflicting Anthropic/Claude/Codex environment variables, or diagnose Codesome-related errors.
+description: Manage and troubleshoot Codesome user workflows via the local `codesome` CLI. Use when users ask to view balance, manage local Codesome accounts, manage API keys, switch key groups, inspect usage, or diagnose Codesome-related errors.
 metadata:
   short-description: Codesome CLI, key, balance, config, and doctor workflow
 ---
@@ -32,19 +32,23 @@ Use this skill to help users operate Codesome through the local `codesome` CLI. 
 | --- | --- |
 | 登录 Codesome | `codesome auth login` |
 | 查看登录状态 | `codesome auth status` |
+| 查看本机账号 | `codesome account list` 或 `codesome account current` |
+| 新增/切换本机账号 | `codesome account add --name "<alias>"` 或 `codesome account switch <alias>` |
 | 查看余额 | `codesome balance show` |
 | 查看月卡/订阅 | `codesome subscription active` 或 `codesome subscription list` |
 | 查看用量 | `codesome usage stats` 或 `codesome usage recent` |
 | 查看某个 Key 用量 | `codesome usage key --name "<key_name>" --days 30` |
 | 查看 API Key | `codesome key list` |
+| 查看 API Key 配置 | `codesome key show --name "<key_name>"` |
 | 创建 API Key | `codesome key create --name "<name>" --group "<group>"` |
 | 编辑 API Key 名称 | `codesome key update --name "<name>" --new-name "<new-name>"` |
+| 修改 Key 限额 | `codesome key update --name "<name>" --quota <usd>`，确认后追加 `--confirm` |
+| 修改 Key 过期时间 | `codesome key update --name "<name>" --expires-at <iso|none>`，确认后追加 `--confirm` |
+| 修改 Key 速率限制 | `codesome key update --name "<name>" --rate-limit-5h <usd> --rate-limit-1d <usd> --rate-limit-7d <usd>`，确认后追加 `--confirm` |
+| 修改 Key IP 名单 | `codesome key update --name "<name>" --ip-whitelist <a,b> --ip-blacklist <a,b>`，确认后追加 `--confirm` |
+| 删除 API Key | `codesome key delete --name "<name>" --confirm` |
 | 切换 Key 分组 | `codesome key switch-group --name "<name>" --group "<target>" --confirm` |
 | 查看可用分组 | `codesome group list` |
-| 配置 Codex | `codesome config codex --key-name "<name>" --model "<model>"` |
-| 配置 Claude Code | `codesome config claude-code --key-name "<name>"` |
-| 诊断 Codex | `codesome doctor codex` |
-| 诊断 Claude Code | `codesome doctor claude-code` |
 
 ## 确认规则
 
@@ -53,8 +57,9 @@ Use this skill to help users operate Codesome through the local `codesome` CLI. 
 - 删除 Key
 - 禁用 Key
 - 切换分组，尤其是月卡分组与按量分组之间切换
-- 写入 Codex / Claude Code 配置
-- 清理环境变量
+- 修改 Key 限额、过期时间、速率限制、IP 白名单或 IP 黑名单
+- 清空 Key 过期时间、IP 白名单或 IP 黑名单
+- 重置 Key 用量计数
 
 确认摘要模板：
 

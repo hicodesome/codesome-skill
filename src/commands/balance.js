@@ -1,5 +1,6 @@
 ﻿import { getBalance } from '../services/balance.js'
 import { hasFlag, printJson } from '../output/format.js'
+import { accountJson, accountServiceOptions, printAccountLine, resolveCommandAccount } from './account-context.js'
 
 function money(value) {
   if (value === undefined || value === null || Number.isNaN(Number(value))) return '-'
@@ -27,13 +28,15 @@ export async function handleBalance(args) {
   }
 
   const json = hasFlag(args, '--json')
-  const data = await getBalance()
+  const account = await resolveCommandAccount(args)
+  const data = await getBalance(accountServiceOptions(account))
   if (json) {
-    printJson(data)
+    printJson({ account: accountJson(account), ...data })
     return
   }
 
   console.log('Codesome 账户余额')
+  printAccountLine(account)
   console.log('')
   console.log(`账号：${maskEmail(data.account.email)}`)
   console.log(`状态：${data.account.status}`)
@@ -53,7 +56,7 @@ export function printBalanceHelp() {
   console.log(`Codesome balance commands
 
 Usage:
-  codesome balance show [--json]
+  codesome balance show [--account <alias>] [--json]
 
 Shows account pay-as-you-go balance and dashboard usage summary.
 `)

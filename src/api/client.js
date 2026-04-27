@@ -1,7 +1,8 @@
 import fs from 'node:fs/promises'
 import http from 'node:http'
 import https from 'node:https'
-import { STORAGE_STATE_PATH, resolveBaseUrl } from '../config/paths.js'
+import { resolveBaseUrl } from '../config/paths.js'
+import { resolveAccountContext } from '../accounts/accounts.js'
 import { redact } from '../output/redact.js'
 
 export class ApiError extends Error {
@@ -12,11 +13,15 @@ export class ApiError extends Error {
   }
 }
 
-async function loadStorageState() {
+async function loadStorageState(account) {
   try {
-    return JSON.parse(await fs.readFile(STORAGE_STATE_PATH, 'utf8'))
+    return JSON.parse(await fs.readFile(account.storageStatePath, 'utf8'))
   } catch {
-    throw new ApiError('???????? codesome auth login?', { code: 'NO_SESSION' })
+    throw new ApiError(`账号 ${account.alias} 未找到登录态，请先运行 codesome auth login --account ${account.alias}。`, {
+      code: 'NO_SESSION',
+      account_alias: account.alias,
+      session_path: account.storageStatePath
+    })
   }
 }
 
@@ -90,11 +95,15 @@ async function parseResponse(response, method, path) {
 }
 
 export async function createApiClient(options = {}) {
-  const baseUrl = resolveBaseUrl(options.baseUrl)
-  const storageState = await loadStorageState()
+  const account = await resolveAccountContext({ account: options.account, baseUrl: options.baseUrl })
+  const baseUrl = resolveBaseUrl(options.baseUrl || process.env.CODESOME_BASE_URL || account.baseUrl)
+  const storageState = await loadStorageState(account)
   const authToken = findAuthToken(storageState, baseUrl)
   if (!authToken) {
-    throw new ApiError('????? auth token?????? codesome auth login?', { code: 'NO_AUTH_TOKEN' })
+    throw new ApiError(`账号 ${account.alias} 缺少 auth token，请重新运行 codesome auth login --account ${account.alias}。`, {
+      code: 'NO_AUTH_TOKEN',
+      account_alias: account.alias
+    })
   }
 
   async function requestJson(method, path, body, params) {
@@ -113,6 +122,11 @@ export async function createApiClient(options = {}) {
   }
 
   return {
+    account: {
+      alias: account.alias,
+      session_path: account.storageStatePath,
+      config_path: account.configPath
+    },
     baseUrl,
     apiBaseUrl: `${baseUrl}/api/v1`,
     get(path, params = {}) {

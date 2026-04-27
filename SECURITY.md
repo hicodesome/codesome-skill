@@ -9,8 +9,9 @@ Do not commit or publish:
 - Tokens
 - Browser storage state
 - Session files
-- Private CLI implementation code
-- UI selectors or internal automation details
+- Private credentials
+- Internal-only implementation details
+- UI selectors or unpublished automation notes
 
 ## Reporting
 

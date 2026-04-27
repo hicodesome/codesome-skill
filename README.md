@@ -105,6 +105,12 @@ CODESOME_SKILL_RAW_BASE_URL
 - `codesome auth login`
 - `codesome auth status`
 - `codesome auth logout`
+- `codesome account list`
+- `codesome account current`
+- `codesome account add --name "<alias>"`
+- `codesome account switch <alias>`
+- `codesome account rename <old> <new>`
+- `codesome account remove <alias> --confirm`
 - `codesome balance show`
 - `codesome subscription active`
 - `codesome subscription list`
@@ -113,10 +119,35 @@ CODESOME_SKILL_RAW_BASE_URL
 - `codesome usage key --name "<key_name>" --days 30`
 - `codesome group list`
 - `codesome key list`
+- `codesome key show --name "<key_name>"`
 - `codesome key create`
-- `codesome key update`
+- `codesome key update --name "<key_name>" --quota <usd>`
+- `codesome key update --name "<key_name>" --expires-at <iso|none>`
+- `codesome key update --name "<key_name>" --rate-limit-5h <usd> --rate-limit-1d <usd> --rate-limit-7d <usd>`
+- `codesome key update --name "<key_name>" --ip-whitelist <a,b> --ip-blacklist <a,b>`
+- `codesome key update --name "<key_name>" --clear-expires-at --clear-ip-whitelist --clear-ip-blacklist`
 - `codesome key switch-group`
 - `codesome key delete`
+
+写操作默认先做 dry-run 预检，展示原值和目标值；追加 `--confirm` 才会写入。
+
+## 当前验收状态
+
+这一版已通过本地 mock 端到端测试、源码 smoke、公开敏感信息扫描和 release build。
+
+真实后台已验证：
+
+- 登录态刷新后 API 可用。
+- `key show` 可读取真实配置字段。
+- `key update` dry-run 不写入。
+- `--confirm` 可写入 quota、过期时间、速率限制、IP 白名单和 IP 黑名单。
+- `list --search` / `show` 可复查持久化结果。
+- 文本和 JSON 输出不会暴露完整 API Key。
+
+仍需继续补充的验收：
+
+- `reset-quota-used` 和 `reset-rate-limit-usage` 的非零用量样本。
+- macOS 二进制的签名和实机运行。
 
 ## 安装位置
 
@@ -174,56 +205,3 @@ BUILD.md                 构建说明
 TESTING.md               测试说明
 SECURITY.md              安全说明
 ```
-
-## 从源码运行和编译 CLI
-
-通常不需要自行编译。推荐优先使用安装脚本和 GitHub Release 中的预编译二进制。
-
-如果你希望从源码运行或自行编译 CLI，可以按下面步骤操作。
-
-环境要求：
-
-- Node.js 20+
-- npm
-
-安装依赖：
-
-```bash
-npm install
-```
-
-本地运行：
-
-```bash
-node ./bin/codesome.js version
-node ./bin/codesome.js --help
-```
-
-安全扫描：
-
-```bash
-npm run scan:public-safety
-```
-
-构建多平台二进制：
-
-```bash
-npm run build:release
-```
-
-构建产物：
-
-```text
-dist/codesome-windows-amd64.exe
-dist/codesome-linux-amd64
-dist/codesome-linux-arm64
-dist/codesome-darwin-amd64
-dist/codesome-darwin-arm64
-dist/checksums.txt
-```
-
-更多说明见：
-
-- [BUILD.md](./BUILD.md)
-- [TESTING.md](./TESTING.md)
-- [SECURITY.md](./SECURITY.md)

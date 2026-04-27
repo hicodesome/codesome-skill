@@ -1,5 +1,6 @@
 import { getKeyUsage, getRecentUsage, getUsageStats } from '../services/usage.js'
 import { getOption, hasFlag, printJson } from '../output/format.js'
+import { accountJson, accountServiceOptions, printAccountLine, resolveCommandAccount } from './account-context.js'
 
 function money(value) {
   if (value === undefined || value === null || Number.isNaN(Number(value))) return '-'
@@ -24,32 +25,35 @@ export async function handleUsage(args) {
   }
 
   const json = hasFlag(args, '--json')
+  const account = await resolveCommandAccount(args)
+  const serviceOptions = accountServiceOptions(account)
   const days = getOption(args, '--days') || 7
   const startDate = getOption(args, '--start-date')
   const endDate = getOption(args, '--end-date')
 
   if (subcommand === 'stats') {
-    const data = await getUsageStats({ days, startDate, endDate })
+    const data = await getUsageStats({ ...serviceOptions, days, startDate, endDate })
     if (json) {
-      printJson(data)
+      printJson({ account: accountJson(account), ...data })
       return
     }
-    printStats(data)
+    printStats(data, account)
     return
   }
 
   if (subcommand === 'recent') {
-    const data = await getRecentUsage({ days, startDate, endDate, pageSize: getOption(args, '--limit') || 10 })
+    const data = await getRecentUsage({ ...serviceOptions, days, startDate, endDate, pageSize: getOption(args, '--limit') || 10 })
     if (json) {
-      printJson(data)
+      printJson({ account: accountJson(account), ...data })
       return
     }
-    printRecent(data)
+    printRecent(data, account)
     return
   }
 
   if (subcommand === 'key') {
     const data = await getKeyUsage({
+      ...serviceOptions,
       name: getOption(args, '--name'),
       days: getOption(args, '--days') || 30,
       startDate,
@@ -57,10 +61,10 @@ export async function handleUsage(args) {
       recentLimit: getOption(args, '--recent-limit') || 5
     })
     if (json) {
-      printJson(data)
+      printJson({ account: accountJson(account), ...data })
       return
     }
-    printKeyUsage(data)
+    printKeyUsage(data, account)
     return
   }
 
@@ -69,9 +73,10 @@ export async function handleUsage(args) {
   process.exitCode = 2
 }
 
-function printStats(data) {
+function printStats(data, account) {
   const stats = data.stats || {}
   console.log(`Codesome 用量统计 (${data.range.start_date} ~ ${data.range.end_date})`)
+  printAccountLine(account)
   console.log('')
   console.log(`总请求数：${compactNumber(stats.total_requests ?? stats.total_count ?? stats.requests)}`)
   console.log(`总 Token：${compactNumber(stats.total_tokens)}`)
@@ -83,8 +88,9 @@ function printStats(data) {
   }
 }
 
-function printRecent(data) {
+function printRecent(data, account) {
   console.log(`Codesome 最近用量 (${data.range.start_date} ~ ${data.range.end_date})`)
+  printAccountLine(account)
   console.log('')
   if (!data.items.length) {
     console.log('没有用量记录。')
@@ -97,9 +103,10 @@ function printRecent(data) {
   }
 }
 
-function printKeyUsage(data) {
+function printKeyUsage(data, account) {
   const key = data.key
   console.log(`Codesome Key 用量：${key.name}`)
+  printAccountLine(account)
   console.log('')
   console.log(`Key：${key.masked_key}`)
   console.log(`分组：${key.group}`)
@@ -133,9 +140,9 @@ export function printUsageHelp() {
   console.log(`Codesome usage commands
 
 Usage:
-  codesome usage stats [--days 7] [--start-date YYYY-MM-DD --end-date YYYY-MM-DD] [--json]
-  codesome usage recent [--days 7] [--limit 10] [--json]
-  codesome usage key --name <key_name> [--days 30] [--start-date YYYY-MM-DD --end-date YYYY-MM-DD] [--recent-limit 5] [--json]
+  codesome usage stats [--account <alias>] [--days 7] [--start-date YYYY-MM-DD --end-date YYYY-MM-DD] [--json]
+  codesome usage recent [--account <alias>] [--days 7] [--limit 10] [--json]
+  codesome usage key --account <alias> --name <key_name> [--days 30] [--start-date YYYY-MM-DD --end-date YYYY-MM-DD] [--recent-limit 5] [--json]
 
 Shows selected-range usage statistics, recent usage records, or usage aggregated by a specific API Key name.
 `)

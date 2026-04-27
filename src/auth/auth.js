@@ -2,7 +2,8 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { loadChromium, launchChromium } from './browser.js'
 import { loginWithSystemBrowser } from './system-browser.js'
-import { CONFIG_PATH, SESSION_DIR, STORAGE_STATE_PATH, resolveBaseUrl } from '../config/paths.js'
+import { resolveBaseUrl } from '../config/paths.js'
+import { resolveAccountContext, updateAccountRecord } from '../accounts/accounts.js'
 
 const DEFAULT_LOGIN_TIMEOUT_MS = 10 * 60 * 1000
 const LOGIN_POLL_INTERVAL_MS = 1500
@@ -16,8 +17,8 @@ async function exists(filePath) {
   }
 }
 
-async function ensureDirs() {
-  await fs.mkdir(SESSION_DIR, { recursive: true })
+async function ensureDirs(accountContext) {
+  await fs.mkdir(accountContext.sessionDir, { recursive: true })
 }
 
 async function readJson(filePath) {
@@ -82,14 +83,21 @@ async function waitForLoginComplete(page, context, timeoutMs) {
 }
 
 export async function getAuthStatus(options = {}) {
-  const baseUrl = resolveBaseUrl(options.baseUrl)
-  const sessionExists = await exists(STORAGE_STATE_PATH)
-  const configExists = await exists(CONFIG_PATH)
+  const account = await resolveAccountContext({
+    account: options.account,
+    createIfMissing: !options.account,
+    baseUrl: options.baseUrl
+  })
+  const baseUrl = resolveBaseUrl(options.baseUrl || process.env.CODESOME_BASE_URL || account.baseUrl)
+  const sessionExists = await exists(account.storageStatePath)
+  const configExists = await exists(account.configPath)
   const result = {
+    account_alias: account.alias,
+    current_account: account.current,
     logged_in: false,
     session_exists: sessionExists,
-    session_path: STORAGE_STATE_PATH,
-    config_path: CONFIG_PATH,
+    session_path: account.storageStatePath,
+    config_path: account.configPath,
     base_url: baseUrl,
     checked_remote: false,
     message: ''
@@ -101,7 +109,7 @@ export async function getAuthStatus(options = {}) {
   }
 
   try {
-    const storageState = await readJson(STORAGE_STATE_PATH)
+    const storageState = await readJson(account.storageStatePath)
     Object.assign(result, cookieSummary(storageState))
     result.logged_in = true
     result.message = '本地登录态存在。'
@@ -116,7 +124,7 @@ export async function getAuthStatus(options = {}) {
     const chromium = await loadChromium()
     const browser = await launchChromium(chromium, { headless: true })
     try {
-      const context = await browser.newContext({ storageState: STORAGE_STATE_PATH })
+      const context = await browser.newContext({ storageState: account.storageStatePath })
       const page = await context.newPage()
       const response = await page.goto(`${baseUrl}/dashboard`, { waitUntil: 'domcontentloaded', timeout: 30000 })
       const url = page.url()
@@ -132,7 +140,7 @@ export async function getAuthStatus(options = {}) {
 
   if (configExists) {
     try {
-      const config = await readJson(CONFIG_PATH)
+      const config = await readJson(account.configPath)
       if (config.account_hint) result.account_hint = config.account_hint
       if (config.saved_at) result.saved_at = config.saved_at
     } catch {
@@ -144,28 +152,36 @@ export async function getAuthStatus(options = {}) {
 }
 
 export async function login(options = {}) {
-  const baseUrl = resolveBaseUrl(options.baseUrl)
+  const account = await resolveAccountContext({ account: options.account, createIfMissing: true, baseUrl: options.baseUrl })
+  const baseUrl = resolveBaseUrl(options.baseUrl || process.env.CODESOME_BASE_URL || account.baseUrl)
   const timeoutMs = Number(options.timeoutMs || DEFAULT_LOGIN_TIMEOUT_MS)
-  await ensureDirs()
+  await ensureDirs(account)
 
-  console.log(`Opening Codesome: ${baseUrl}`)
+  console.log(`Opening Codesome account "${account.alias}": ${baseUrl}`)
   console.log('Please sign in in the browser. The CLI will not read your password.')
   console.log('The session is saved automatically after login; do not press Enter.')
 
   if (process.pkg) {
     const loginState = await loginWithSystemBrowser({ baseUrl, timeoutMs })
-    await writeJson(STORAGE_STATE_PATH, loginState.storageState)
+    await writeJson(account.storageStatePath, loginState.storageState)
     const savedAt = new Date().toISOString()
-    await writeJson(CONFIG_PATH, {
+    await writeJson(account.configPath, {
+      account_alias: account.alias,
+      base_url: baseUrl,
+      saved_at: savedAt,
+      final_url: loginState.final_url
+    })
+    await updateAccountRecord(account.alias, {
       base_url: baseUrl,
       saved_at: savedAt,
       final_url: loginState.final_url
     })
     const summary = cookieSummary(loginState.storageState)
     return {
+      account_alias: account.alias,
       logged_in: true,
-      session_path: STORAGE_STATE_PATH,
-      config_path: CONFIG_PATH,
+      session_path: account.storageStatePath,
+      config_path: account.configPath,
       final_url: loginState.final_url,
       saved_at: savedAt,
       cookie_count: summary.cookie_count,
@@ -183,17 +199,24 @@ export async function login(options = {}) {
   try {
     await page.goto(`${baseUrl}/login`, { waitUntil: 'domcontentloaded', timeout: 60000 })
     const loginState = await waitForLoginComplete(page, context, timeoutMs)
-    await writeJson(STORAGE_STATE_PATH, loginState.storageState)
+    await writeJson(account.storageStatePath, loginState.storageState)
     const savedAt = new Date().toISOString()
-    await writeJson(CONFIG_PATH, {
+    await writeJson(account.configPath, {
+      account_alias: account.alias,
+      base_url: baseUrl,
+      saved_at: savedAt,
+      final_url: loginState.final_url
+    })
+    await updateAccountRecord(account.alias, {
       base_url: baseUrl,
       saved_at: savedAt,
       final_url: loginState.final_url
     })
     return {
+      account_alias: account.alias,
       logged_in: true,
-      session_path: STORAGE_STATE_PATH,
-      config_path: CONFIG_PATH,
+      session_path: account.storageStatePath,
+      config_path: account.configPath,
       final_url: loginState.final_url,
       saved_at: savedAt,
       cookie_count: loginState.cookie_count,
@@ -207,15 +230,17 @@ export async function login(options = {}) {
   }
 }
 
-export async function logout() {
+export async function logout(options = {}) {
+  const account = await resolveAccountContext({ account: options.account, createIfMissing: !options.account })
   const removed = []
-  for (const filePath of [STORAGE_STATE_PATH, CONFIG_PATH]) {
+  for (const filePath of [account.storageStatePath, account.configPath]) {
     if (await exists(filePath)) {
       await fs.rm(filePath, { force: true })
       removed.push(filePath)
     }
   }
   return {
+    account_alias: account.alias,
     logged_in: false,
     removed,
     message: removed.length ? '登录态已清理。' : '本地没有登录态。'

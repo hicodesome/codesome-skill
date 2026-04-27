@@ -1,5 +1,6 @@
 ﻿import { listGroups } from '../services/groups.js'
 import { getOption, hasFlag, printJson } from '../output/format.js'
+import { accountJson, accountServiceOptions, printAccountLine, resolveCommandAccount } from './account-context.js'
 
 function moneyLimit(value) {
   const numeric = Number(value || 0)
@@ -21,19 +22,21 @@ export async function handleGroup(args) {
   }
 
   const json = hasFlag(args, '--json')
+  const account = await resolveCommandAccount(args)
   const platform = getOption(args, '--platform')
   const type = getOption(args, '--type')
-  const data = await listGroups()
+  const data = await listGroups(accountServiceOptions(account))
   let items = data.items
   if (platform) items = items.filter((item) => item.platform === platform)
   if (type) items = items.filter((item) => item.subscription_type === type)
 
   if (json) {
-    printJson({ items, warnings: data.warnings })
+    printJson({ account: accountJson(account), items, warnings: data.warnings })
     return
   }
 
   console.log(`Codesome 可用分组（${items.length}）`)
+  printAccountLine(account)
   console.log('')
   for (const item of items) {
     const typeLabel = item.subscription_type === 'subscription' ? '订阅/月卡' : '按量/标准'
@@ -49,7 +52,7 @@ export function printGroupHelp() {
   console.log(`Codesome group commands
 
 Usage:
-  codesome group list [--platform anthropic|openai|gemini|antigravity] [--type standard|subscription] [--json]
+  codesome group list [--account <alias>] [--platform anthropic|openai|gemini|antigravity] [--type standard|subscription] [--json]
 
 Shows available groups for the current user without exposing internal routing details.
 `)

@@ -1,6 +1,7 @@
 import { deleteKey, previewDeleteKey } from '../services/key-delete.js'
 import { getOption, hasFlag, printJson } from '../output/format.js'
 import { maskApiKey } from '../output/redact.js'
+import { accountJson, accountServiceOptions, printAccountLine, resolveCommandAccount } from './account-context.js'
 
 function safeKey(key) {
   if (!key) return null
@@ -26,8 +27,9 @@ function safeKey(key) {
   }
 }
 
-function makeOptions(args) {
+function makeOptions(args, account) {
   return {
+    ...accountServiceOptions(account),
     id: getOption(args, '--id'),
     name: getOption(args, '--name'),
     baseUrl: getOption(args, '--base-url')
@@ -37,21 +39,24 @@ function makeOptions(args) {
 export async function handleKeyDelete(args) {
   const json = hasFlag(args, '--json')
   const confirm = hasFlag(args, '--confirm')
-  const options = makeOptions(args)
+  const account = await resolveCommandAccount(args)
+  const options = makeOptions(args, account)
 
   if (!confirm) {
     const preview = await previewDeleteKey(options)
     const safe = {
       dry_run: true,
       requires_confirm: true,
+      account: accountJson(account),
       key: safeKey(preview.key),
-      next_command: `codesome key delete ${options.id ? `--id ${options.id}` : `--name "${preview.key.name}"`} --confirm`
+      next_command: `codesome key delete --account ${account.alias} ${options.id ? `--id ${options.id}` : `--name "${preview.key.name}"`} --confirm`
     }
     if (json) {
       printJson(safe)
       return
     }
     console.log('危险操作：删除 API Key（预检）')
+    printAccountLine(account)
     console.log('')
     console.log(`名称：${safe.key.name}`)
     console.log(`Key：${safe.key.key}`)
@@ -67,6 +72,7 @@ export async function handleKeyDelete(args) {
   const result = await deleteKey(options)
   const safe = {
     deleted: true,
+    account: accountJson(account),
     key: safeKey(result.key),
     result: result.result
   }
@@ -75,6 +81,7 @@ export async function handleKeyDelete(args) {
     return
   }
   console.log('API Key 删除成功')
+  printAccountLine(account)
   console.log('')
   console.log(`名称：${safe.key.name}`)
   console.log(`Key：${safe.key.key}`)
@@ -85,9 +92,9 @@ export function printKeyDeleteHelp() {
   console.log(`Codesome key delete
 
 Usage:
-  codesome key delete --name <name>
-  codesome key delete --name <name> --confirm
-  codesome key delete --id <id> --confirm
+  codesome key delete [--account <alias>] --name <name>
+  codesome key delete [--account <alias>] --name <name> --confirm
+  codesome key delete [--account <alias>] --id <id> --confirm
 
 Notes:
   Without --confirm this command only previews the target key.

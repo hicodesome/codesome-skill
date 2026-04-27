@@ -4,6 +4,7 @@ import { handleSubscription } from './commands/subscriptions.js'
 import { handleUsage } from './commands/usage.js'
 import { handleKey } from './commands/keys.js'
 import { handleGroup } from './commands/groups.js'
+import { handleAccount } from './commands/accounts.js'
 import { runCommand } from './commands/run.js'
 import { hasFlag, printJson, getOption } from './output/format.js'
 
@@ -23,7 +24,12 @@ export async function main(args) {
   }
 
   if (command === 'auth') {
-    await handleAuth(subcommand, args.slice(2))
+    await runCommand(() => handleAuth(subcommand, args.slice(2)))
+    return
+  }
+
+  if (command === 'account') {
+    await runCommand(() => handleAccount(args.slice(1)))
     return
   }
 
@@ -68,6 +74,7 @@ async function handleAuth(subcommand, args) {
   const json = hasFlag(args, '--json')
   const baseUrl = getOption(args, '--base-url')
   const timeoutMs = getOption(args, '--timeout-ms')
+  const account = getOption(args, '--account')
 
   if (!subcommand || subcommand === '--help' || subcommand === '-h') {
     printAuthHelp()
@@ -75,11 +82,12 @@ async function handleAuth(subcommand, args) {
   }
 
   if (subcommand === 'status') {
-    const status = await getAuthStatus({ verify: hasFlag(args, '--verify'), baseUrl })
+    const status = await getAuthStatus({ verify: hasFlag(args, '--verify'), baseUrl, account })
     if (json) {
       printJson(status)
       return
     }
+    console.log(`当前账号：${status.account_alias}`)
     console.log(`当前状态：${status.logged_in ? '已登录（本地登录态存在）' : '未登录'}`)
     console.log(`后台地址：${status.base_url}`)
     console.log(`登录态文件：${status.session_path}`)
@@ -90,24 +98,26 @@ async function handleAuth(subcommand, args) {
   }
 
   if (subcommand === 'login') {
-    const result = await login({ baseUrl, timeoutMs })
+    const result = await login({ baseUrl, timeoutMs, account })
     if (json) {
       printJson(result)
       return
     }
     console.log(result.message)
+    console.log(`账号别名：${result.account_alias}`)
     console.log(`登录态文件：${result.session_path}`)
     console.log(`Cookie 数量：${result.cookie_count}`)
     return
   }
 
   if (subcommand === 'logout') {
-    const result = await logout()
+    const result = await logout({ account })
     if (json) {
       printJson(result)
       return
     }
     console.log(result.message)
+    console.log(`账号别名：${result.account_alias}`)
     for (const filePath of result.removed) console.log(`已删除：${filePath}`)
     return
   }
@@ -127,14 +137,15 @@ Commands:
   auth login       打开浏览器登录 Codesome，并保存本地登录态
   auth status      查看本地登录态状态
   auth logout      清理本地登录态
+  account list     管理本机保存的多个 Codesome 账号
   balance show     查询普通按量余额和用量概览
+  subscription list/active
+  usage stats/recent/key
+  key list/show/create/update/switch-group/delete
+  group list
   version          显示版本
 
 Planned commands:
-  key list/create/update/switch-group/delete
-  group list
-  subscription list/active
-  usage stats/recent
   config codex/claude-code/clean
   doctor codex/claude-code
 
@@ -147,12 +158,13 @@ function printAuthHelp() {
   console.log(`Codesome auth commands
 
 Usage:
-  codesome auth login [--base-url <url>] [--timeout-ms <ms>] [--json]
-  codesome auth status [--verify] [--base-url <url>] [--json]
-  codesome auth logout [--json]
+  codesome auth login [--account <alias>] [--base-url <url>] [--timeout-ms <ms>] [--json]
+  codesome auth status [--account <alias>] [--verify] [--base-url <url>] [--json]
+  codesome auth logout [--account <alias>] [--json]
 
 Examples:
   codesome auth login
+  codesome auth login --account work
   codesome auth status
   codesome auth status --verify
 `)

@@ -7,7 +7,8 @@ export async function runCommand(handler) {
     if (error instanceof ApiError) {
       console.error(error.message)
       if (error.details?.code === 'NO_SESSION') {
-        console.error('下一步：codesome auth login')
+        const suffix = error.details.account_alias ? ` --account ${error.details.account_alias}` : ''
+        console.error(`下一步：codesome auth login${suffix}`)
       }
       process.exitCode = 1
       return

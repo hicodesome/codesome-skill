@@ -11,6 +11,7 @@
     "start": "node ./bin/codesome.js",
     "test:smoke": "node ./bin/codesome.js --help && node ./bin/codesome.js version && node ./bin/codesome.js auth status",
     "scan:public-safety": "node ./scripts/scan-public-safety.cjs --public",
+    "test:key-config": "node ./scripts/test-key-config-mock.cjs",
     "build:release": "node ./scripts/build-release.mjs"
   },
   "dependencies": {

@@ -1,5 +1,6 @@
 ﻿import { listActiveSubscriptions, listSubscriptions } from '../services/subscriptions.js'
 import { hasFlag, printJson } from '../output/format.js'
+import { accountJson, accountServiceOptions, printAccountLine, resolveCommandAccount } from './account-context.js'
 
 function money(value) {
   if (value === undefined || value === null || Number.isNaN(Number(value))) return '-'
@@ -32,13 +33,17 @@ export async function handleSubscription(args) {
   }
 
   const json = hasFlag(args, '--json')
-  const items = subcommand === 'active' ? await listActiveSubscriptions() : await listSubscriptions()
+  const account = await resolveCommandAccount(args)
+  const items = subcommand === 'active'
+    ? await listActiveSubscriptions(accountServiceOptions(account))
+    : await listSubscriptions(accountServiceOptions(account))
   if (json) {
-    printJson({ items })
+    printJson({ account: accountJson(account), items })
     return
   }
 
   console.log(subcommand === 'active' ? 'Codesome 当前有效月卡/订阅' : 'Codesome 月卡/订阅列表')
+  printAccountLine(account)
   console.log('')
   if (!items.length) {
     console.log('未找到订阅。')
@@ -66,8 +71,8 @@ export function printSubscriptionHelp() {
   console.log(`Codesome subscription commands
 
 Usage:
-  codesome subscription active [--json]
-  codesome subscription list [--json]
+  codesome subscription active [--account <alias>] [--json]
+  codesome subscription list [--account <alias>] [--json]
 
 Shows monthly-card/subscription packages, limits, usage, remaining quota, and expiry.
 `)
