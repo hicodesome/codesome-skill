@@ -34,6 +34,18 @@ dist/codesome-linux-amd64 version
 
 ## Output Safety Checks
 
+Run the public safety scanner before every public release:
+
+```bash
+npm run scan:public-safety
+```
+
+Expected result:
+
+```text
+blocker_count=0
+```
+
 Command output must not include:
 
 - full API keys

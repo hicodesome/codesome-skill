@@ -10,6 +10,7 @@
   "scripts": {
     "start": "node ./bin/codesome.js",
     "test:smoke": "node ./bin/codesome.js --help && node ./bin/codesome.js version && node ./bin/codesome.js auth status",
+    "scan:public-safety": "node ./scripts/scan-public-safety.cjs --public",
     "build:release": "node ./scripts/build-release.mjs"
   },
   "dependencies": {
