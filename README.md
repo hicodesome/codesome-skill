@@ -1,21 +1,40 @@
 # Codesome Skill
 
-Codesome Skill 帮助 Agent 通过本地 `codesome` CLI 完成 Codesome 相关操作，例如余额查询、订阅查询、用量查询、API Key 管理和分组切换。
+Codesome Skill 是给 Agent 使用的 Codesome 助手。安装后，你可以直接让 Agent 帮你完成余额查询、订阅查询、用量查询、API Key 管理和分组切换等操作，不需要自己在网页后台来回找入口。
 
-本仓库包含：
+它适合这些场景：
 
-- Codesome Skill：`SKILL.md` 和 `references/`
-- 安装脚本：`install.ps1` / `install.sh`
-- `codesome` CLI 源码
-- CLI 构建和测试说明
+- 想快速查看 Codesome 账户余额和订阅状态。
+- 想管理自己的 API Key，例如创建、改名、启用、禁用、切换分组或删除。
+- 想查看某个 API Key 的近期用量。
+- 想让 Codex、Claude Code、OpenClaw、Hermes、OpenCode 等 Agent 客户端识别 Codesome Skill。
 
 ### 使用反馈和答疑欢迎进群交流
 
 ![codesome 使用反馈和答疑群](images/codesome-support-group.png)
 
+## 给 Agent 看的
+
+把下面这段提示词发给你的 Agent，它会按你的系统自动安装：
+
+```text
+请帮我安装并配置 Codesome Skill：https://github.com/hicodesome/codesome-skill
+
+请按当前系统安装本地 codesome CLI，并把 Codesome Skill 安装到常见 Agent 客户端的用户级技能目录。
+
+安装后请验证：
+1. codesome version
+2. codesome auth status
+3. 如果未登录，执行 codesome auth login，并让我在浏览器里完成登录
+4. 登录后执行 codesome balance show 验证可用
+5. 告诉我 CLI 安装目录和 Skill 安装目录
+
+安全要求：不要输出 Cookie、Token、Session 或完整 API Key。
+```
+
 ## 给人类看的
 
-推荐直接使用本仓库提供的安装脚本。安装脚本会下载对应系统的预编译 `codesome` CLI 二进制，并把 Codesome Skill 安装到常见 Agent 客户端的用户级技能目录。
+推荐直接使用安装脚本。脚本会下载对应系统的预编译 `codesome` CLI 二进制，并安装 Codesome Skill。
 
 Windows：
 
@@ -46,32 +65,6 @@ codesome auth login
 
 ```bash
 codesome balance show
-```
-
-## 给 Agent 看的
-
-可以把下面这段发给你的 LLM Agent：
-
-```text
-请帮我安装并配置 Codesome Skill。
-
-公开仓库地址：
-https://github.com/hicodesome/codesome-skill
-
-请按当前系统安装本地 codesome CLI，并把 Codesome Skill 安装到常见 Agent 客户端的用户级技能目录。
-
-推荐安装方式：
-- Windows：运行 https://raw.githubusercontent.com/hicodesome/codesome-skill/main/install.ps1
-- Linux / WSL / macOS：运行 https://raw.githubusercontent.com/hicodesome/codesome-skill/main/install.sh
-
-安装后请验证：
-1. codesome version
-2. codesome auth status
-3. 如果未登录，执行 codesome auth login，并让我在浏览器里完成登录
-4. 登录后执行 codesome balance show 验证可用
-5. 告诉我 CLI 安装目录和 Skill 安装目录
-
-安全要求：不要输出 Cookie、Token、Session 或完整 API Key。
 ```
 
 ## 推荐安装方式
@@ -109,8 +102,6 @@ CODESOME_SKILL_RAW_BASE_URL
 
 ## 支持的功能
 
-已支持的核心能力：
-
 - `codesome auth login`
 - `codesome auth status`
 - `codesome auth logout`
@@ -126,8 +117,6 @@ CODESOME_SKILL_RAW_BASE_URL
 - `codesome key update`
 - `codesome key switch-group`
 - `codesome key delete`
-
-本版本暂不包含兑换码、Codex / Claude Code 自动配置、Doctor 诊断、Chrome for Testing 专用浏览器运行时、NPM / NPX 安装入口。
 
 ## 安装位置
 
@@ -152,7 +141,7 @@ OpenCode 原生: ~/.config/opencode/skill/codesome/SKILL.md
 
 说明：`~/.codex` 主要用于 Codex 全局规则，例如 `AGENTS.md`。Codex 官方用户级 Skill 搜索目录是 `~/.agents/skills/<skill-name>/SKILL.md`。
 
-安装脚本默认不写入项目级目录，避免污染当前仓库。如需项目级安装，可以手动复制到：
+安装脚本默认不写入项目级目录。如需项目级安装，可以手动复制到：
 
 ```text
 <repo>/.agents/skills/codesome/SKILL.md
@@ -185,21 +174,6 @@ BUILD.md                 构建说明
 TESTING.md               测试说明
 SECURITY.md              安全说明
 ```
-
-## 安全边界
-
-- 不绕过登录、验证码、二次验证或权限系统。
-- 只操作当前登录用户自己有权限访问的数据。
-- 不在对话、日志或文档中输出 Cookie、Token、Session 或完整 API Key。
-- 删除、禁用、切换分组等写操作必须确认。
-- 创建 API Key 后，完整 Key 应通过本地文件或剪贴板交付，不应直接打印到聊天中。
-
-## 已知限制
-
-- macOS 二进制可能需要用户本机临时签名。
-- NPM / NPX 安装入口尚未提供。
-- WSL GUI 浏览器桥接不包含在本版本中。
-- API Key 限额、过期时间、速率限制、IP 白名单 / 黑名单不包含在本版本中。
 
 ## 从源码运行和编译 CLI
 
