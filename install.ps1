@@ -1,7 +1,9 @@
 $ErrorActionPreference = "Stop"
 
-$DefaultBaseUrl = "https://github.com/hicodesome/codesome-skill/releases/download/latest"
-$DefaultRawBaseUrl = "https://raw.githubusercontent.com/hicodesome/codesome-skill/main"
+$DefaultCliVersion = "v0.2.0"
+$CliVersion = if ($env:CODESOME_CLI_VERSION) { $env:CODESOME_CLI_VERSION.Trim() } else { $DefaultCliVersion }
+$DefaultBaseUrl = "https://github.com/hicodesome/codesome-skill/releases/download/$CliVersion"
+$DefaultRawBaseUrl = "https://raw.githubusercontent.com/hicodesome/codesome-skill/$CliVersion"
 $BaseUrl = if ($env:CODESOME_CLI_BASE_URL) { $env:CODESOME_CLI_BASE_URL.TrimEnd('/') } else { $DefaultBaseUrl }
 $RawBaseUrl = if ($env:CODESOME_SKILL_RAW_BASE_URL) { $env:CODESOME_SKILL_RAW_BASE_URL.TrimEnd('/') } else { $DefaultRawBaseUrl }
 $UserHome = if ($env:CODESOME_INSTALL_HOME) { $env:CODESOME_INSTALL_HOME } else { $HOME }
@@ -12,6 +14,7 @@ $TmpPath = Join-Path $env:TEMP "codesome.exe"
 $SkillName = "codesome"
 $SkillFiles = @(
   "SKILL.md",
+  "CHANGELOG.md",
   "references/basic-usage.md",
   "references/troubleshooting.md",
   "references/features/balance.md",
@@ -83,6 +86,7 @@ function Install-SkillTarget($Target) {
 }
 
 Write-Step "Installing Codesome CLI for Windows amd64"
+Write-Step "CLI version: $CliVersion"
 Write-Step "CLI download base: $BaseUrl"
 Write-Step "CLI install directory: $InstallDir"
 Write-Step "CLI executable: $BinPath"
@@ -97,7 +101,7 @@ $Url = "$BaseUrl/codesome-windows-amd64.exe"
 try {
   Download-File $Url $TmpPath
 } catch {
-  Write-Error "Download failed: $Url. The CLI binary may not be published yet, or the download source is unavailable. You can set CODESOME_CLI_BASE_URL to another verified mirror."
+  Write-Error "Download failed: $Url. Confirm GitHub Release $CliVersion contains codesome-windows-amd64.exe, or set CODESOME_CLI_VERSION / CODESOME_CLI_BASE_URL to another verified release."
 }
 
 if (-not $DryRun) {

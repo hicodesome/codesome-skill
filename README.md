@@ -2,6 +2,10 @@
 
 Codesome Skill 是给 Agent 使用的 Codesome 助手。安装后，你可以直接让 Agent 帮你完成余额查询、订阅查询、用量查询、API Key 管理和分组切换等操作，不需要自己在网页后台来回找入口。
 
+当前稳定版本：`v0.2.0`
+
+每个公开版本都有独立 Release 和更新说明。升级前可以查看 [CHANGELOG.md](CHANGELOG.md)，了解本次增加了什么、修复了什么，以及还有哪些已知边界。
+
 它适合这些场景：
 
 - 想快速查看 Codesome 账户余额和订阅状态。
@@ -87,20 +91,41 @@ macOS Intel: codesome-darwin-amd64
 macOS Apple Silicon / M 系列: codesome-darwin-arm64
 ```
 
-默认下载源是本仓库 GitHub Release `latest`：
+默认下载源是本仓库 GitHub Release 当前稳定版本 `v0.2.0`：
 
-- `https://github.com/hicodesome/codesome-skill/releases/download/latest/codesome-windows-amd64.exe`
-- `https://github.com/hicodesome/codesome-skill/releases/download/latest/codesome-linux-amd64`
-- `https://github.com/hicodesome/codesome-skill/releases/download/latest/codesome-linux-arm64`
-- `https://github.com/hicodesome/codesome-skill/releases/download/latest/codesome-darwin-amd64`
-- `https://github.com/hicodesome/codesome-skill/releases/download/latest/codesome-darwin-arm64`
+- `https://github.com/hicodesome/codesome-skill/releases/download/v0.2.0/codesome-windows-amd64.exe`
+- `https://github.com/hicodesome/codesome-skill/releases/download/v0.2.0/codesome-linux-amd64`
+- `https://github.com/hicodesome/codesome-skill/releases/download/v0.2.0/codesome-linux-arm64`
+- `https://github.com/hicodesome/codesome-skill/releases/download/v0.2.0/codesome-darwin-amd64`
+- `https://github.com/hicodesome/codesome-skill/releases/download/v0.2.0/codesome-darwin-arm64`
 
-可通过环境变量指定经过验证的镜像：
+可通过环境变量指定版本或经过验证的镜像：
 
 ```text
+CODESOME_CLI_VERSION
 CODESOME_CLI_BASE_URL
 CODESOME_SKILL_RAW_BASE_URL
 ```
+
+示例：
+
+```powershell
+$env:CODESOME_CLI_VERSION="v0.2.0"
+iwr https://raw.githubusercontent.com/hicodesome/codesome-skill/main/install.ps1 -UseB | iex
+```
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/hicodesome/codesome-skill/main/install.sh | CODESOME_CLI_VERSION=v0.2.0 bash
+```
+
+`latest` 只作为兼容别名保留；面向用户的发布说明和安装验证以明确版本号为准。
+
+## 更新日志
+
+每次功能发布都会对应一个不可变版本，例如 `v0.2.0`。版本说明记录在两个地方：
+
+- GitHub Release 页面，方便下载预编译包时查看。
+- [CHANGELOG.md](CHANGELOG.md)，方便在仓库中追踪连续变化。
 
 ## 支持的功能
 
@@ -199,6 +224,7 @@ codesome version
 
 ```text
 SKILL.md                 Skill 主说明
+CHANGELOG.md             版本更新日志
 references/              Skill 参考文档
 install.ps1              Windows 安装脚本
 install.sh               Linux / WSL / macOS 安装脚本

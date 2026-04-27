@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-DEFAULT_BASE_URL="https://github.com/hicodesome/codesome-skill/releases/download/latest"
-DEFAULT_RAW_BASE_URL="https://raw.githubusercontent.com/hicodesome/codesome-skill/main"
+DEFAULT_CLI_VERSION="v0.2.0"
+CLI_VERSION="${CODESOME_CLI_VERSION:-$DEFAULT_CLI_VERSION}"
+DEFAULT_BASE_URL="https://github.com/hicodesome/codesome-skill/releases/download/$CLI_VERSION"
+DEFAULT_RAW_BASE_URL="https://raw.githubusercontent.com/hicodesome/codesome-skill/$CLI_VERSION"
 BASE_URL="${CODESOME_CLI_BASE_URL:-$DEFAULT_BASE_URL}"
 BASE_URL="${BASE_URL%/}"
 RAW_BASE_URL="${CODESOME_SKILL_RAW_BASE_URL:-$DEFAULT_RAW_BASE_URL}"
@@ -13,6 +15,7 @@ INSTALL_DIR="$HOME_DIR/.codesome/bin"
 SKILL_NAME="codesome"
 SKILL_FILES=(
   "SKILL.md"
+  "CHANGELOG.md"
   "references/basic-usage.md"
   "references/troubleshooting.md"
   "references/features/balance.md"
@@ -63,9 +66,9 @@ download_to() {
 fail_download() {
   cat >&2 <<EOF
 [codesome] Download failed: $url
-[codesome] Please confirm GitHub Release latest contains $bin_name.
+[codesome] Please confirm GitHub Release $CLI_VERSION contains $bin_name.
 [codesome] For macOS, the release must contain codesome-darwin-amd64 or codesome-darwin-arm64.
-[codesome] You can also set CODESOME_CLI_BASE_URL to another verified mirror and retry.
+[codesome] You can also set CODESOME_CLI_VERSION or CODESOME_CLI_BASE_URL to another verified release and retry.
 EOF
   exit 1
 }
@@ -91,6 +94,7 @@ tmp="${TMPDIR:-/tmp}/$bin_name.$$"
 target="$INSTALL_DIR/codesome"
 
 step "Installing Codesome CLI for ${os_name}/${arch_name}"
+step "CLI version: $CLI_VERSION"
 step "CLI download base: $BASE_URL"
 step "CLI install directory: $INSTALL_DIR"
 step "CLI executable: $target"
