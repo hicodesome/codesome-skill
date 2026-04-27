@@ -15,7 +15,7 @@ Use this skill to help users operate Codesome through the local `codesome` CLI. 
 - 只操作当前登录用户自己有权限访问的内容。
 - 不向用户索要或保存 Codesome 密码。
 - 不在对话中输出 Cookie、Token、Authorization header、浏览器 session 或完整 API Key。
-- 不把底层实现细节、页面选择器、内部路径或逆向细节写入公开回答。
+- 不把底层实现细节、页面选择器、非公开路径或逆向细节写入公开回答。
 
 对外表述：这是基于用户授权登录态的 Codesome 客户端自动化工具，不是管理员或破解工具。
 
