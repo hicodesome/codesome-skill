@@ -6,3 +6,10 @@
 sessions/
 secrets/
 *.tmp
+dist/
+build/
+*.exe
+*.dll
+*.so
+*.dylib
+debug-site-inspect/

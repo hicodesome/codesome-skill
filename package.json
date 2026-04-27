@@ -1,0 +1,26 @@
+{
+  "name": "@codesome/cli",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Open Codesome CLI and Skill workspace",
+  "type": "module",
+  "bin": {
+    "codesome": "./bin/codesome.js"
+  },
+  "scripts": {
+    "start": "node ./bin/codesome.js",
+    "test:smoke": "node ./bin/codesome.js --help && node ./bin/codesome.js version && node ./bin/codesome.js auth status",
+    "build:release": "node ./scripts/build-release.mjs"
+  },
+  "dependencies": {
+    "playwright": "^1.57.0",
+    "ws": "^8.20.0"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.0",
+    "pkg": "^5.8.1"
+  }
+}
