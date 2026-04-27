@@ -32,6 +32,35 @@ chmod +x dist/codesome-linux-amd64
 dist/codesome-linux-amd64 version
 ```
 
+## Installer Dry-Run Tests
+
+Windows PowerShell:
+
+```powershell
+$env:CODESOME_INSTALL_DRY_RUN="1"
+$env:CODESOME_INSTALL_HOME="$env:TEMP\codesome-install-dryrun"
+powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1
+Remove-Item Env:\CODESOME_INSTALL_DRY_RUN
+Remove-Item Env:\CODESOME_INSTALL_HOME
+```
+
+Linux / macOS / WSL:
+
+```bash
+CODESOME_INSTALL_DRY_RUN=1 CODESOME_INSTALL_HOME=/tmp/codesome-install-dryrun bash ./install.sh
+```
+
+Expected output must include:
+
+```text
+CLI install directory
+~/.agents/skills/codesome
+~/.claude/skills/codesome
+~/.hermes/skills/codesome
+~/.openclaw/skills/codesome
+~/.config/opencode/skill/codesome
+```
+
 ## Output Safety Checks
 
 Run the public safety scanner before every public release:

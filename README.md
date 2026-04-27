@@ -8,7 +8,36 @@
 
 ## 快速安装技能
 
-> 这个仓库首先是 Codesome Skill 仓库。安装脚本会安装/更新本地 `codesome` CLI，因为这个技能实际执行操作时需要调用本地 CLI。
+> 这个仓库首先是 Codesome Skill 仓库。安装脚本会安装/更新本地 `codesome` CLI，并把 `codesome` Skill 安装到常见 Agent 客户端的用户级技能目录，因为这个技能实际执行操作时需要调用本地 CLI。
+
+### 安装位置
+
+安装脚本会明确打印安装位置。
+
+CLI 默认安装到：
+
+```text
+Windows: %USERPROFILE%\.codesome\bin\codesome.exe
+Linux / macOS: ~/.codesome/bin/codesome
+```
+
+Skill 默认安装/更新到这些用户级目录：
+
+```text
+Codex / OpenClaw 通用: ~/.agents/skills/codesome/SKILL.md
+Claude Code / OpenCode 兼容: ~/.claude/skills/codesome/SKILL.md
+Hermes Agent: ~/.hermes/skills/codesome/SKILL.md
+OpenClaw 用户级: ~/.openclaw/skills/codesome/SKILL.md
+OpenCode 原生: ~/.config/opencode/skill/codesome/SKILL.md
+```
+
+项目级目录不会默认写入，避免污染用户当前仓库。如需项目级安装，可以复制到：
+
+```text
+<repo>/.agents/skills/codesome/SKILL.md
+<repo>/.claude/skills/codesome/SKILL.md
+<repo>/.opencode/skill/codesome/SKILL.md
+```
 
 ### 给人类看的
 
@@ -20,7 +49,7 @@
 公开仓库地址：
 https://github.com/hicodesome/codesome-skill
 
-请按我的系统安装本地 codesome CLI，因为这个 Skill 需要调用本地 CLI 才能执行余额查询、API Key 管理、用量查询等操作。
+请按我的系统安装本地 codesome CLI，并把 Codesome Skill 安装到常见 Agent 客户端的用户级技能目录，因为这个 Skill 需要调用本地 CLI 才能执行余额查询、API Key 管理、用量查询等操作。
 
 安装方式：
 - Windows：运行 https://raw.githubusercontent.com/hicodesome/codesome-skill/main/install.ps1，安装脚本会下载 `codesome-windows-amd64.exe`
@@ -34,6 +63,7 @@ https://github.com/hicodesome/codesome-skill
 2. codesome auth status
 3. 如果未登录，执行 codesome auth login，并让我在浏览器里完成登录
 4. 登录后执行 codesome balance show 验证可用
+5. 告诉我 CLI 安装目录和 Skill 安装目录
 
 安全要求：不要输出 Cookie、Token、Session 或完整 API Key。
 ```
@@ -71,6 +101,16 @@ curl -fsSL https://raw.githubusercontent.com/hicodesome/codesome-skill/main/inst
 codesome version
 codesome auth status
 codesome balance show
+```
+
+安装脚本还会打印 Skill 安装目录。正常情况下，至少应看到：
+
+```text
+~/.agents/skills/codesome
+~/.claude/skills/codesome
+~/.hermes/skills/codesome
+~/.openclaw/skills/codesome
+~/.config/opencode/skill/codesome
 ```
 
 ### macOS 未签名提示

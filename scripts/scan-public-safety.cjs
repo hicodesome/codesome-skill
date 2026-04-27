@@ -12,6 +12,8 @@ const publicTargets = [
   'scripts',
   'package.json',
   'package-lock.json',
+  'install.ps1',
+  'install.sh',
   'README.md',
   'BUILD.md',
   'TESTING.md',
