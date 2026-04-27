@@ -131,24 +131,6 @@ CODESOME_SKILL_RAW_BASE_URL
 
 写操作默认先做 dry-run 预检，展示原值和目标值；追加 `--confirm` 才会写入。
 
-## 当前验收状态
-
-这一版已通过本地 mock 端到端测试、源码 smoke、公开敏感信息扫描和 release build。
-
-真实后台已验证：
-
-- 登录态刷新后 API 可用。
-- `key show` 可读取真实配置字段。
-- `key update` dry-run 不写入。
-- `--confirm` 可写入 quota、过期时间、速率限制、IP 白名单和 IP 黑名单。
-- `list --search` / `show` 可复查持久化结果。
-- 文本和 JSON 输出不会暴露完整 API Key。
-
-仍需继续补充的验收：
-
-- `reset-quota-used` 和 `reset-rate-limit-usage` 的非零用量样本。
-- macOS 二进制的签名和实机运行。
-
 ## 安装位置
 
 脚本运行时会打印实际安装路径。
