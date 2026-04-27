@@ -31,7 +31,7 @@ export async function handleGroup(args) {
   if (type) items = items.filter((item) => item.subscription_type === type)
 
   if (json) {
-    printJson({ account: accountJson(account), items, warnings: data.warnings })
+    printJson({ account_context: accountJson(account), items, warnings: data.warnings })
     return
   }
 

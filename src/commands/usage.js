@@ -34,7 +34,7 @@ export async function handleUsage(args) {
   if (subcommand === 'stats') {
     const data = await getUsageStats({ ...serviceOptions, days, startDate, endDate })
     if (json) {
-      printJson({ account: accountJson(account), ...data })
+      printJson({ account_context: accountJson(account), ...data })
       return
     }
     printStats(data, account)
@@ -44,7 +44,7 @@ export async function handleUsage(args) {
   if (subcommand === 'recent') {
     const data = await getRecentUsage({ ...serviceOptions, days, startDate, endDate, pageSize: getOption(args, '--limit') || 10 })
     if (json) {
-      printJson({ account: accountJson(account), ...data })
+      printJson({ account_context: accountJson(account), ...data })
       return
     }
     printRecent(data, account)
@@ -61,7 +61,7 @@ export async function handleUsage(args) {
       recentLimit: getOption(args, '--recent-limit') || 5
     })
     if (json) {
-      printJson({ account: accountJson(account), ...data })
+      printJson({ account_context: accountJson(account), ...data })
       return
     }
     printKeyUsage(data, account)

@@ -5,6 +5,7 @@ import { handleUsage } from './commands/usage.js'
 import { handleKey } from './commands/keys.js'
 import { handleGroup } from './commands/groups.js'
 import { handleAccount } from './commands/accounts.js'
+import { handleBrowser } from './commands/browser.js'
 import { runCommand } from './commands/run.js'
 import { hasFlag, printJson, getOption } from './output/format.js'
 
@@ -30,6 +31,11 @@ export async function main(args) {
 
   if (command === 'account') {
     await runCommand(() => handleAccount(args.slice(1)))
+    return
+  }
+
+  if (command === 'browser') {
+    await runCommand(() => handleBrowser(args.slice(1)))
     return
   }
 
@@ -60,7 +66,7 @@ export async function main(args) {
 
   if (['config', 'doctor'].includes(command)) {
     console.error(`命令尚未实现：codesome ${command}${subcommand ? ` ${subcommand}` : ''}`)
-    console.error('当前已实现：auth login/status/logout、balance show、version、help。')
+    console.error('当前已实现：auth、account、browser、balance、subscription、usage、key、group、version、help。')
     process.exitCode = 2
     return
   }
@@ -134,10 +140,13 @@ Usage:
   codesome <command> [options]
 
 Commands:
-  auth login       打开浏览器登录 Codesome，并保存本地登录态
+  auth login       打开 Codesome 专用浏览器登录，并保存本地登录态
   auth status      查看本地登录态状态
   auth logout      清理本地登录态
   account list     管理本机保存的多个 Codesome 账号
+  browser install  安装 Codesome 专用 Chrome for Testing
+  browser status   查看 Codesome 专用浏览器运行时
+  browser uninstall 删除 Codesome 专用浏览器运行时
   balance show     查询普通按量余额和用量概览
   subscription list/active
   usage stats/recent/key

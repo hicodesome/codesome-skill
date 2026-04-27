@@ -47,7 +47,7 @@ export async function handleKeyDelete(args) {
     const safe = {
       dry_run: true,
       requires_confirm: true,
-      account: accountJson(account),
+      account_context: accountJson(account),
       key: safeKey(preview.key),
       next_command: `codesome key delete --account ${account.alias} ${options.id ? `--id ${options.id}` : `--name "${preview.key.name}"`} --confirm`
     }
@@ -72,7 +72,7 @@ export async function handleKeyDelete(args) {
   const result = await deleteKey(options)
   const safe = {
     deleted: true,
-    account: accountJson(account),
+    account_context: accountJson(account),
     key: safeKey(result.key),
     result: result.result
   }

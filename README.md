@@ -25,9 +25,10 @@ Codesome Skill 是给 Agent 使用的 Codesome 助手。安装后，你可以直
 安装后请验证：
 1. codesome version
 2. codesome auth status
-3. 如果未登录，执行 codesome auth login，并让我在浏览器里完成登录
-4. 登录后执行 codesome balance show 验证可用
-5. 告诉我 CLI 安装目录和 Skill 安装目录
+3. codesome browser install
+4. 如果未登录，执行 codesome auth login，并让我在 Codesome 专用浏览器里完成登录
+5. 登录后执行 codesome balance show 验证可用
+6. 告诉我 CLI 安装目录、浏览器运行时目录和 Skill 安装目录
 
 安全要求：不要输出 Cookie、Token、Session 或完整 API Key。
 ```
@@ -52,6 +53,7 @@ curl -fsSL https://raw.githubusercontent.com/hicodesome/codesome-skill/main/inst
 
 ```bash
 codesome version
+codesome browser install
 codesome auth status
 ```
 
@@ -105,6 +107,9 @@ CODESOME_SKILL_RAW_BASE_URL
 - `codesome auth login`
 - `codesome auth status`
 - `codesome auth logout`
+- `codesome browser install`
+- `codesome browser status`
+- `codesome browser uninstall`
 - `codesome account list`
 - `codesome account current`
 - `codesome account add --name "<alias>"`
@@ -131,6 +136,16 @@ CODESOME_SKILL_RAW_BASE_URL
 
 写操作默认先做 dry-run 预检，展示原值和目标值；追加 `--confirm` 才会写入。
 
+## 登录浏览器
+
+`codesome auth login` 使用 Codesome 管理的 Chrome for Testing，不使用用户自己的 Chrome 或 Edge。安装脚本会安装 CLI；首次登录前如缺少浏览器运行时，请执行：
+
+```bash
+codesome browser install
+```
+
+多账号登录会为每个账号使用独立浏览器 profile，避免不同账号共用网页登录态。
+
 ## 安装位置
 
 脚本运行时会打印实际安装路径。
@@ -140,6 +155,13 @@ CLI 默认安装到：
 ```text
 Windows: %USERPROFILE%\.codesome\bin\codesome.exe
 Linux / macOS: ~/.codesome/bin/codesome
+```
+
+浏览器运行时默认安装到：
+
+```text
+Windows: %USERPROFILE%\.codesome\browser
+Linux / macOS: ~/.codesome/browser
 ```
 
 Skill 默认安装或更新到这些用户级目录：

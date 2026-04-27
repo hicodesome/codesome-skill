@@ -3,11 +3,11 @@ import path from 'node:path'
 import http from 'node:http'
 import { spawn } from 'node:child_process'
 import WebSocket from 'ws'
-import { findSystemBrowser } from './browser.js'
-import { CODESOME_HOME, resolveBaseUrl } from '../config/paths.js'
+import { findBrowser } from './browser.js'
+import { CODESOME_HOME, getAccountDir, resolveBaseUrl } from '../config/paths.js'
 
-const CDP_PORT = 19425
-const CDP_PROFILE_DIR = path.join(CODESOME_HOME, 'browser-profile')
+const CDP_PORT_BASE = 19425
+const CDP_PORT_RANGE = 1000
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms))
@@ -57,12 +57,23 @@ function connectWebSocket(url) {
   })
 }
 
-async function waitForCdp(timeoutMs = 15000) {
+export function accountPort(alias) {
+  const text = String(alias || 'default')
+  let hash = 0
+  for (const char of text) hash = (hash * 31 + char.charCodeAt(0)) >>> 0
+  return CDP_PORT_BASE + (hash % CDP_PORT_RANGE)
+}
+
+export function accountBrowserProfileDir(alias) {
+  return alias ? path.join(getAccountDir(alias), 'browser-profile') : path.join(CODESOME_HOME, 'browser-profile')
+}
+
+async function waitForCdp(port, timeoutMs = 15000) {
   const deadline = Date.now() + timeoutMs
   let lastError
   while (Date.now() < deadline) {
     try {
-      return await requestJson(`http://127.0.0.1:${CDP_PORT}/json/version`)
+      return await requestJson(`http://127.0.0.1:${port}/json/version`)
     } catch (error) {
       lastError = error
       await sleep(300)
@@ -125,8 +136,8 @@ function hasAuthToken(state) {
   return state.origins[0].localStorage.some((item) => item.name === 'auth_token' && item.value)
 }
 
-async function findLoggedInCodesomeTab(baseUrl) {
-  const tabs = await requestJson(`http://127.0.0.1:${CDP_PORT}/json`)
+async function findLoggedInCodesomeTab(port, baseUrl) {
+  const tabs = await requestJson(`http://127.0.0.1:${port}/json`)
   const candidates = tabs.filter((tab) => tab.type === 'page' && tab.url && tab.url.startsWith(baseUrl))
   for (const tab of candidates) {
     const result = await readTabState(tab, baseUrl).catch(() => null)
@@ -138,30 +149,33 @@ async function findLoggedInCodesomeTab(baseUrl) {
 export async function loginWithSystemBrowser(options = {}) {
   const baseUrl = resolveBaseUrl(options.baseUrl)
   const timeoutMs = Number(options.timeoutMs || 10 * 60 * 1000)
-  const browserPath = findSystemBrowser()
+  const accountAlias = options.accountAlias || 'default'
+  const cdpPort = accountPort(accountAlias)
+  const profileDir = accountBrowserProfileDir(accountAlias)
+  const browserPath = findBrowser()
   if (!browserPath) {
-    throw new Error('Chrome/Edge not found. Install Chrome/Edge or set CODESOME_BROWSER_PATH. On macOS, Chrome is usually /Applications/Google Chrome.app/Contents/MacOS/Google Chrome.')
+    throw new Error('未安装 Codesome 专用浏览器。请先运行 codesome browser install 安装 Chrome for Testing；登录不会使用系统 Chrome/Edge 或 CODESOME_BROWSER_PATH。')
   }
 
-  await fs.mkdir(CDP_PROFILE_DIR, { recursive: true })
+  await fs.mkdir(profileDir, { recursive: true })
   const child = spawn(browserPath, [
-    `--remote-debugging-port=${CDP_PORT}`,
-    `--user-data-dir=${CDP_PROFILE_DIR}`,
+    `--remote-debugging-port=${cdpPort}`,
+    `--user-data-dir=${profileDir}`,
     '--no-first-run',
     '--no-default-browser-check',
     `${baseUrl}/login`
   ], { detached: true, stdio: 'ignore' })
   child.unref()
 
-  await waitForCdp()
-  await requestJson(`http://127.0.0.1:${CDP_PORT}/json/new?${encodeURIComponent(`${baseUrl}/login`)}`, { method: 'PUT' }).catch(() => null)
+  await waitForCdp(cdpPort)
+  await requestJson(`http://127.0.0.1:${cdpPort}/json/new?${encodeURIComponent(`${baseUrl}/login`)}`, { method: 'PUT' }).catch(() => null)
 
   const startedAt = Date.now()
   let lastUrl = `${baseUrl}/login`
   while (Date.now() - startedAt < timeoutMs) {
-    const loggedIn = await findLoggedInCodesomeTab(baseUrl)
+    const loggedIn = await findLoggedInCodesomeTab(cdpPort, baseUrl)
     if (loggedIn) return loggedIn
-    const tabs = await requestJson(`http://127.0.0.1:${CDP_PORT}/json`).catch(() => [])
+    const tabs = await requestJson(`http://127.0.0.1:${cdpPort}/json`).catch(() => [])
     const firstCodesome = tabs.find((tab) => tab.type === 'page' && tab.url && tab.url.startsWith(baseUrl))
     if (firstCodesome?.url) lastUrl = firstCodesome.url
     await sleep(1500)

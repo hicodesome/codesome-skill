@@ -1,8 +1,8 @@
-import { spawnSync } from 'node:child_process'
 import fs from 'node:fs'
+import path from 'node:path'
+import { CODESOME_HOME } from '../config/paths.js'
 
 const WINDOWS_BROWSER_CANDIDATES = [
-  process.env.CODESOME_BROWSER_PATH,
   process.env.LOCALAPPDATA && `${process.env.LOCALAPPDATA}\\Google\\Chrome\\Application\\chrome.exe`,
   process.env.PROGRAMFILES && `${process.env.PROGRAMFILES}\\Google\\Chrome\\Application\\chrome.exe`,
   process.env['PROGRAMFILES(X86)'] && `${process.env['PROGRAMFILES(X86)']}\\Google\\Chrome\\Application\\chrome.exe`,
@@ -11,7 +11,6 @@ const WINDOWS_BROWSER_CANDIDATES = [
 ].filter(Boolean)
 
 const LINUX_BROWSER_CANDIDATES = [
-  process.env.CODESOME_BROWSER_PATH,
   '/usr/bin/google-chrome',
   '/usr/bin/google-chrome-stable',
   '/usr/bin/chromium-browser',
@@ -22,7 +21,6 @@ const LINUX_BROWSER_CANDIDATES = [
 ].filter(Boolean)
 
 const MACOS_BROWSER_CANDIDATES = [
-  process.env.CODESOME_BROWSER_PATH,
   '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
   '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge',
   `${process.env.HOME || ''}/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`,
@@ -31,43 +29,52 @@ const MACOS_BROWSER_CANDIDATES = [
   `${process.env.HOME || ''}/Applications/Chromium.app/Contents/MacOS/Chromium`
 ].filter(Boolean)
 
+export const MANAGED_BROWSER_ROOT = path.join(CODESOME_HOME, 'browser')
+
 export async function loadChromium() {
   try {
     const playwright = await import('playwright')
     return playwright.chromium
   } catch {
     if (process.pkg) {
-      throw new Error('???????? Playwright???? CODESOME_BROWSER_PATH ?? Chrome/Edge?????????????')
+      throw new Error('发行版缺少 Playwright 运行时。请运行 codesome browser install 后再重试。')
     }
-    throw new Error('?? Playwright ??????????? npm install ????')
+    throw new Error('缺少 Playwright 依赖。请先运行 npm install。')
   }
 }
 
 export async function launchChromium(chromium, options) {
   const launchOptions = { ...options }
-  if (process.pkg && !launchOptions.executablePath) {
-    const executablePath = findSystemBrowser()
-    if (executablePath) {
-      launchOptions.executablePath = executablePath
-      launchOptions.channel = undefined
+  if (!launchOptions.executablePath) {
+    const executablePath = findBrowser()
+    if (!executablePath) {
+      throw new Error('未安装 Codesome 专用浏览器。请先运行 codesome browser install 安装 Chrome for Testing。')
     }
+    launchOptions.executablePath = executablePath
+    launchOptions.channel = undefined
   }
 
   try {
     return await chromium.launch(launchOptions)
   } catch (error) {
-    if (!isMissingBrowserError(error) || process.pkg) throw error
-    console.error('Playwright ???????????? Chromium??????...')
-    const result = spawnSync(process.execPath, ['node_modules/playwright/cli.js', 'install', 'chromium'], {
-      stdio: 'inherit',
-      cwd: process.cwd(),
-      shell: false
-    })
-    if (result.status !== 0) {
-      throw new Error('???? Playwright Chromium ????????????')
+    if (isMissingBrowserError(error)) {
+      throw new Error('Codesome 专用浏览器不可用。请重新运行 codesome browser install。')
     }
-    return chromium.launch(options)
+    throw error
   }
+}
+
+export function findBrowser() {
+  return findManagedBrowser()
+}
+
+export function findEnvBrowser() {
+  const value = process.env.CODESOME_BROWSER_PATH
+  return value && fs.existsSync(value) ? value : null
+}
+
+export function findManagedBrowser() {
+  return managedBrowserCandidates().find((candidate) => candidate && fs.existsSync(candidate)) || null
 }
 
 export function findSystemBrowser() {
@@ -77,6 +84,49 @@ export function findSystemBrowser() {
       ? MACOS_BROWSER_CANDIDATES
       : LINUX_BROWSER_CANDIDATES
   return candidates.find((candidate) => candidate && fs.existsSync(candidate)) || null
+}
+
+function managedBrowserCandidates() {
+  return managedBrowserCandidatesForRoot(MANAGED_BROWSER_ROOT)
+}
+
+function managedBrowserCandidatesForRoot(root) {
+  const direct = directManagedBrowserCandidates(root)
+  const versioned = listVersionedBrowserDirs(path.join(root, 'chrome-for-testing')).flatMap(directManagedBrowserCandidates)
+  return [...direct, ...versioned]
+}
+
+function directManagedBrowserCandidates(root) {
+  if (process.platform === 'win32') {
+    return [
+      path.join(root, 'chrome-win64', 'chrome.exe'),
+      path.join(root, 'chrome-win32', 'chrome.exe'),
+      path.join(root, 'chrome.exe')
+    ]
+  }
+  if (process.platform === 'darwin') {
+    return [
+      path.join(root, 'chrome-mac-arm64', 'Google Chrome for Testing.app', 'Contents', 'MacOS', 'Google Chrome for Testing'),
+      path.join(root, 'chrome-mac-x64', 'Google Chrome for Testing.app', 'Contents', 'MacOS', 'Google Chrome for Testing'),
+      path.join(root, 'Google Chrome for Testing.app', 'Contents', 'MacOS', 'Google Chrome for Testing')
+    ]
+  }
+  return [
+    path.join(root, 'chrome-linux64', 'chrome'),
+    path.join(root, 'chrome')
+  ]
+}
+
+function listVersionedBrowserDirs(root) {
+  try {
+    return fs.readdirSync(root, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => path.join(root, entry.name))
+      .sort()
+      .reverse()
+  } catch {
+    return []
+  }
 }
 
 function isMissingBrowserError(error) {

@@ -22,9 +22,16 @@ Use this skill to help users operate Codesome through the local `codesome` CLI. 
 ## 使用前
 
 1. 如果任务需要账户数据或 Key 操作，先运行 `codesome auth status`。
-2. 如果未登录，让用户运行 `codesome auth login` 并在浏览器完成登录。
+2. 如果未登录，先确保 `codesome browser install` 已安装 Codesome 专用浏览器，再让用户运行 `codesome auth login` 并在该浏览器完成登录。
 3. 删除、禁用、切换分组、写本地配置等操作必须先确认。
 4. 查询类命令优先使用 `--json` 供 Agent 解析，然后向用户输出脱敏摘要。
+
+## 浏览器运行时
+
+- `codesome auth login` 使用 Codesome 管理的 Chrome for Testing。
+- 不把用户自己的 Chrome/Edge 或 `CODESOME_BROWSER_PATH` 当作常规登录运行时。
+- 缺少运行时时，先执行 `codesome browser install`。
+- 多账号登录使用独立浏览器 profile，避免不同账号复用网页登录态。
 
 ## 命令映射
 
@@ -32,6 +39,7 @@ Use this skill to help users operate Codesome through the local `codesome` CLI. 
 | --- | --- |
 | 登录 Codesome | `codesome auth login` |
 | 查看登录状态 | `codesome auth status` |
+| 安装/查看登录浏览器 | `codesome browser install` / `codesome browser status` |
 | 查看本机账号 | `codesome account list` 或 `codesome account current` |
 | 新增/切换本机账号 | `codesome account add --name "<alias>"` 或 `codesome account switch <alias>` |
 | 查看余额 | `codesome balance show` |

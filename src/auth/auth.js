@@ -1,12 +1,11 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { loadChromium, launchChromium } from './browser.js'
 import { loginWithSystemBrowser } from './system-browser.js'
 import { resolveBaseUrl } from '../config/paths.js'
 import { resolveAccountContext, updateAccountRecord } from '../accounts/accounts.js'
+import { createApiClient } from '../api/client.js'
 
 const DEFAULT_LOGIN_TIMEOUT_MS = 10 * 60 * 1000
-const LOGIN_POLL_INTERVAL_MS = 1500
 
 async function exists(filePath) {
   try {
@@ -39,47 +38,6 @@ function cookieSummary(storageState) {
     origin_count: origins.length,
     domains
   }
-}
-
-function isAuthPage(url) {
-  try {
-    const parsed = new URL(url)
-    return /\/login|\/register|\/forgot-password|\/reset-password|\/email-verify|\/auth\/callback/i.test(parsed.pathname)
-  } catch {
-    return true
-  }
-}
-
-function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms))
-}
-
-async function waitForLoginComplete(page, context, timeoutMs) {
-  const startedAt = Date.now()
-  let lastUrl = page.url()
-
-  while (Date.now() - startedAt < timeoutMs) {
-    if (page.isClosed()) {
-      throw new Error('登录窗口已关闭，未保存登录态。')
-    }
-
-    lastUrl = page.url()
-    const storageState = await context.storageState()
-    const summary = cookieSummary(storageState)
-    const hasAuthToken = (storageState.origins || []).some((origin) =>
-      (origin.localStorage || []).some((item) => item.name === 'auth_token' && item.value)
-    )
-    const leftAuthPage = !isAuthPage(lastUrl)
-
-    if (leftAuthPage && hasAuthToken) {
-      await page.waitForLoadState('domcontentloaded', { timeout: 5000 }).catch(() => {})
-      return { storageState, final_url: lastUrl, ...summary }
-    }
-
-    await sleep(LOGIN_POLL_INTERVAL_MS)
-  }
-
-  throw new Error(`登录等待超时，请确认已经完成登录。最后页面：${lastUrl}`)
 }
 
 export async function getAuthStatus(options = {}) {
@@ -121,20 +79,17 @@ export async function getAuthStatus(options = {}) {
 
   if (options.verify) {
     result.checked_remote = true
-    const chromium = await loadChromium()
-    const browser = await launchChromium(chromium, { headless: true })
     try {
-      const context = await browser.newContext({ storageState: account.storageStatePath })
-      const page = await context.newPage()
-      const response = await page.goto(`${baseUrl}/dashboard`, { waitUntil: 'domcontentloaded', timeout: 30000 })
-      const url = page.url()
-      result.final_url = url
-      result.http_status = response?.status() ?? null
-      result.logged_in = !isAuthPage(url)
-      result.message = result.logged_in ? '远程校验通过。' : '远程校验未通过，请重新运行 codesome auth login。'
-      await context.close()
-    } finally {
-      await browser.close()
+      const client = await createApiClient({ account: account.alias, baseUrl })
+      await client.get('/auth/me')
+      result.http_status = 200
+      result.logged_in = true
+      result.message = '远程校验通过。'
+      await client.close()
+    } catch (error) {
+      result.logged_in = false
+      result.http_status = error?.details?.status ?? null
+      result.message = '远程校验未通过，请重新运行 codesome auth login。'
     }
   }
 
@@ -158,75 +113,35 @@ export async function login(options = {}) {
   await ensureDirs(account)
 
   console.log(`Opening Codesome account "${account.alias}": ${baseUrl}`)
-  console.log('Please sign in in the browser. The CLI will not read your password.')
+  console.log('Please sign in in the Codesome-managed browser. The CLI will not read your password.')
   console.log('The session is saved automatically after login; do not press Enter.')
 
-  if (process.pkg) {
-    const loginState = await loginWithSystemBrowser({ baseUrl, timeoutMs })
-    await writeJson(account.storageStatePath, loginState.storageState)
-    const savedAt = new Date().toISOString()
-    await writeJson(account.configPath, {
-      account_alias: account.alias,
-      base_url: baseUrl,
-      saved_at: savedAt,
-      final_url: loginState.final_url
-    })
-    await updateAccountRecord(account.alias, {
-      base_url: baseUrl,
-      saved_at: savedAt,
-      final_url: loginState.final_url
-    })
-    const summary = cookieSummary(loginState.storageState)
-    return {
-      account_alias: account.alias,
-      logged_in: true,
-      session_path: account.storageStatePath,
-      config_path: account.configPath,
-      final_url: loginState.final_url,
-      saved_at: savedAt,
-      cookie_count: summary.cookie_count,
-      origin_count: summary.origin_count,
-      domains: summary.domains,
-      message: 'Login session saved.'
-    }
-  }
-
-  const chromium = await loadChromium()
-  const browser = await launchChromium(chromium, { headless: false })
-  const context = await browser.newContext()
-  const page = await context.newPage()
-
-  try {
-    await page.goto(`${baseUrl}/login`, { waitUntil: 'domcontentloaded', timeout: 60000 })
-    const loginState = await waitForLoginComplete(page, context, timeoutMs)
-    await writeJson(account.storageStatePath, loginState.storageState)
-    const savedAt = new Date().toISOString()
-    await writeJson(account.configPath, {
-      account_alias: account.alias,
-      base_url: baseUrl,
-      saved_at: savedAt,
-      final_url: loginState.final_url
-    })
-    await updateAccountRecord(account.alias, {
-      base_url: baseUrl,
-      saved_at: savedAt,
-      final_url: loginState.final_url
-    })
-    return {
-      account_alias: account.alias,
-      logged_in: true,
-      session_path: account.storageStatePath,
-      config_path: account.configPath,
-      final_url: loginState.final_url,
-      saved_at: savedAt,
-      cookie_count: loginState.cookie_count,
-      origin_count: loginState.origin_count,
-      domains: loginState.domains,
-      message: 'Login session saved.'
-    }
-  } finally {
-    await context.close().catch(() => {})
-    await browser.close().catch(() => {})
+  const loginState = await loginWithSystemBrowser({ baseUrl, timeoutMs, accountAlias: account.alias })
+  await writeJson(account.storageStatePath, loginState.storageState)
+  const savedAt = new Date().toISOString()
+  await writeJson(account.configPath, {
+    account_alias: account.alias,
+    base_url: baseUrl,
+    saved_at: savedAt,
+    final_url: loginState.final_url
+  })
+  await updateAccountRecord(account.alias, {
+    base_url: baseUrl,
+    saved_at: savedAt,
+    final_url: loginState.final_url
+  })
+  const summary = cookieSummary(loginState.storageState)
+  return {
+    account_alias: account.alias,
+    logged_in: true,
+    session_path: account.storageStatePath,
+    config_path: account.configPath,
+    final_url: loginState.final_url,
+    saved_at: savedAt,
+    cookie_count: summary.cookie_count,
+    origin_count: summary.origin_count,
+    domains: summary.domains,
+    message: 'Login session saved.'
   }
 }
 

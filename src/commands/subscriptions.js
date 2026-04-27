@@ -38,7 +38,7 @@ export async function handleSubscription(args) {
     ? await listActiveSubscriptions(accountServiceOptions(account))
     : await listSubscriptions(accountServiceOptions(account))
   if (json) {
-    printJson({ account: accountJson(account), items })
+    printJson({ account_context: accountJson(account), items })
     return
   }
 

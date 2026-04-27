@@ -83,7 +83,7 @@ export async function handleKeyShow(args) {
     baseUrl: getOption(args, '--base-url')
   })
 
-  const safe = makeSafe({ account: accountJson(account), key })
+  const safe = makeSafe({ account_context: accountJson(account), key })
   if (json) {
     printJson(safe)
     return
@@ -97,7 +97,7 @@ export async function handleKeyUpdate(args) {
   const account = await resolveCommandAccount(args)
   const options = makeOptions(args, account)
   const data = confirm ? await updateKey(options) : await previewUpdateKey(options)
-  const safe = makeSafe({ account: accountJson(account), ...data })
+  const safe = makeSafe({ account_context: accountJson(account), ...data })
 
   if (json) {
     printJson(safe)

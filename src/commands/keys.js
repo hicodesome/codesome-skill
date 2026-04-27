@@ -69,7 +69,7 @@ export async function handleKey(args) {
   })
 
   if (json) {
-    printJson({ account: accountJson(account), ...data })
+    printJson({ account_context: accountJson(account), ...data })
     return
   }
 

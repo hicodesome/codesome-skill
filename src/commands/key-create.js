@@ -37,7 +37,7 @@ export async function handleKeyCreate(args) {
   }
 
   if (json) {
-    printJson({ account: accountJson(account), ...safeResult })
+    printJson({ account_context: accountJson(account), ...safeResult })
     return
   }
 

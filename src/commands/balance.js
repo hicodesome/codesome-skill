@@ -31,7 +31,7 @@ export async function handleBalance(args) {
   const account = await resolveCommandAccount(args)
   const data = await getBalance(accountServiceOptions(account))
   if (json) {
-    printJson({ account: accountJson(account), ...data })
+    printJson({ account_context: accountJson(account), ...data })
     return
   }
 
