@@ -4,7 +4,7 @@
 
 # 进群享受小白和技术答疑服务
 
-![codesome's genius 扣桑天才吧](<images/codesome｜Claude code 小白无门槛宝典-image-001.png>)
+![codesome 小白和技术答疑群](images/codesome-support-group.png)
 
 ## 快速安装技能
 
@@ -161,6 +161,7 @@ codesome <command>
 - Skill 可以公开审查。
 - 核心自动化实现不暴露。
 - 登录态、API Key、Cookie、Token 等敏感处理留在本地 CLI 中。
+
 
 
 
