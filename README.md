@@ -2,7 +2,7 @@
 
 这是 Codesome 的公开 Skill 仓库。
 
-### 使用反馈欢迎进群交流
+### 使用反馈和答疑欢迎进群交流
 
 ![codesome 小白和技术答疑群](images/codesome-support-group.png)
 
@@ -161,6 +161,7 @@ codesome <command>
 - Skill 可以公开审查。
 - 核心自动化实现不暴露。
 - 登录态、API Key、Cookie、Token 等敏感处理留在本地 CLI 中。
+
 
 
 
