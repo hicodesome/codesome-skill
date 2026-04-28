@@ -47,6 +47,9 @@ Use this skill to help users operate Codesome through the local `codesome` CLI. 
 | 查看用量 | `codesome usage stats` 或 `codesome usage recent` |
 | 查看某个 Key 用量 | `codesome usage key --name "<key_name>" --days 30` |
 | 查看 API Key | `codesome key list` |
+| 兑换码预检 | `codesome redeem apply --code "<code>"` |
+| 确认兑换码兑换 | `codesome redeem apply --code "<code>" --confirm` |
+| 查看兑换记录 | `codesome redeem history` |
 | 查看 API Key 配置 | `codesome key show --name "<key_name>"` |
 | 创建 API Key | `codesome key create --name "<name>" --group "<group>"` |
 | 编辑 API Key 名称 | `codesome key update --name "<name>" --new-name "<new-name>"` |
@@ -68,6 +71,7 @@ Use this skill to help users operate Codesome through the local `codesome` CLI. 
 - 修改 Key 限额、过期时间、速率限制、IP 白名单或 IP 黑名单
 - 清空 Key 过期时间、IP 白名单或 IP 黑名单
 - 重置 Key 用量计数
+- 确认兑换码兑换
 
 确认摘要模板：
 
@@ -84,6 +88,7 @@ Key：<name> / <masked-key-if-available>
 ## 输出安全
 
 - API Key 默认显示为 `sk-****abcd`。
+- 兑换码默认只显示前后少量字符，例如 `abcd****wxyz`。
 - 新建 Key 后，完整 Key 应由 CLI 保存到本地文件或复制到剪贴板；对话中只说明路径和脱敏值。
 - 邮箱按需部分脱敏。
 - 如果命令意外输出敏感内容，不要复述，改为说明“已脱敏”。
@@ -96,6 +101,7 @@ Key：<name> / <masked-key-if-available>
 - `references/features/subscriptions.md`
 - `references/features/usage.md`
 - `references/features/keys.md`
+- `references/features/redeem.md`
 - `references/features/groups.md`
 - `references/basic-usage.md`
 - `references/troubleshooting.md`

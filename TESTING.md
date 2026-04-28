@@ -113,6 +113,23 @@ This uses a local mock API through the real CLI entry point. It covers:
 - deleting the temporary key
 - JSON output redaction
 
+## Redeem Mock Test
+
+Run:
+
+```bash
+npm run test:redeem
+```
+
+This uses a local mock API through the real CLI entry point. It covers:
+
+- `redeem apply` dry-run preview without calling the write endpoint
+- `redeem apply --confirm` write path
+- backend payload normalization
+- `redeem history`
+- used-code failure redaction
+- JSON and text output redaction
+
 ## Account-Dependent Tests
 
 These tests require a local Codesome login session:
@@ -133,6 +150,6 @@ node ./bin/codesome.js key list --search "<test-key>"
 node ./bin/codesome.js key update --name "<test-key>" --quota 0 --confirm
 ```
 
-Current real-backend coverage: quota, expiry, rate limits, IP whitelist/blacklist, clear operations, JSON redaction, and final cleanup passed on 2026-04-27. Remaining gaps: reset commands were only verified on zero usage counters, and macOS binaries still need signing plus real-machine execution.
+Current real-backend coverage: quota, expiry, rate limits, IP whitelist/blacklist, clear operations, reset commands with non-zero usage counters, JSON redaction, redeem preview, redeem confirm, redeem history, repeated redeem failure, and final cleanup passed by 2026-04-28. macOS binaries still need signing plus real-machine execution.
 
 Do not paste Cookie, Token, session storage, or full API keys into issues, pull requests, logs, or chat.

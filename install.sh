@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-DEFAULT_CLI_VERSION="v0.2.0"
+DEFAULT_CLI_VERSION="v0.3.0"
 CLI_VERSION="${CODESOME_CLI_VERSION:-$DEFAULT_CLI_VERSION}"
 DEFAULT_BASE_URL="https://github.com/hicodesome/codesome-skill/releases/download/$CLI_VERSION"
 DEFAULT_RAW_BASE_URL="https://raw.githubusercontent.com/hicodesome/codesome-skill/$CLI_VERSION"
@@ -21,6 +21,7 @@ SKILL_FILES=(
   "references/features/balance.md"
   "references/features/groups.md"
   "references/features/keys.md"
+  "references/features/redeem.md"
   "references/features/subscriptions.md"
   "references/features/usage.md"
 )

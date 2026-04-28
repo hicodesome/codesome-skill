@@ -1,5 +1,26 @@
 # Changelog
 
+## v0.3.0 - 2026-04-28
+
+### 新增
+
+- 新增 `codesome redeem apply --code <code>` 兑换码预检，默认不消耗兑换码。
+- 新增 `codesome redeem apply --code <code> --confirm` 确认兑换。
+- 新增 `codesome redeem history` 查看兑换记录。
+- 新增兑换码输出脱敏，JSON、文本输出和失败路径都不会打印完整兑换码。
+
+### 验证
+
+- 私有源仓库通过 `npm run test:redeem`、Key mock、多账号 mock、smoke、安全扫描和多平台 release build。
+- 真实后台验收通过：预检不消耗，确认兑换成功，兑换记录可查询，重复兑换返回已使用错误。
+- Windows 预编译包通过 `codesome version` 冒烟验证。
+
+### 已知边界
+
+- 兑换是真实写操作，确认兑换前应先运行不带 `--confirm` 的预检命令。
+- macOS 二进制仍为交叉构建产物，尚未在 macOS 真机运行验证。
+- Linux arm64 二进制仍未在 Linux arm64 真机运行验证。
+
 ## v0.2.0 - 2026-04-27
 
 ### 新增

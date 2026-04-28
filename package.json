@@ -1,6 +1,6 @@
 {
     "name": "@codesome/cli",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "private": true,
     "description": "Open Codesome CLI and Skill workspace",
     "type": "module",
@@ -13,6 +13,7 @@
         "scan:public-safety": "node ./scripts/scan-public-safety.cjs --public",
         "test:key-config": "node ./scripts/test-key-config-mock.cjs",
         "test:multi-account": "node ./scripts/test-multi-account-mock.cjs",
+        "test:redeem": "node ./scripts/test-redeem-mock.cjs",
         "build:release": "node ./scripts/build-release.mjs"
     },
     "dependencies": {
