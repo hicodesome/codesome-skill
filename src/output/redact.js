@@ -3,7 +3,9 @@
   /(ghp_|github_pat_|gho_|ghu_|ghs_)[A-Za-z0-9_]+/g,
   /(authorization\s*[:=]\s*bearer\s+)[^\s"']+/gi,
   /(cookie\s*[:=]\s*)[^\n]+/gi,
+  /(password\s*[:=]\s*)[^\n,}]+/gi,
   /(token\s*[:=]\s*)[^\n,}]+/gi,
+  /(temp_token\s*[:=]\s*)[^\n,}]+/gi,
   /((?:redeem[_\s-]?code|redemption[_\s-]?code)\s*[:=]\s*["']?)[^"',}\s]+/gi,
   /\b[A-Z0-9]{4,8}(?:-[A-Z0-9]{4,8}){1,5}\b/g
 ]

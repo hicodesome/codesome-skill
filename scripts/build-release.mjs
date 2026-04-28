@@ -21,7 +21,6 @@ run('npx', [
   '--platform=node',
   '--target=node18',
   '--format=cjs',
-  '--external:playwright',
   `--outfile=${bundlePath}`
 ])
 

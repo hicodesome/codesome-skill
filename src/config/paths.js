@@ -22,6 +22,10 @@ export function getAccountStorageStatePath(alias) {
   return path.join(getAccountSessionDir(alias), 'storage-state.json')
 }
 
+export function getAccountCredentialsPath(alias) {
+  return path.join(getAccountDir(alias), 'credentials.enc')
+}
+
 export function getAccountConfigPath(alias) {
   return path.join(getAccountDir(alias), 'config.json')
 }

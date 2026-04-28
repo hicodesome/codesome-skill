@@ -6,6 +6,7 @@ import {
   CONFIG_PATH,
   STORAGE_STATE_PATH,
   getAccountConfigPath,
+  getAccountCredentialsPath,
   getAccountDir,
   getAccountSessionDir,
   getAccountStorageStatePath
@@ -67,6 +68,7 @@ function safeAccountPaths(alias) {
     dir: getAccountDir(safeAlias),
     sessionDir: getAccountSessionDir(safeAlias),
     storageStatePath: getAccountStorageStatePath(safeAlias),
+    credentialsPath: getAccountCredentialsPath(safeAlias),
     configPath: getAccountConfigPath(safeAlias)
   }
 }
@@ -168,6 +170,8 @@ export async function listAccounts() {
     items.push({
       alias: record.alias,
       current: record.alias === index.current,
+      credentials_exists: await exists(paths.credentialsPath),
+      credentials_path: paths.credentialsPath,
       session_exists: await exists(paths.storageStatePath),
       session_path: paths.storageStatePath,
       config_path: paths.configPath,
@@ -264,6 +268,7 @@ export async function removeAccount(alias, options = {}) {
     deleted: true,
     account: {
       alias: safeAlias,
+      credentials_path: paths.credentialsPath,
       session_path: paths.storageStatePath,
       config_path: paths.configPath
     },
@@ -276,6 +281,8 @@ async function accountSummary(alias, record, index) {
   return {
     alias,
     current: alias === index.current,
+    credentials_exists: await exists(paths.credentialsPath),
+    credentials_path: paths.credentialsPath,
     session_exists: await exists(paths.storageStatePath),
     session_path: paths.storageStatePath,
     config_path: paths.configPath,
@@ -308,6 +315,7 @@ export async function resolveAccountContext(options = {}) {
     storageStatePath: paths.storageStatePath,
     sessionPath: paths.storageStatePath,
     sessionDir: paths.sessionDir,
+    credentialsPath: paths.credentialsPath,
     configPath: paths.configPath,
     accountDir: paths.dir,
     baseUrl: options.baseUrl || config?.base_url || record.base_url,

@@ -85,6 +85,6 @@ Usage:
   codesome browser install [--force] [--json]
   codesome browser uninstall [--confirm] [--json]
 
-Installs and manages the mandatory Codesome Chrome for Testing runtime.
+Installs and manages the fallback Codesome Chrome for Testing runtime.
 `)
 }

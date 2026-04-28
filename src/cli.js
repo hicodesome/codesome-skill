@@ -10,7 +10,7 @@ import { handleRedeem } from './commands/redeem.js'
 import { runCommand } from './commands/run.js'
 import { hasFlag, printJson, getOption } from './output/format.js'
 
-const VERSION = '0.3.0'
+const VERSION = '0.4.0'
 
 export async function main(args) {
   const [command, subcommand] = args
@@ -87,6 +87,8 @@ async function handleAuth(subcommand, args) {
   const baseUrl = getOption(args, '--base-url')
   const timeoutMs = getOption(args, '--timeout-ms')
   const account = getOption(args, '--account')
+  const username = getOption(args, '--username') || getOption(args, '--email')
+  const totpCode = getOption(args, '--totp-code')
 
   if (!subcommand || subcommand === '--help' || subcommand === '-h') {
     printAuthHelp()
@@ -100,9 +102,13 @@ async function handleAuth(subcommand, args) {
       return
     }
     console.log(`当前账号：${status.account_alias}`)
-    console.log(`当前状态：${status.logged_in ? '已登录（本地登录态存在）' : '未登录'}`)
+    console.log(`当前状态：${status.logged_in ? '已登录' : '未登录'}`)
+    console.log(`凭证来源：${status.token_source || '-'}`)
     console.log(`后台地址：${status.base_url}`)
+    console.log(`HTTP 凭证文件：${status.credentials_path}`)
     console.log(`登录态文件：${status.session_path}`)
+    if (status.credentials_exists !== undefined) console.log(`HTTP 凭证：${status.credentials_exists ? '已保存' : '未保存'}`)
+    if (status.session_exists !== undefined) console.log(`浏览器登录态：${status.session_exists ? '已保存' : '未保存'}`)
     if (status.cookie_count !== undefined) console.log(`Cookie 数量：${status.cookie_count}`)
     if (status.checked_remote) console.log(`远程校验：${status.logged_in ? '通过' : '未通过'}`)
     console.log(status.message)
@@ -110,20 +116,30 @@ async function handleAuth(subcommand, args) {
   }
 
   if (subcommand === 'login') {
-    const result = await login({ baseUrl, timeoutMs, account })
+    const result = await login({
+      baseUrl,
+      timeoutMs,
+      account,
+      username,
+      totpCode,
+      passwordStdin: hasFlag(args, '--password-stdin'),
+      browser: hasFlag(args, '--browser')
+    })
     if (json) {
       printJson(result)
       return
     }
     console.log(result.message)
     console.log(`账号别名：${result.account_alias}`)
-    console.log(`登录态文件：${result.session_path}`)
-    console.log(`Cookie 数量：${result.cookie_count}`)
+    console.log(`凭证来源：${result.token_source}`)
+    if (result.credentials_path) console.log(`HTTP 凭证文件：${result.credentials_path}`)
+    if (result.session_path) console.log(`浏览器登录态文件：${result.session_path}`)
+    if (result.cookie_count !== undefined) console.log(`Cookie 数量：${result.cookie_count}`)
     return
   }
 
   if (subcommand === 'logout') {
-    const result = await logout({ account })
+    const result = await logout({ account, baseUrl, timeoutMs })
     if (json) {
       printJson(result)
       return
@@ -146,11 +162,11 @@ Usage:
   codesome <command> [options]
 
 Commands:
-  auth login       打开 Codesome 专用浏览器登录，并保存本地登录态
+  auth login       使用账号密码 HTTP 登录，并保存本地凭证
   auth status      查看本地登录态状态
   auth logout      清理本地登录态
   account list     管理本机保存的多个 Codesome 账号
-  browser install  安装 Codesome 专用 Chrome for Testing
+  browser install  安装 Codesome 专用 Chrome for Testing（浏览器兜底登录用）
   browser status   查看 Codesome 专用浏览器运行时
   browser uninstall 删除 Codesome 专用浏览器运行时
   balance show     查询普通按量余额和用量概览
@@ -174,13 +190,15 @@ function printAuthHelp() {
   console.log(`Codesome auth commands
 
 Usage:
-  codesome auth login [--account <alias>] [--base-url <url>] [--timeout-ms <ms>] [--json]
+  codesome auth login [--account <alias>] [--username <email>] [--password-stdin] [--totp-code <code>] [--browser] [--base-url <url>] [--timeout-ms <ms>] [--json]
   codesome auth status [--account <alias>] [--verify] [--base-url <url>] [--json]
-  codesome auth logout [--account <alias>] [--json]
+  codesome auth logout [--account <alias>] [--base-url <url>] [--json]
 
 Examples:
   codesome auth login
-  codesome auth login --account work
+  codesome auth login --account work --username user@example.com
+  type password.txt | codesome auth login --username user@example.com --password-stdin
+  codesome auth login --browser
   codesome auth status
   codesome auth status --verify
 `)

@@ -1,5 +1,34 @@
 # Changelog
 
+## v0.4.0 - 2026-04-28
+
+### 新增
+
+- `codesome auth login` 默认改为账号密码 HTTP 登录，不再要求用户先下载或打开浏览器。
+- 新增加密凭证存储：HTTP 登录后的 token / refresh token 保存为本机加密文件，不保存明文密码。
+- 新增统一 token source：业务命令优先使用加密 HTTP 凭证，旧浏览器登录态继续作为兼容兜底。
+- `codesome auth login --browser` 保留给验证码、二次验证、风控或用户主动选择网页登录的场景。
+
+### 改进
+
+- 发行版移除默认路径对 Playwright 的依赖，查询余额、订阅、用量、分组、Key 和兑换不再因为登录方式而要求下载浏览器。
+- `auth status` 会展示凭证来源，便于判断当前使用的是 HTTP credentials 还是 browser session fallback。
+- `logout` 会同时清理 HTTP 凭证和旧浏览器登录态。
+
+### 验证
+
+- Mock 覆盖 HTTP 登录、加密落盘、远程校验、token refresh、旧浏览器 session fallback 和 logout。
+- 真实账号验收通过：HTTP 登录成功，`auth status --verify` 返回 HTTP 200，`balance show`、`group list`、`key list`、`subscription active`、`usage stats` 可用。
+- 公开安全扫描 blocker 为 0。
+- Windows 预编译包通过 `codesome version` 冒烟验证。
+
+### 已知边界
+
+- 如果后台要求验证码、二次验证或风控，CLI 不会绕过，需要改用 `codesome auth login --browser`。
+- 本机加密凭证依赖当前用户目录下的 master key；换机器或删除 master key 后需要重新登录。
+- macOS 二进制仍为交叉构建产物，尚未在 macOS 真机运行验证。
+- Linux arm64 二进制仍未在 Linux arm64 真机运行验证。
+
 ## v0.3.0 - 2026-04-28
 
 ### 新增

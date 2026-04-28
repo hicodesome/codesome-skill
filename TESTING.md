@@ -11,6 +11,24 @@ node ./bin/codesome.js version
 node ./bin/codesome.js --help
 ```
 
+## HTTP Login Mock Test
+
+Run:
+
+```bash
+npm run test:auth-http
+```
+
+This uses a local mock API through the real CLI entry point. It covers:
+
+- default HTTP login
+- encrypted credentials at rest
+- `auth status --verify`
+- API client using encrypted credentials
+- browser session fallback
+- token refresh
+- logout cleanup
+
 ## Build Test
 
 Run:

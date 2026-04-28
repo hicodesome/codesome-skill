@@ -31,8 +31,10 @@ export async function handleAccount(args) {
     }
     for (const item of data.items) {
       console.log(`- ${item.alias}${item.current ? ' *' : ''}`)
-      console.log(`  登录态：${item.session_exists ? '已保存' : '未登录'}`)
+      const loginState = item.credentials_exists ? 'HTTP 凭证已保存' : item.session_exists ? '浏览器登录态已保存' : '未登录'
+      console.log(`  登录态：${loginState}`)
       console.log(`  后台地址：${item.base_url || '-'}`)
+      console.log(`  HTTP 凭证文件：${item.credentials_path}`)
       console.log(`  登录态文件：${item.session_path}`)
     }
     return
@@ -42,6 +44,7 @@ export async function handleAccount(args) {
     const account = await resolveAccountContext({ createIfMissing: false })
     const data = {
       alias: account.alias,
+      credentials_path: account.credentialsPath,
       session_path: account.sessionPath,
       config_path: account.configPath,
       base_url: account.baseUrl || null
@@ -51,6 +54,7 @@ export async function handleAccount(args) {
       return
     }
     console.log(`当前账号：${account.alias}`)
+    console.log(`HTTP 凭证文件：${account.credentialsPath}`)
     console.log(`登录态文件：${account.sessionPath}`)
     console.log(`配置文件：${account.configPath}`)
     if (account.baseUrl) console.log(`后台地址：${account.baseUrl}`)
@@ -60,12 +64,13 @@ export async function handleAccount(args) {
   if (subcommand === 'add') {
     const name = getOption(args, '--name') || args[1]
     const account = await addAccount(name)
-    const data = { added: true, account: { alias: account.alias, session_path: account.sessionPath, config_path: account.configPath } }
+    const data = { added: true, account: { alias: account.alias, credentials_path: account.credentialsPath, session_path: account.sessionPath, config_path: account.configPath } }
     if (json) {
       printJson(data)
       return
     }
     console.log(`账号已添加：${account.alias}`)
+    console.log(`HTTP 凭证文件：${account.credentialsPath}`)
     console.log(`登录态文件：${account.sessionPath}`)
     console.log(`下一步：codesome auth login --account ${account.alias}`)
     return
@@ -87,12 +92,13 @@ export async function handleAccount(args) {
     const oldName = args[1]
     const newName = args[2]
     const account = await renameAccount(oldName, newName)
-    const data = { renamed: true, account: { alias: account.alias, session_path: account.sessionPath, config_path: account.configPath } }
+    const data = { renamed: true, account: { alias: account.alias, credentials_path: account.credentialsPath, session_path: account.sessionPath, config_path: account.configPath } }
     if (json) {
       printJson(data)
       return
     }
     console.log(`账号已重命名：${oldName} -> ${account.alias}`)
+    console.log(`HTTP 凭证文件：${account.credentialsPath}`)
     console.log(`登录态文件：${account.sessionPath}`)
     return
   }
@@ -110,7 +116,9 @@ export async function handleAccount(args) {
       console.log('')
       console.log(`账号：${result.account.alias}`)
       console.log(`当前账号：${result.account.current ? '是' : '否'}`)
-      console.log(`登录态：${result.account.session_exists ? '已保存' : '未登录'}`)
+      const loginState = result.account.credentials_exists ? 'HTTP 凭证已保存' : result.account.session_exists ? '浏览器登录态已保存' : '未登录'
+      console.log(`登录态：${loginState}`)
+      if (result.account.credentials_path) console.log(`HTTP 凭证文件：${result.account.credentials_path}`)
       console.log(`登录态文件：${result.account.session_path}`)
       console.log('')
       console.log('删除后，此账号的本地登录态和配置会被移除。')

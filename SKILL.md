@@ -13,7 +13,7 @@ Use this skill to help users operate Codesome through the local `codesome` CLI. 
 
 - 不绕过登录、验证码、二次验证、风控或权限系统。
 - 只操作当前登录用户自己有权限访问的内容。
-- 不向用户索要或保存 Codesome 密码。
+- 不在对话中索要或保存 Codesome 密码。需要登录时，使用 CLI 安全提示或用户授权的 `--password-stdin`。
 - 不在对话中输出 Cookie、Token、Authorization header、浏览器 session 或完整 API Key。
 - 不把底层实现细节、页面选择器、非公开路径或逆向细节写入公开回答。
 
@@ -22,22 +22,25 @@ Use this skill to help users operate Codesome through the local `codesome` CLI. 
 ## 使用前
 
 1. 如果任务需要账户数据或 Key 操作，先运行 `codesome auth status`。
-2. 如果未登录，先确保 `codesome browser install` 已安装 Codesome 专用浏览器，再让用户运行 `codesome auth login` 并在该浏览器完成登录。
-3. 删除、禁用、切换分组、写本地配置等操作必须先确认。
-4. 查询类命令优先使用 `--json` 供 Agent 解析，然后向用户输出脱敏摘要。
+2. 如果未登录，优先运行 `codesome auth login`。默认路径是 HTTP 登录和本机加密凭证，不要求先下载浏览器。
+3. 只有遇到验证码、二次验证、风控或用户明确要求网页登录时，才使用 `codesome auth login --browser`；缺少浏览器运行时时再执行 `codesome browser install`。
+4. 删除、禁用、切换分组、写本地配置等操作必须先确认。
+5. 查询类命令优先使用 `--json` 供 Agent 解析，然后向用户输出脱敏摘要。
 
-## 浏览器运行时
+## 登录运行时
 
-- `codesome auth login` 使用 Codesome 管理的 Chrome for Testing。
+- `codesome auth login` 默认使用账号密码 HTTP 登录，并把凭证加密保存在本机账号目录。
+- `codesome auth login --browser` 是兜底路径，使用 Codesome 管理的 Chrome for Testing。
 - 不把用户自己的 Chrome/Edge 或 `CODESOME_BROWSER_PATH` 当作常规登录运行时。
-- 缺少运行时时，先执行 `codesome browser install`。
-- 多账号登录使用独立浏览器 profile，避免不同账号复用网页登录态。
+- 浏览器兜底缺少运行时时，先执行 `codesome browser install`。
+- 多账号使用独立加密凭证；浏览器兜底使用独立 browser profile，避免不同账号复用网页登录态。
 
 ## 命令映射
 
 | 用户意图 | 命令 |
 | --- | --- |
 | 登录 Codesome | `codesome auth login` |
+| 浏览器兜底登录 | `codesome auth login --browser` |
 | 查看登录状态 | `codesome auth status` |
 | 安装/查看登录浏览器 | `codesome browser install` / `codesome browser status` |
 | 查看本机账号 | `codesome account list` 或 `codesome account current` |

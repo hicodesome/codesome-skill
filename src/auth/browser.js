@@ -31,39 +31,6 @@ const MACOS_BROWSER_CANDIDATES = [
 
 export const MANAGED_BROWSER_ROOT = path.join(CODESOME_HOME, 'browser')
 
-export async function loadChromium() {
-  try {
-    const playwright = await import('playwright')
-    return playwright.chromium
-  } catch {
-    if (process.pkg) {
-      throw new Error('发行版缺少 Playwright 运行时。请运行 codesome browser install 后再重试。')
-    }
-    throw new Error('缺少 Playwright 依赖。请先运行 npm install。')
-  }
-}
-
-export async function launchChromium(chromium, options) {
-  const launchOptions = { ...options }
-  if (!launchOptions.executablePath) {
-    const executablePath = findBrowser()
-    if (!executablePath) {
-      throw new Error('未安装 Codesome 专用浏览器。请先运行 codesome browser install 安装 Chrome for Testing。')
-    }
-    launchOptions.executablePath = executablePath
-    launchOptions.channel = undefined
-  }
-
-  try {
-    return await chromium.launch(launchOptions)
-  } catch (error) {
-    if (isMissingBrowserError(error)) {
-      throw new Error('Codesome 专用浏览器不可用。请重新运行 codesome browser install。')
-    }
-    throw error
-  }
-}
-
 export function findBrowser() {
   return findManagedBrowser()
 }
@@ -127,9 +94,4 @@ function listVersionedBrowserDirs(root) {
   } catch {
     return []
   }
-}
-
-function isMissingBrowserError(error) {
-  const message = error && typeof error.message === 'string' ? error.message : String(error)
-  return message.includes("Executable doesn't exist") || message.includes('playwright install')
 }
