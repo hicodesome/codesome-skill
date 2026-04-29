@@ -1,5 +1,32 @@
 # Changelog
 
+## v0.4.1 - 2026-04-29
+
+### 新增
+
+- 新增 `codesome hotskills`，用窄屏友好的文本卡片展示 Codesome 推荐的优秀 Agent Skills。
+- 新增 `codesome hotskills info dbskill`，展示 `dbskill` 的适合场景、核心子 skill、来源和许可证。
+- 新增 `codesome hotskills install dbskill` 安装预检；追加 `--confirm` 后才会调用底层 `skills` CLI 安装。
+- 新增独立入口 `codesome-hotskills`，方便只需要推荐导航的 Agent 或脚本调用。
+
+### 改进
+
+- `dbskill` 安装默认使用全局用户目录，方便 Codex、Claude Code、OpenCode 等不同 Agent 客户端复用。
+- 安装入口只允许内置白名单推荐项，不接受任意仓库代装。
+- Windows 下安装调用改为兼容 `npx.cmd`，避免 PowerShell `.ps1` 执行策略拦截。
+
+### 验证
+
+- 私有源仓库通过 `test:auth-http`、`test:redeem`、`test:key-config`、`test:multi-account`、`test:smoke` 和 `scan:public-safety`。
+- `codesome hotskills`、`info dbskill`、`--json`、独立 `codesome-hotskills` 入口和安装预检均已验证。
+- 本机已实测 `dbskill` 全局安装，安装后包含 13 个 `dbs*` skills。
+
+### 已知边界
+
+- 真实安装会让底层 `skills` CLI 写入多个已识别 Agent 客户端的用户级目录，执行前应先看预检输出。
+- macOS 二进制仍为交叉构建产物，尚未在 macOS 真机运行验证。
+- Linux arm64 二进制仍未在 Linux arm64 真机运行验证。
+
 ## v0.4.0 - 2026-04-28
 
 ### 新增

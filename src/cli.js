@@ -7,10 +7,11 @@ import { handleGroup } from './commands/groups.js'
 import { handleAccount } from './commands/accounts.js'
 import { handleBrowser } from './commands/browser.js'
 import { handleRedeem } from './commands/redeem.js'
+import { handleHotskills } from './commands/hotskills.js'
 import { runCommand } from './commands/run.js'
 import { hasFlag, printJson, getOption } from './output/format.js'
 
-const VERSION = '0.4.0'
+const VERSION = '0.4.1'
 
 export async function main(args) {
   const [command, subcommand] = args
@@ -70,9 +71,14 @@ export async function main(args) {
     return
   }
 
+  if (command === 'hotskills') {
+    await runCommand(() => handleHotskills(args.slice(1)))
+    return
+  }
+
   if (['config', 'doctor'].includes(command)) {
     console.error(`命令尚未实现：codesome ${command}${subcommand ? ` ${subcommand}` : ''}`)
-    console.error('当前已实现：auth、account、browser、balance、subscription、usage、key、group、redeem、version、help。')
+    console.error('当前已实现：auth、account、browser、balance、subscription、usage、key、group、redeem、hotskills、version、help。')
     process.exitCode = 2
     return
   }
@@ -175,6 +181,7 @@ Commands:
   key list/show/create/update/switch-group/delete
   group list
   redeem apply/history
+  hotskills        查看优秀 Agent Skills，并安全安装白名单推荐项
   version          显示版本
 
 Planned commands:

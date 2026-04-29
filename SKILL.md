@@ -1,6 +1,6 @@
 ---
 name: codesome
-description: Manage and troubleshoot Codesome user workflows via the local `codesome` CLI. Use when users ask to view balance, manage local Codesome accounts, manage API keys, switch key groups, inspect usage, or diagnose Codesome-related errors.
+description: Manage and troubleshoot Codesome user workflows via the local `codesome` CLI. Use when users ask to view balance, manage local Codesome accounts, manage API keys, switch key groups, inspect usage, find recommended Agent Skills, or diagnose Codesome-related errors.
 metadata:
   short-description: Codesome CLI, key, balance, config, and doctor workflow
 ---
@@ -63,6 +63,10 @@ Use this skill to help users operate Codesome through the local `codesome` CLI. 
 | 删除 API Key | `codesome key delete --name "<name>" --confirm` |
 | 切换 Key 分组 | `codesome key switch-group --name "<name>" --group "<target>" --confirm` |
 | 查看可用分组 | `codesome group list` |
+| 查看推荐 Skills | `codesome hotskills` |
+| 查看 dbskill 详情 | `codesome hotskills info dbskill` |
+| 安装 dbskill 预检 | `codesome hotskills install dbskill` |
+| 确认安装 dbskill | `codesome hotskills install dbskill --confirm` |
 
 ## 确认规则
 
@@ -75,6 +79,7 @@ Use this skill to help users operate Codesome through the local `codesome` CLI. 
 - 清空 Key 过期时间、IP 白名单或 IP 黑名单
 - 重置 Key 用量计数
 - 确认兑换码兑换
+- 确认安装推荐 Skill
 
 确认摘要模板：
 
@@ -116,6 +121,7 @@ Key：<name> / <masked-key-if-available>
 - 按量分组会消耗账户余额，切换前要提示费用影响。
 - Key 切换分组后，客户端通常不需要换 Key，但可能需要重启终端或客户端。
 - Claude Code/Claude 类客户端常使用 Anthropic 兼容配置；Codex/OpenAI 类客户端常使用 OpenAI 兼容配置。
+- `codesome hotskills install dbskill` 默认只做安装预检；追加 `--confirm` 才会调用 `skills` CLI。默认安装范围是全局用户目录。
 
 ## 排查提示
 
