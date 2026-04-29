@@ -5,13 +5,14 @@ import { handleUsage } from './commands/usage.js'
 import { handleKey } from './commands/keys.js'
 import { handleGroup } from './commands/groups.js'
 import { handleAccount } from './commands/accounts.js'
+import { handleInstance } from './commands/instances.js'
 import { handleBrowser } from './commands/browser.js'
 import { handleRedeem } from './commands/redeem.js'
 import { handleHotskills } from './commands/hotskills.js'
 import { runCommand } from './commands/run.js'
 import { hasFlag, printJson, getOption } from './output/format.js'
 
-const VERSION = '0.4.1'
+const VERSION = '0.5.0'
 
 export async function main(args) {
   const [command, subcommand] = args
@@ -33,6 +34,11 @@ export async function main(args) {
 
   if (command === 'account') {
     await runCommand(() => handleAccount(args.slice(1)))
+    return
+  }
+
+  if (command === 'instance') {
+    await runCommand(() => handleInstance(args.slice(1)))
     return
   }
 
@@ -78,7 +84,7 @@ export async function main(args) {
 
   if (['config', 'doctor'].includes(command)) {
     console.error(`命令尚未实现：codesome ${command}${subcommand ? ` ${subcommand}` : ''}`)
-    console.error('当前已实现：auth、account、browser、balance、subscription、usage、key、group、redeem、hotskills、version、help。')
+    console.error('当前已实现：auth、instance、account、browser、balance、subscription、usage、key、group、redeem、hotskills、version、help。')
     process.exitCode = 2
     return
   }
@@ -93,6 +99,7 @@ async function handleAuth(subcommand, args) {
   const baseUrl = getOption(args, '--base-url')
   const timeoutMs = getOption(args, '--timeout-ms')
   const account = getOption(args, '--account')
+  const instance = getOption(args, '--instance')
   const username = getOption(args, '--username') || getOption(args, '--email')
   const totpCode = getOption(args, '--totp-code')
 
@@ -102,12 +109,13 @@ async function handleAuth(subcommand, args) {
   }
 
   if (subcommand === 'status') {
-    const status = await getAuthStatus({ verify: hasFlag(args, '--verify'), baseUrl, account })
+    const status = await getAuthStatus({ verify: hasFlag(args, '--verify'), baseUrl, account, instance })
     if (json) {
       printJson(status)
       return
     }
     console.log(`当前账号：${status.account_alias}`)
+    console.log(`当前实例：${status.instance_id}`)
     console.log(`当前状态：${status.logged_in ? '已登录' : '未登录'}`)
     console.log(`凭证来源：${status.token_source || '-'}`)
     console.log(`后台地址：${status.base_url}`)
@@ -126,6 +134,7 @@ async function handleAuth(subcommand, args) {
       baseUrl,
       timeoutMs,
       account,
+      instance,
       username,
       totpCode,
       passwordStdin: hasFlag(args, '--password-stdin'),
@@ -136,6 +145,7 @@ async function handleAuth(subcommand, args) {
       return
     }
     console.log(result.message)
+    console.log(`实例：${result.instance_id}`)
     console.log(`账号别名：${result.account_alias}`)
     console.log(`凭证来源：${result.token_source}`)
     if (result.credentials_path) console.log(`HTTP 凭证文件：${result.credentials_path}`)
@@ -145,12 +155,13 @@ async function handleAuth(subcommand, args) {
   }
 
   if (subcommand === 'logout') {
-    const result = await logout({ account, baseUrl, timeoutMs })
+    const result = await logout({ account, instance, baseUrl, timeoutMs })
     if (json) {
       printJson(result)
       return
     }
     console.log(result.message)
+    console.log(`实例：${result.instance_id}`)
     console.log(`账号别名：${result.account_alias}`)
     for (const filePath of result.removed) console.log(`已删除：${filePath}`)
     return
@@ -171,6 +182,7 @@ Commands:
   auth login       使用账号密码 HTTP 登录，并保存本地凭证
   auth status      查看本地登录态状态
   auth logout      清理本地登录态
+  instance list    本机登记任意 Sub2API 自部署实例
   account list     管理本机保存的多个 Codesome 账号
   browser install  安装 Codesome 专用 Chrome for Testing（浏览器兜底登录用）
   browser status   查看 Codesome 专用浏览器运行时
@@ -197,17 +209,22 @@ function printAuthHelp() {
   console.log(`Codesome auth commands
 
 Usage:
-  codesome auth login [--account <alias>] [--username <email>] [--password-stdin] [--totp-code <code>] [--browser] [--base-url <url>] [--timeout-ms <ms>] [--json]
-  codesome auth status [--account <alias>] [--verify] [--base-url <url>] [--json]
-  codesome auth logout [--account <alias>] [--base-url <url>] [--json]
+  codesome auth login [--instance <name>] [--account <alias>] [--username <email>] [--password-stdin] [--totp-code <code>] [--browser] [--base-url <url>] [--timeout-ms <ms>] [--json]
+  codesome auth status [--instance <name>] [--account <alias>] [--verify] [--base-url <url>] [--json]
+  codesome auth logout [--instance <name>] [--account <alias>] [--base-url <url>] [--json]
 
 Examples:
   codesome auth login
+  codesome instance add my-sub2api --base-url https://api.example.com
+  codesome auth login --instance my-sub2api
   codesome auth login --account work --username user@example.com
   type password.txt | codesome auth login --username user@example.com --password-stdin
   codesome auth login --browser
   codesome auth status
   codesome auth status --verify
+
+Instance note:
+  自定义实例通过 instance add 在本机登记，任意 Sub2API 兼容 HTTPS 地址均可使用，无需平台审核。
 `)
 }
 

@@ -20,6 +20,8 @@ const accountsByToken = {
 }
 
 let refreshCount = 0
+let loginRequestCount = 0
+let logoutRequestCount = 0
 const ACCESS_FIELD = 'access_' + 'token'
 const REFRESH_FIELD = 'refresh_' + 'token'
 const TOKEN_TYPE_FIELD = 'token_' + 'type'
@@ -152,6 +154,7 @@ function accountFromRequest(req) {
 async function handle(req, res) {
   const url = new URL(req.url, `http://${req.headers.host}`)
   if (req.method === 'POST' && url.pathname === '/api/v1/auth/login') {
+    loginRequestCount += 1
     const body = await readBody(req)
     if (body.password !== 'correct-password') {
       send(res, 401, { message: 'bad credentials' })
@@ -181,6 +184,7 @@ async function handle(req, res) {
   }
 
   if (req.method === 'POST' && url.pathname === '/api/v1/auth/logout') {
+    logoutRequestCount += 1
     send(res, 200, { message: 'Logged out successfully' })
     return
   }
@@ -216,9 +220,37 @@ async function main() {
   await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve))
   const baseUrl = `http://127.0.0.1:${server.address().port}`
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'codesome-auth-http-'))
-  const env = { ...process.env, CODESOME_HOME: home, CODESOME_BASE_URL: baseUrl }
+  const unsafeHome = fs.mkdtempSync(path.join(os.tmpdir(), 'codesome-auth-http-unsafe-'))
+  const unsafeEnv = { ...process.env, CODESOME_HOME: unsafeHome, CODESOME_BASE_URL: baseUrl }
+  delete unsafeEnv.CODESOME_DEV_ALLOW_INSECURE_BASE_URL
+  const env = {
+    ...process.env,
+    CODESOME_HOME: home,
+    CODESOME_BASE_URL: baseUrl,
+    CODESOME_DEV_ALLOW_INSECURE_BASE_URL: '1'
+  }
+  const envWithoutDevAllow = { ...env }
+  delete envWithoutDevAllow.CODESOME_DEV_ALLOW_INSECURE_BASE_URL
+  const evilServer = http.createServer((req, res) => {
+    res.writeHead(200, { 'content-type': 'application/json' })
+    res.end(JSON.stringify({ code: 0, data: { message: 'evil logout accepted' } }))
+  })
+  await new Promise((resolve) => evilServer.listen(0, '127.0.0.1', resolve))
+  const evilBaseUrl = `http://127.0.0.1:${evilServer.address().port}`
+  let evilRequestCount = 0
+  evilServer.on('request', () => {
+    evilRequestCount += 1
+  })
 
   try {
+    const blockedLogin = await run(['auth', 'login', '--username', 'http-user@example.test', '--password-stdin'], unsafeEnv, {
+      input: 'correct-password\n',
+      code: 1,
+      json: false
+    })
+    assert(/不可信后台地址/.test(blockedLogin.stderr), 'unsafe HTTP login was not blocked before sending password')
+    assert(loginRequestCount === 0, 'unsafe HTTP login reached mock server')
+
     const login = await run(['auth', 'login', '--username', 'http-user@example.test', '--password-stdin'], env, {
       input: 'correct-password\n'
     })
@@ -236,6 +268,9 @@ async function main() {
     const balance = await run(['balance', 'show'], env)
     assert(balance.account.email === 'http-user@example.test', 'balance did not use HTTP credentials')
 
+    const blockedApi = await run(['balance', 'show'], envWithoutDevAllow, { code: 1, json: false })
+    assert(/不可信后台地址/.test(blockedApi.stderr), 'unsafe Authorization request was not blocked')
+
     await run(['account', 'add', '--name', 'browser'], env)
     writeJson(path.join(home, 'accounts', 'browser', 'session', 'storage-state.json'), storageState(baseUrl, 'browser-token'))
     writeJson(path.join(home, 'accounts', 'browser', 'config.json'), { base_url: baseUrl, saved_at: new Date().toISOString() })
@@ -246,21 +281,29 @@ async function main() {
     await run(['auth', 'login', '--account', 'expired', '--username', 'expired@example.test', '--password-stdin'], env, {
       input: 'correct-password\n'
     })
+    const beforeBlockedRefresh = refreshCount
+    const blockedRefresh = await run(['balance', 'show', '--account', 'expired'], envWithoutDevAllow, { code: 1, json: false })
+    assert(/不可信后台地址/.test(blockedRefresh.stderr), 'unsafe refresh request was not blocked')
+    assert(refreshCount === beforeBlockedRefresh, 'unsafe refresh reached mock server')
     const refreshedBalance = await run(['balance', 'show', '--account', 'expired'], env)
     assert(refreshedBalance.account.email === 'refreshed@example.test', 'expired token was not refreshed')
     assert(refreshCount === 1, 'refresh endpoint was not called exactly once')
 
-    await run(['auth', 'logout'], env)
+    await run(['auth', 'logout', '--base-url', evilBaseUrl], env)
+    assert(evilRequestCount === 0, 'logout used caller-supplied baseUrl instead of saved credential base_url')
+    assert(logoutRequestCount === 1, 'logout did not reach saved credential base_url exactly once')
     assert(!fs.existsSync(login.credentials_path), 'logout did not remove credentials file')
 
     console.log(JSON.stringify({
       ok: true,
       temp_home: home,
-      checked: ['http-login', 'encrypted-at-rest', 'status-verify', 'api-client-credentials', 'browser-fallback', 'refresh', 'logout']
+      checked: ['trusted-origin-blocks-login', 'http-login', 'encrypted-at-rest', 'status-verify', 'api-client-credentials', 'trusted-origin-blocks-authorization', 'browser-fallback', 'trusted-origin-blocks-refresh', 'refresh', 'logout-saved-base-url']
     }))
   } finally {
     server.close()
+    evilServer.close()
     if (!process.env.CODESOME_TEST_KEEP_TEMP) fs.rmSync(home, { recursive: true, force: true })
+    if (!process.env.CODESOME_TEST_KEEP_TEMP) fs.rmSync(unsafeHome, { recursive: true, force: true })
   }
 }
 

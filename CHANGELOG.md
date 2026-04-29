@@ -1,5 +1,35 @@
 # Changelog
 
+## v0.5.0 - 2026-04-29
+
+### 新增
+
+- 新增 `codesome instance` 命令，可在本机登记、查看、切换和删除 Sub2API 兼容自部署实例。
+- `auth login/status/logout` 新增 `--instance <name>`，可以在自定义实例上完成登录、远程校验和登出。
+- 余额、Key、分组、用量、订阅和兑换相关命令支持 `--instance <name>`，可直接操作已登记实例。
+- 浏览器兜底登录会打开对应实例的 `/login`，并使用实例级隔离的 browser profile。
+
+### 改进
+
+- `instance add` 可以直接接收控制台页面链接，例如 `/dashboard`，CLI 会保存为站点根地址。
+- 自定义实例采用本机信任登记，不需要平台审核或官方白名单。
+- 默认 Codesome 实例继续兼容旧账号目录；自定义实例使用 `~/.codesome/instances/<instance-id>/accounts/<alias>/` 独立保存凭据和登录态。
+- 带密码、token 或 refresh token 的请求会被限制在默认官方地址或已登记实例，降低凭据被临时 URL 劫持的风险。
+
+### 验证
+
+- Mock 覆盖实例登记、离线 HTTPS 地址登记、未登记 URL 阻断、自定义实例登录、远程校验、业务命令 `--instance`、实例级凭据隔离和登出保护。
+- 真实自部署实例只读验证通过：登录状态远程校验、浏览器入口、余额、分组、Key、用量和订阅命令均命中自定义实例。
+- 公开安全扫描 blocker 为 0。
+- Windows 预编译包通过 `codesome version` 冒烟验证。
+
+### 已知边界
+
+- 自定义实例仅声明支持 Sub2API 兼容部署；严重魔改的站点可能需要额外适配。
+- `config` 和 `doctor` 命令仍未实现。
+- macOS 二进制仍为交叉构建产物，尚未在 macOS 真机运行验证。
+- Linux arm64 二进制仍未在 Linux arm64 真机运行验证。
+
 ## v0.4.1 - 2026-04-29
 
 ### 新增

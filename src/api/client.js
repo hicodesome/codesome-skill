@@ -1,12 +1,14 @@
 import { buildApiUrl, parseApiResponse, requestText } from './http.js'
 import { refreshTokenSource, resolveTokenSource } from '../auth/token-source.js'
 import { ApiError } from './errors.js'
+import { assertTrustedCredentialOrigin } from './trusted-origin.js'
 
 export { ApiError } from './errors.js'
 
 export async function createApiClient(options = {}) {
   let tokenSource = await resolveTokenSource(options)
   const { account, baseUrl } = tokenSource
+  assertTrustedCredentialOrigin(baseUrl, { trustedOrigins: tokenSource.trusted_origins })
 
   async function requestJson(method, path, body, params, retry = true) {
     const headers = {
@@ -25,6 +27,7 @@ export async function createApiClient(options = {}) {
     } catch (error) {
       if (retry && error instanceof ApiError && error.details?.status === 401) {
         tokenSource = await refreshTokenSource(tokenSource, options)
+        assertTrustedCredentialOrigin(baseUrl, { trustedOrigins: tokenSource.trusted_origins })
         return requestJson(method, path, body, params, false)
       }
       throw error
@@ -34,6 +37,8 @@ export async function createApiClient(options = {}) {
   return {
     account: {
       alias: account.alias,
+      instance_id: account.instance_id,
+      instance_name: account.instance_name,
       token_source: tokenSource.source,
       credentials_path: tokenSource.credentials_path,
       session_path: account.storageStatePath,

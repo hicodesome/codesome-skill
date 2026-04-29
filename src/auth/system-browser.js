@@ -151,7 +151,7 @@ export async function loginWithSystemBrowser(options = {}) {
   const timeoutMs = Number(options.timeoutMs || 10 * 60 * 1000)
   const accountAlias = options.accountAlias || 'default'
   const cdpPort = accountPort(accountAlias)
-  const profileDir = accountBrowserProfileDir(accountAlias)
+  const profileDir = options.profileDir || accountBrowserProfileDir(accountAlias)
   const browserPath = findBrowser()
   if (!browserPath) {
     throw new Error('未安装 Codesome 专用浏览器。请先运行 codesome browser install 安装 Chrome for Testing；登录不会使用系统 Chrome/Edge 或 CODESOME_BROWSER_PATH。')

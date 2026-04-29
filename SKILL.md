@@ -1,6 +1,6 @@
 ---
 name: codesome
-description: Manage and troubleshoot Codesome user workflows via the local `codesome` CLI. Use when users ask to view balance, manage local Codesome accounts, manage API keys, switch key groups, inspect usage, find recommended Agent Skills, or diagnose Codesome-related errors.
+description: Manage and troubleshoot Codesome user workflows via the local `codesome` CLI. Use when users ask to view balance, manage local Codesome accounts, manage Sub2API-compatible self-hosted instances, manage API keys, switch key groups, inspect usage, find recommended Agent Skills, or diagnose Codesome-related errors.
 metadata:
   short-description: Codesome CLI, key, balance, config, and doctor workflow
 ---
@@ -21,19 +21,22 @@ Use this skill to help users operate Codesome through the local `codesome` CLI. 
 
 ## 使用前
 
-1. 如果任务需要账户数据或 Key 操作，先运行 `codesome auth status`。
-2. 如果未登录，优先运行 `codesome auth login`。默认路径是 HTTP 登录和本机加密凭证，不要求先下载浏览器。
-3. 只有遇到验证码、二次验证、风控或用户明确要求网页登录时，才使用 `codesome auth login --browser`；缺少浏览器运行时时再执行 `codesome browser install`。
-4. 删除、禁用、切换分组、写本地配置等操作必须先确认。
-5. 查询类命令优先使用 `--json` 供 Agent 解析，然后向用户输出脱敏摘要。
+1. 如果用户提供 Codesome/Sub2API 站点链接，先规范成站点根地址，例如 `https://api.example.com/dashboard` -> `https://api.example.com`。非默认 Codesome 地址要先本机登记：`codesome instance add <instance-id> --base-url <origin>`。实例名可用 hostname，例如 `api.example.com`；如果实例已存在，继续使用该实例名。
+2. 如果任务需要账户数据或 Key 操作，自定义实例先运行 `codesome auth status --instance <instance-id>`；默认 Codesome 实例运行 `codesome auth status`。
+3. 如果未登录，自定义实例使用 `codesome auth login --instance <instance-id>`；默认 Codesome 实例使用 `codesome auth login`。默认路径是 HTTP 登录和本机加密凭证，不要求先下载浏览器。
+4. 只有遇到验证码、二次验证、风控或用户明确要求网页登录时，才使用浏览器兜底。自定义实例必须带 `--instance <instance-id>`，例如 `codesome auth login --instance <instance-id> --browser`，否则会打开默认 Codesome 站点；缺少浏览器运行时时再执行 `codesome browser install`。
+5. 删除、禁用、切换分组、写本地配置等操作必须先确认。
+6. 查询类命令优先使用 `--json` 供 Agent 解析，然后向用户输出脱敏摘要。
 
 ## 登录运行时
 
 - `codesome auth login` 默认使用账号密码 HTTP 登录，并把凭证加密保存在本机账号目录。
+- 任意 Sub2API 兼容 HTTPS 站点都可以通过 `codesome instance add` 做本机信任登记；这不是平台审核，也不是官方白名单。
+- 自定义实例的 `auth`、余额、Key、分组、用量、订阅和兑换命令都要带 `--instance <instance-id>`。
 - `codesome auth login --browser` 是兜底路径，使用 Codesome 管理的 Chrome for Testing。
 - 不把用户自己的 Chrome/Edge 或 `CODESOME_BROWSER_PATH` 当作常规登录运行时。
 - 浏览器兜底缺少运行时时，先执行 `codesome browser install`。
-- 多账号使用独立加密凭证；浏览器兜底使用独立 browser profile，避免不同账号复用网页登录态。
+- 多账号使用独立加密凭证；浏览器兜底使用独立 browser profile，避免不同账号复用网页登录态。自定义实例使用 `~/.codesome/instances/<instance-id>/accounts/<alias>/` 做实例级隔离。
 
 ## 命令映射
 
@@ -41,11 +44,16 @@ Use this skill to help users operate Codesome through the local `codesome` CLI. 
 | --- | --- |
 | 登录 Codesome | `codesome auth login` |
 | 浏览器兜底登录 | `codesome auth login --browser` |
+| 登记自部署 Sub2API 实例 | `codesome instance add <instance-id> --base-url <origin>` |
+| 登录自部署实例 | `codesome auth login --instance <instance-id>` |
+| 浏览器兜底登录自部署实例 | `codesome auth login --instance <instance-id> --browser` |
 | 查看登录状态 | `codesome auth status` |
+| 查看自部署实例登录状态 | `codesome auth status --instance <instance-id> --verify` |
 | 安装/查看登录浏览器 | `codesome browser install` / `codesome browser status` |
 | 查看本机账号 | `codesome account list` 或 `codesome account current` |
 | 新增/切换本机账号 | `codesome account add --name "<alias>"` 或 `codesome account switch <alias>` |
 | 查看余额 | `codesome balance show` |
+| 查看自部署实例余额 | `codesome balance show --instance <instance-id>` |
 | 查看月卡/订阅 | `codesome subscription active` 或 `codesome subscription list` |
 | 查看用量 | `codesome usage stats` 或 `codesome usage recent` |
 | 查看某个 Key 用量 | `codesome usage key --name "<key_name>" --days 30` |

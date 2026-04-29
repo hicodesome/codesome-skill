@@ -1,4 +1,4 @@
-import { resolveAccountContext } from '../accounts/accounts.js'
+import { resolveInstanceAccountContext } from '../instances/instances.js'
 import { resolveBaseUrl } from '../config/paths.js'
 import { ApiError } from '../api/errors.js'
 import { requestApiJson } from '../api/http.js'
@@ -65,7 +65,8 @@ async function refreshCredentials(accountContext, baseUrl, credentials, options 
   const data = await requestApiJson(baseUrl, 'POST', '/auth/refresh', {
     body: { refresh_token: credentials.refresh_token },
     timezone: false,
-    timeoutMs: options.timeoutMs
+    timeoutMs: options.timeoutMs,
+    trustedOrigins: options.trustedOrigins || accountContext.trustedOrigins
   })
   requireAccessToken(data, 'REFRESH_NO_ACCESS_TOKEN')
   const next = {
@@ -105,10 +106,17 @@ async function loadHttpCredentials(accountContext, baseUrl, options = {}) {
 }
 
 export async function resolveTokenSource(options = {}) {
-  const account = await resolveAccountContext({ account: options.account, baseUrl: options.baseUrl })
-  const baseUrl = resolveBaseUrl(options.baseUrl || process.env.CODESOME_BASE_URL || account.baseUrl)
+  const account = options.accountContext || await resolveInstanceAccountContext({
+    instance: options.instance,
+    account: options.account,
+    baseUrl: options.baseUrl
+  })
+  const baseUrl = resolveBaseUrl(account.baseUrl)
 
-  const httpCredentials = await loadHttpCredentials(account, baseUrl, options)
+  const httpCredentials = await loadHttpCredentials(account, baseUrl, {
+    ...options,
+    trustedOrigins: account.trustedOrigins
+  })
   if (httpCredentials) {
     return {
       account,
@@ -116,7 +124,8 @@ export async function resolveTokenSource(options = {}) {
       token: httpCredentials.token,
       source: httpCredentials.source,
       credentials_path: httpCredentials.credentials_path,
-      session_path: account.storageStatePath
+      session_path: account.storageStatePath,
+      trusted_origins: account.trustedOrigins
     }
   }
 
@@ -128,12 +137,15 @@ export async function resolveTokenSource(options = {}) {
       token: browserSession.token,
       source: browserSession.source,
       credentials_path: account.credentialsPath,
-      session_path: browserSession.session_path
+      session_path: browserSession.session_path,
+      trusted_origins: account.trustedOrigins
     }
   }
 
-  throw new ApiError(`账号 ${account.alias} 未找到可用登录凭证，请先运行 codesome auth login --account ${account.alias}。`, {
+  const instanceHint = account.instance_id && account.instance_id !== 'codesome' ? ` --instance ${account.instance_id}` : ''
+  throw new ApiError(`账号 ${account.alias} 未找到可用登录凭证，请先运行 codesome auth login${instanceHint} --account ${account.alias}。`, {
     code: 'NO_SESSION',
+    instance_id: account.instance_id,
     account_alias: account.alias,
     credentials_path: account.credentialsPath,
     session_path: account.storageStatePath
@@ -149,9 +161,13 @@ export async function refreshTokenSource(tokenSource, options = {}) {
     })
   }
   const credentials = await loadCredentials(tokenSource.account)
-  const refreshed = await refreshCredentials(tokenSource.account, tokenSource.baseUrl, credentials, options)
+  const refreshed = await refreshCredentials(tokenSource.account, tokenSource.baseUrl, credentials, {
+    ...options,
+    trustedOrigins: tokenSource.trusted_origins
+  })
   return {
     ...tokenSource,
-    token: refreshed.access_token
+    token: refreshed.access_token,
+    trusted_origins: tokenSource.trusted_origins
   }
 }

@@ -1,6 +1,6 @@
 {
     "name": "@codesome/cli",
-    "version": "0.4.1",
+    "version": "0.5.0",
     "private": true,
     "description": "Private Codesome CLI workspace",
     "type": "module",
@@ -13,6 +13,7 @@
         "test:smoke": "node ./bin/codesome.js --help && node ./bin/codesome.js version && node ./bin/codesome.js auth status",
         "scan:public-safety": "node ./scripts/scan-public-safety.cjs --public",
         "test:auth-http": "node ./scripts/test-auth-http-mock.cjs",
+        "test:instance": "node ./scripts/test-instance-mock.cjs",
         "test:key-config": "node ./scripts/test-key-config-mock.cjs",
         "test:multi-account": "node ./scripts/test-multi-account-mock.cjs",
         "test:redeem": "node ./scripts/test-redeem-mock.cjs",

@@ -189,7 +189,12 @@ async function main() {
   await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve))
   const baseUrl = `http://127.0.0.1:${server.address().port}`
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'codesome-multi-account-'))
-  const env = { ...process.env, CODESOME_HOME: home, CODESOME_BASE_URL: baseUrl }
+  const env = {
+    ...process.env,
+    CODESOME_HOME: home,
+    CODESOME_BASE_URL: baseUrl,
+    CODESOME_DEV_ALLOW_INSECURE_BASE_URL: '1'
+  }
 
   try {
     writeLegacySession(home, baseUrl, 'legacy-token')

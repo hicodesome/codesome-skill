@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { resolveBaseUrl } from '../config/paths.js'
-import { resolveAccountContext, updateAccountRecord } from '../accounts/accounts.js'
+import { resolveInstanceAccountContext, updateResolvedAccountRecord } from '../instances/instances.js'
 import { createApiClient } from '../api/client.js'
 import { requestApiJson } from '../api/http.js'
 import { completeTotpLogin, loginWithHttpCredentials } from './providers/http-credential-provider.js'
@@ -64,7 +64,12 @@ function safeUser(user) {
 async function loginWithBrowser(account, baseUrl, timeoutMs) {
   await ensureDirs(account)
   const { loginWithSystemBrowser } = await import('./system-browser.js')
-  const loginState = await loginWithSystemBrowser({ baseUrl, timeoutMs, accountAlias: account.alias })
+  const loginState = await loginWithSystemBrowser({
+    baseUrl,
+    timeoutMs,
+    accountAlias: account.browserPortAlias || account.alias,
+    profileDir: account.browserProfileDir
+  })
   await writeJson(account.storageStatePath, loginState.storageState)
   const savedAt = new Date().toISOString()
   await writeJson(account.configPath, {
@@ -74,7 +79,7 @@ async function loginWithBrowser(account, baseUrl, timeoutMs) {
     final_url: loginState.final_url,
     credential_source: 'browser-session'
   })
-  await updateAccountRecord(account.alias, {
+  await updateResolvedAccountRecord(account, {
     base_url: baseUrl,
     saved_at: savedAt,
     final_url: loginState.final_url
@@ -83,6 +88,8 @@ async function loginWithBrowser(account, baseUrl, timeoutMs) {
   const summary = cookieSummary(loginState.storageState)
   return {
     account_alias: account.alias,
+    instance_id: account.instance_id,
+    instance_name: account.instance_name,
     logged_in: true,
     token_source: 'browser-session',
     session_path: account.storageStatePath,
@@ -114,17 +121,20 @@ async function resolveLoginPassword(options) {
 }
 
 export async function getAuthStatus(options = {}) {
-  const account = await resolveAccountContext({
+  const account = await resolveInstanceAccountContext({
+    instance: options.instance,
     account: options.account,
     createIfMissing: !options.account,
     baseUrl: options.baseUrl
   })
-  const baseUrl = resolveBaseUrl(options.baseUrl || process.env.CODESOME_BASE_URL || account.baseUrl)
+  const baseUrl = resolveBaseUrl(account.baseUrl)
   const sessionExists = await exists(account.storageStatePath)
   const configExists = await exists(account.configPath)
   const httpCredentialsExist = await credentialsExist(account)
   const result = {
     account_alias: account.alias,
+    instance_id: account.instance_id,
+    instance_name: account.instance_name,
     current_account: account.current,
     logged_in: false,
     token_source: null,
@@ -174,7 +184,7 @@ export async function getAuthStatus(options = {}) {
     result.checked_remote = true
     let client
     try {
-      client = await createApiClient({ account: account.alias, baseUrl })
+      client = await createApiClient({ instance: account.instance_id, account: account.alias, baseUrl })
       await client.get('/auth/me')
       result.http_status = 200
       result.logged_in = true
@@ -204,8 +214,13 @@ export async function getAuthStatus(options = {}) {
 }
 
 export async function login(options = {}) {
-  const account = await resolveAccountContext({ account: options.account, createIfMissing: true, baseUrl: options.baseUrl })
-  const baseUrl = resolveBaseUrl(options.baseUrl || process.env.CODESOME_BASE_URL || account.baseUrl)
+  const account = await resolveInstanceAccountContext({
+    instance: options.instance,
+    account: options.account,
+    createIfMissing: true,
+    baseUrl: options.baseUrl
+  })
+  const baseUrl = resolveBaseUrl(account.baseUrl)
   const timeoutMs = Number(options.timeoutMs || DEFAULT_LOGIN_TIMEOUT_MS)
 
   if (options.browser) {
@@ -214,14 +229,21 @@ export async function login(options = {}) {
 
   const email = await resolveLoginEmail(options)
   const password = await resolveLoginPassword(options)
-  let authResponse = await loginWithHttpCredentials({ baseUrl, email, password, timeoutMs })
+  let authResponse = await loginWithHttpCredentials({
+    baseUrl,
+    email,
+    password,
+    timeoutMs,
+    trustedOrigins: account.trustedOrigins
+  })
   if (authResponse?.requires_2fa) {
     const code = options.totpCode || await promptText(`2FA 验证码${authResponse.user_email_masked ? `（${authResponse.user_email_masked}）` : ''}：`)
     authResponse = await completeTotpLogin({
       baseUrl,
       tempToken: authResponse.temp_token,
       totpCode: code,
-      timeoutMs
+      timeoutMs,
+      trustedOrigins: account.trustedOrigins
     })
   }
 
@@ -234,7 +256,7 @@ export async function login(options = {}) {
     account_hint: authResponse.user?.email || email,
     credential_source: 'http'
   })
-  await updateAccountRecord(account.alias, {
+  await updateResolvedAccountRecord(account, {
     base_url: baseUrl,
     saved_at: savedAt,
     final_url: `${baseUrl}/dashboard`
@@ -242,6 +264,8 @@ export async function login(options = {}) {
 
   return {
     account_alias: account.alias,
+    instance_id: account.instance_id,
+    instance_name: account.instance_name,
     logged_in: true,
     token_source: 'credentials',
     credentials_path: account.credentialsPath,
@@ -255,15 +279,22 @@ export async function login(options = {}) {
 }
 
 export async function logout(options = {}) {
-  const account = await resolveAccountContext({ account: options.account, createIfMissing: !options.account })
-  const baseUrl = resolveBaseUrl(options.baseUrl || process.env.CODESOME_BASE_URL || account.baseUrl)
+  const account = await resolveInstanceAccountContext({
+    instance: options.instance,
+    account: options.account,
+    createIfMissing: !options.account,
+    baseUrl: options.baseUrl
+  })
+  const requestedBaseUrl = resolveBaseUrl(account.baseUrl)
   const credentials = await loadCredentials(account).catch(() => null)
+  const logoutBaseUrl = resolveBaseUrl(credentials?.base_url || account.baseUrl || requestedBaseUrl)
   if (credentials?.refresh_token) {
-    await requestApiJson(baseUrl, 'POST', '/auth/logout', {
+    await requestApiJson(logoutBaseUrl, 'POST', '/auth/logout', {
       body: { refresh_token: credentials.refresh_token },
       token: credentials.access_token,
       timezone: false,
-      timeoutMs: options.timeoutMs
+      timeoutMs: options.timeoutMs,
+      trustedOrigins: account.trustedOrigins
     }).catch(() => null)
   }
 
@@ -277,6 +308,8 @@ export async function logout(options = {}) {
   }
   return {
     account_alias: account.alias,
+    instance_id: account.instance_id,
+    instance_name: account.instance_name,
     logged_in: false,
     removed,
     message: removed.length ? '本地登录凭证已清理。' : '本地没有登录凭证。'

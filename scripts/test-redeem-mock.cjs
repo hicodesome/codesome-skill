@@ -230,7 +230,8 @@ async function main() {
   const env = {
     ...process.env,
     CODESOME_HOME: home,
-    CODESOME_BASE_URL: baseUrl
+    CODESOME_BASE_URL: baseUrl,
+    CODESOME_DEV_ALLOW_INSECURE_BASE_URL: '1'
   }
 
   try {

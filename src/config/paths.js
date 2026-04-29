@@ -5,6 +5,8 @@ export const CODESOME_HOME = process.env.CODESOME_HOME || path.join(os.homedir()
 export const SESSION_DIR = path.join(CODESOME_HOME, 'session')
 export const ACCOUNTS_DIR = path.join(CODESOME_HOME, 'accounts')
 export const ACCOUNTS_INDEX_PATH = path.join(CODESOME_HOME, 'accounts.json')
+export const INSTANCES_DIR = path.join(CODESOME_HOME, 'instances')
+export const INSTANCES_INDEX_PATH = path.join(CODESOME_HOME, 'instances.json')
 export const SECRETS_DIR = path.join(CODESOME_HOME, 'secrets')
 export const STORAGE_STATE_PATH = path.join(SESSION_DIR, 'storage-state.json')
 export const CONFIG_PATH = path.join(CODESOME_HOME, 'config.json')
@@ -28,6 +30,38 @@ export function getAccountCredentialsPath(alias) {
 
 export function getAccountConfigPath(alias) {
   return path.join(getAccountDir(alias), 'config.json')
+}
+
+export function getInstanceDir(id) {
+  return path.join(INSTANCES_DIR, id)
+}
+
+export function getInstanceAccountsDir(id) {
+  return path.join(getInstanceDir(id), 'accounts')
+}
+
+export function getInstanceAccountsIndexPath(id) {
+  return path.join(getInstanceDir(id), 'accounts.json')
+}
+
+export function getInstanceAccountDir(id, alias) {
+  return path.join(getInstanceAccountsDir(id), alias)
+}
+
+export function getInstanceAccountSessionDir(id, alias) {
+  return path.join(getInstanceAccountDir(id, alias), 'session')
+}
+
+export function getInstanceAccountStorageStatePath(id, alias) {
+  return path.join(getInstanceAccountSessionDir(id, alias), 'storage-state.json')
+}
+
+export function getInstanceAccountCredentialsPath(id, alias) {
+  return path.join(getInstanceAccountDir(id, alias), 'credentials.enc')
+}
+
+export function getInstanceAccountConfigPath(id, alias) {
+  return path.join(getInstanceAccountDir(id, alias), 'config.json')
 }
 
 export function resolveBaseUrl(value) {

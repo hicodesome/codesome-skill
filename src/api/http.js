@@ -2,6 +2,7 @@ import http from 'node:http'
 import https from 'node:https'
 import { redact } from '../output/redact.js'
 import { ApiError } from './errors.js'
+import { assertTrustedCredentialOrigin } from './trusted-origin.js'
 
 export function buildApiUrl(baseUrl, path, params = {}, options = {}) {
   const normalized = path.startsWith('/api/v1/') ? path : `/api/v1${path.startsWith('/') ? path : `/${path}`}`
@@ -73,7 +74,41 @@ export async function parseApiResponse(response, method, path) {
   return payload?.data ?? payload
 }
 
+const CREDENTIAL_BODY_KEYS = new Set([
+  'access_token',
+  'auth_token',
+  'password',
+  'refresh_token',
+  'temp_token',
+  'token'
+])
+
+function headersContainAuthorization(headers = {}) {
+  return Object.entries(headers).some(([key, value]) => {
+    return key.toLowerCase() === 'authorization' && value !== undefined && value !== null && String(value).trim() !== ''
+  })
+}
+
+function bodyContainsCredential(value) {
+  if (!value || typeof value !== 'object') return false
+  if (Array.isArray(value)) return value.some((item) => bodyContainsCredential(item))
+  return Object.entries(value).some(([key, item]) => {
+    return CREDENTIAL_BODY_KEYS.has(key.toLowerCase()) || bodyContainsCredential(item)
+  })
+}
+
+function isCredentialBearingRequest(options = {}) {
+  return Boolean(
+    options.token ||
+    headersContainAuthorization(options.headers) ||
+    bodyContainsCredential(options.body)
+  )
+}
+
 export async function requestApiJson(baseUrl, method, path, options = {}) {
+  if (isCredentialBearingRequest(options)) {
+    assertTrustedCredentialOrigin(baseUrl, { trustedOrigins: options.trustedOrigins })
+  }
   const headers = {
     Accept: 'application/json',
     ...(options.headers || {})

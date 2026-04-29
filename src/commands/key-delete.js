@@ -36,6 +36,11 @@ function makeOptions(args, account) {
   }
 }
 
+function accountArgs(account) {
+  const instanceArg = account.instance_id && account.instance_id !== 'codesome' ? `--instance ${account.instance_id} ` : ''
+  return `${instanceArg}--account ${account.alias}`
+}
+
 export async function handleKeyDelete(args) {
   const json = hasFlag(args, '--json')
   const confirm = hasFlag(args, '--confirm')
@@ -49,7 +54,7 @@ export async function handleKeyDelete(args) {
       requires_confirm: true,
       account_context: accountJson(account),
       key: safeKey(preview.key),
-      next_command: `codesome key delete --account ${account.alias} ${options.id ? `--id ${options.id}` : `--name "${preview.key.name}"`} --confirm`
+      next_command: `codesome key delete ${accountArgs(account)} ${options.id ? `--id ${options.id}` : `--name "${preview.key.name}"`} --confirm`
     }
     if (json) {
       printJson(safe)

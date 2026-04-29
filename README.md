@@ -2,7 +2,7 @@
 
 Codesome Skill 是给 Agent 使用的 Codesome 助手。安装后，你可以直接让 Agent 帮你完成余额查询、订阅查询、用量查询、兑换码充值、API Key 管理和分组切换等操作，不需要自己在网页后台来回找入口。
 
-当前稳定版本：`v0.4.1`
+当前稳定版本：`v0.5.0`
 
 每个公开版本都有独立 Release 和更新说明。升级前可以查看 [CHANGELOG.md](CHANGELOG.md)，了解本次增加了什么、修复了什么，以及还有哪些已知边界。
 
@@ -12,6 +12,7 @@ Codesome Skill 是给 Agent 使用的 Codesome 助手。安装后，你可以直
 - 想安全预检并确认兑换 Codesome 兑换码。
 - 想管理自己的 API Key，例如创建、改名、启用、禁用、切换分组或删除。
 - 想查看某个 API Key 的近期用量。
+- 想把任意 Sub2API 兼容自部署站点登记为本机实例，并用 `--instance` 操作它。
 - 想查看 Codesome 推荐的优秀 Agent Skills，并安全安装白名单推荐项。
 - 想让 Codex、Claude Code、OpenClaw、Hermes、OpenCode 等 Agent 客户端识别 Codesome Skill。
 
@@ -31,11 +32,13 @@ Codesome Skill 是给 Agent 使用的 Codesome 助手。安装后，你可以直
 安装后请验证：
 1. codesome version
 2. codesome auth status
-3. codesome hotskills
-4. 如果未登录，执行 codesome auth login，用 CLI 的安全提示完成账号密码登录
-5. 登录后执行 codesome balance show 验证可用
-6. 如果遇到验证码、二次验证或风控，再使用 codesome auth login --browser 走浏览器兜底
-7. 告诉我 CLI 安装目录和 Skill 安装目录
+3. codesome instance list
+4. codesome hotskills
+5. 如果未登录，执行 codesome auth login，用 CLI 的安全提示完成账号密码登录
+6. 登录后执行 codesome balance show 验证可用
+7. 如果我要使用自部署 Sub2API 站点，先执行 codesome instance add <name> --base-url <url>，后续命令都带 --instance <name>
+8. 如果遇到验证码、二次验证或风控，再使用 codesome auth login --browser 走浏览器兜底
+9. 告诉我 CLI 安装目录和 Skill 安装目录
 
 安全要求：不要输出 Cookie、Token、Session 或完整 API Key。
 ```
@@ -93,13 +96,13 @@ macOS Intel: codesome-darwin-amd64
 macOS Apple Silicon / M 系列: codesome-darwin-arm64
 ```
 
-默认下载源是本仓库 GitHub Release 当前稳定版本 `v0.4.1`：
+默认下载源是本仓库 GitHub Release 当前稳定版本 `v0.5.0`：
 
-- `https://github.com/hicodesome/codesome-skill/releases/download/v0.4.1/codesome-windows-amd64.exe`
-- `https://github.com/hicodesome/codesome-skill/releases/download/v0.4.1/codesome-linux-amd64`
-- `https://github.com/hicodesome/codesome-skill/releases/download/v0.4.1/codesome-linux-arm64`
-- `https://github.com/hicodesome/codesome-skill/releases/download/v0.4.1/codesome-darwin-amd64`
-- `https://github.com/hicodesome/codesome-skill/releases/download/v0.4.1/codesome-darwin-arm64`
+- `https://github.com/hicodesome/codesome-skill/releases/download/v0.5.0/codesome-windows-amd64.exe`
+- `https://github.com/hicodesome/codesome-skill/releases/download/v0.5.0/codesome-linux-amd64`
+- `https://github.com/hicodesome/codesome-skill/releases/download/v0.5.0/codesome-linux-arm64`
+- `https://github.com/hicodesome/codesome-skill/releases/download/v0.5.0/codesome-darwin-amd64`
+- `https://github.com/hicodesome/codesome-skill/releases/download/v0.5.0/codesome-darwin-arm64`
 
 可通过环境变量指定版本或经过验证的镜像：
 
@@ -112,12 +115,12 @@ CODESOME_SKILL_RAW_BASE_URL
 示例：
 
 ```powershell
-$env:CODESOME_CLI_VERSION="v0.4.1"
+$env:CODESOME_CLI_VERSION="v0.5.0"
 iwr https://raw.githubusercontent.com/hicodesome/codesome-skill/main/install.ps1 -UseB | iex
 ```
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/hicodesome/codesome-skill/main/install.sh | CODESOME_CLI_VERSION=v0.4.1 bash
+curl -fsSL https://raw.githubusercontent.com/hicodesome/codesome-skill/main/install.sh | CODESOME_CLI_VERSION=v0.5.0 bash
 ```
 
 `latest` 只作为兼容别名保留；面向用户的发布说明和安装验证以明确版本号为准。
@@ -134,6 +137,12 @@ curl -fsSL https://raw.githubusercontent.com/hicodesome/codesome-skill/main/inst
 - `codesome auth login`
 - `codesome auth status`
 - `codesome auth logout`
+- `codesome instance list`
+- `codesome instance current`
+- `codesome instance add <name> --base-url <url>`
+- `codesome instance switch <name>`
+- `codesome instance status <name>`
+- `codesome instance remove <name> --confirm`
 - `codesome browser install`
 - `codesome browser status`
 - `codesome browser uninstall`
@@ -169,6 +178,19 @@ curl -fsSL https://raw.githubusercontent.com/hicodesome/codesome-skill/main/inst
 
 写操作默认先做 dry-run 预检，展示原值和目标值；追加 `--confirm` 才会写入。兑换码默认也只做预检，确认兑换时才追加 `--confirm`。
 
+## 自部署 Sub2API 实例
+
+除了默认 Codesome 实例，也可以把任意 Sub2API 兼容 HTTPS 站点登记为本机实例：
+
+```bash
+codesome instance add my-sub2api --base-url https://api.example.com
+codesome auth login --instance my-sub2api
+codesome balance show --instance my-sub2api
+codesome key list --instance my-sub2api
+```
+
+`instance add` 是本机信任登记，不是平台审核或官方白名单。登录凭证、浏览器登录态和 browser profile 会按实例隔离保存。带账号密码、token 或 refresh token 的请求只允许发往默认官方地址或已登记实例，避免临时恶意 URL 接管凭据。
+
 ## Hot Skills 推荐
 
 `codesome hotskills` 会展示 Codesome 当前推荐的优秀 Agent Skills。默认输出为窄屏友好的文本卡片，也支持 `--json` 给 Agent 客户端二次渲染。
@@ -203,7 +225,7 @@ codesome auth login --browser
 codesome browser install
 ```
 
-多账号登录会为每个账号隔离 HTTP 凭证；浏览器兜底也会使用独立 browser profile，避免不同账号共用网页登录态。
+多账号登录会为每个账号隔离 HTTP 凭证；浏览器兜底也会使用独立 browser profile，避免不同账号共用网页登录态。自部署实例还会额外按实例隔离，目录位于 `~/.codesome/instances/<instance-id>/accounts/<alias>/`。
 
 ## 安装位置
 

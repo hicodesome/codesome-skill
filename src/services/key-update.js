@@ -177,8 +177,7 @@ export async function findKeyByName(name, options = {}) {
   const query = String(name || '').trim()
   if (!query) throw new Error('必须指定 Key 名称：--name <name>。')
   const data = await listKeys({
-    account: options.account,
-    baseUrl: options.baseUrl,
+    ...options,
     pageSize: 100,
     search: query
   })
@@ -198,7 +197,7 @@ export async function findKeyById(id, options = {}) {
   const pageSize = 100
   let page = 1
   while (true) {
-    const data = await listKeys({ account: options.account, baseUrl: options.baseUrl, page, pageSize })
+    const data = await listKeys({ ...options, page, pageSize })
     const match = data.items.find((item) => Number(item.id) === keyId)
     if (match) return match
     if (!data.items.length || data.items.length < pageSize || page * pageSize >= Number(data.total || 0)) break

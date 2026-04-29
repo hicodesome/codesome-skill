@@ -11,7 +11,8 @@ export async function loginWithHttpCredentials(options = {}) {
   const first = await requestApiJson(options.baseUrl, 'POST', '/auth/login', {
     body,
     timezone: false,
-    timeoutMs: options.timeoutMs
+    timeoutMs: options.timeoutMs,
+    trustedOrigins: options.trustedOrigins
   })
 
   if (first?.requires_2fa) {
@@ -24,7 +25,8 @@ export async function loginWithHttpCredentials(options = {}) {
         totp_code: options.totpCode
       },
       timezone: false,
-      timeoutMs: options.timeoutMs
+      timeoutMs: options.timeoutMs,
+      trustedOrigins: options.trustedOrigins
     })
   }
 
@@ -44,6 +46,7 @@ export async function completeTotpLogin(options = {}) {
       totp_code: options.totpCode
     },
     timezone: false,
-    timeoutMs: options.timeoutMs
+    timeoutMs: options.timeoutMs,
+    trustedOrigins: options.trustedOrigins
   })
 }

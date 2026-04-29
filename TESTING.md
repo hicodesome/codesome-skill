@@ -29,6 +29,24 @@ This uses a local mock API through the real CLI entry point. It covers:
 - token refresh
 - logout cleanup
 
+## Sub2API Instance Mock Test
+
+Run:
+
+```bash
+npm run test:instance
+```
+
+This uses a local mock API through the real CLI entry point. It covers:
+
+- `instance add/list/current/switch/status/remove`
+- offline HTTPS instance registration without platform review
+- blocking unregistered credential-bearing base URLs
+- custom instance login and `auth status --verify`
+- business commands honoring `--instance`
+- instance-scoped credentials, session paths, and browser profile paths
+- logout using the saved instance base URL instead of caller-supplied URLs
+
 ## Build Test
 
 Run:
