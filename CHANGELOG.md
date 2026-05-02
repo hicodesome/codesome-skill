@@ -7,10 +7,14 @@
 - 修复 Linux/macOS 安装链路中的 CRLF 换行风险：`install.sh` 现在必须保持 LF，避免 bash 报 `pipefail\r` 或函数定义语法错误。
 - 修复 Unix 直接执行 `bin/codesome.js` / `bin/codesome-hotskills.js` 时的 shebang 换行风险，避免 `/usr/bin/env: node\r`。
 - macOS 安装脚本会在下载 CLI 后自动尝试移除 quarantine 并执行 ad-hoc codesign，降低首次运行被未签名二进制拦截的概率。
+- 修复 `codesome usage recent --json` 可能原样输出嵌套 `api_key.key` 的问题，现在 JSON 输出层会递归脱敏完整 API Key。
+- 修复 `codesome auth logout --help` 会实际执行登出并删除本地凭证的问题，现在 `--help` 只显示帮助。
 
 ### 验证
 
 - 新增 `npm run test:unix-entry`，并将其串入 `npm run test:smoke`。
+- 新增 `npm run test:json-safety`，覆盖递归 JSON API Key 脱敏。
+- `npm run test:auth-http` 新增 `auth logout --help` 无副作用回归。
 - 新增 `.gitattributes`，固定 `*.sh` 和 `bin/*.js` 为 LF。
 
 ## v0.5.0 - 2026-04-29

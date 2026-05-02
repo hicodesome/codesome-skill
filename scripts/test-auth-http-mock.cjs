@@ -265,6 +265,12 @@ async function main() {
     assert(status.logged_in === true, 'auth status --verify failed after HTTP login')
     assert(status.token_source === 'credentials', 'auth status did not use credentials')
 
+    const logoutHelpBefore = logoutRequestCount
+    const logoutHelp = await run(['auth', 'logout', '--help'], env, { json: false })
+    assert(/Codesome auth commands/.test(logoutHelp.stdout), 'auth logout --help did not print auth help')
+    assert(logoutRequestCount === logoutHelpBefore, 'auth logout --help reached logout endpoint')
+    assert(fs.existsSync(login.credentials_path), 'auth logout --help removed credentials')
+
     const balance = await run(['balance', 'show'], env)
     assert(balance.account.email === 'http-user@example.test', 'balance did not use HTTP credentials')
 
@@ -297,7 +303,7 @@ async function main() {
     console.log(JSON.stringify({
       ok: true,
       temp_home: home,
-      checked: ['trusted-origin-blocks-login', 'http-login', 'encrypted-at-rest', 'status-verify', 'api-client-credentials', 'trusted-origin-blocks-authorization', 'browser-fallback', 'trusted-origin-blocks-refresh', 'refresh', 'logout-saved-base-url']
+      checked: ['trusted-origin-blocks-login', 'http-login', 'encrypted-at-rest', 'status-verify', 'auth-logout-help-no-side-effect', 'api-client-credentials', 'trusted-origin-blocks-authorization', 'browser-fallback', 'trusted-origin-blocks-refresh', 'refresh', 'logout-saved-base-url']
     }))
   } finally {
     server.close()

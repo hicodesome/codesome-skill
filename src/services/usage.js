@@ -1,4 +1,5 @@
 import { withApiClient } from '../api/client.js'
+import { maskApiKey } from '../output/redact.js'
 
 function dateRange(days = 7) {
   const end = new Date()
@@ -103,11 +104,6 @@ function roundMoney(value) {
   return Number(Number(value || 0).toFixed(6))
 }
 
-function maskApiKey(value) {
-  if (!value) return '-'
-  return `${value.slice(0, 3)}****${value.slice(-4)}`
-}
-
 async function findKeyByName(client, name) {
   const data = await client.get('/keys', {
     page: 1,
@@ -128,6 +124,22 @@ async function findKeyByName(client, name) {
   }
   if (fuzzy.length === 1) return fuzzy[0]
   throw new Error(`未找到 API Key：${name}`)
+}
+
+function normalizeRecentUsageItem(item) {
+  const result = { ...item }
+  if (result.api_key && typeof result.api_key === 'object') {
+    const apiKey = { ...result.api_key }
+    const masked = apiKey.masked_key || maskApiKey(apiKey.key)
+    if (apiKey.key) apiKey.key = masked
+    if (!apiKey.masked_key && masked) apiKey.masked_key = masked
+    result.api_key = apiKey
+  }
+  if (typeof result.key === 'string' && result.key.startsWith('sk-')) result.key = maskApiKey(result.key)
+  if (typeof result.api_key_key === 'string' && result.api_key_key.startsWith('sk-')) {
+    result.api_key_key = maskApiKey(result.api_key_key)
+  }
+  return result
 }
 
 async function aggregateKeyUsage(client, keyId, range, recentLimit) {
@@ -197,7 +209,7 @@ export async function getRecentUsage(options = {}) {
       page: data.page,
       page_size: data.page_size,
       total: data.total,
-      items: data.items || []
+      items: (data.items || []).map(normalizeRecentUsageItem)
     }
   })
 }

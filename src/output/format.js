@@ -1,5 +1,7 @@
-﻿export function printJson(value) {
-  console.log(JSON.stringify(value, null, 2))
+import { redactJsonSecrets } from './redact.js'
+
+export function printJson(value) {
+  console.log(JSON.stringify(redactJsonSecrets(value), null, 2))
 }
 
 export function hasFlag(args, flag) {

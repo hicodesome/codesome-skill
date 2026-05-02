@@ -12,7 +12,7 @@ import { handleHotskills } from './commands/hotskills.js'
 import { runCommand } from './commands/run.js'
 import { hasFlag, printJson, getOption } from './output/format.js'
 
-const VERSION = '0.5.1-rc.1'
+const VERSION = '0.5.1-rc.2'
 
 export async function main(args) {
   const [command, subcommand] = args
@@ -104,6 +104,11 @@ async function handleAuth(subcommand, args) {
   const totpCode = getOption(args, '--totp-code')
 
   if (!subcommand || subcommand === '--help' || subcommand === '-h') {
+    printAuthHelp()
+    return
+  }
+
+  if (hasFlag(args, '--help') || hasFlag(args, '-h')) {
     printAuthHelp()
     return
   }

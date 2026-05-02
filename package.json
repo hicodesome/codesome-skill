@@ -1,6 +1,6 @@
 {
     "name": "@codesome/cli",
-    "version": "0.5.1-rc.1",
+    "version": "0.5.1-rc.2",
     "private": true,
     "description": "Private Codesome CLI workspace",
     "type": "module",
@@ -10,8 +10,9 @@
     },
     "scripts": {
         "start": "node ./bin/codesome.js",
-        "test:smoke": "npm run test:unix-entry && node ./bin/codesome.js --help && node ./bin/codesome.js version && node ./bin/codesome.js auth status",
+        "test:smoke": "npm run test:unix-entry && npm run test:json-safety && node ./bin/codesome.js --help && node ./bin/codesome.js version && node ./bin/codesome.js auth status",
         "test:unix-entry": "node ./scripts/verify-unix-entry-line-endings.cjs",
+        "test:json-safety": "node ./scripts/test-json-safety.cjs",
         "scan:public-safety": "node ./scripts/scan-public-safety.cjs --public",
         "test:auth-http": "node ./scripts/test-auth-http-mock.cjs",
         "test:instance": "node ./scripts/test-instance-mock.cjs",

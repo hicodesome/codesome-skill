@@ -25,6 +25,31 @@ export function maskRedeemCode(value) {
   return `${text.slice(0, 4)}****${text.slice(-4)}`
 }
 
+function redactJsonString(value) {
+  if (/^sk-[A-Za-z0-9_-]{8,}$/.test(value)) return maskApiKey(value)
+  return redact(value)
+}
+
+export function redactJsonSecrets(value) {
+  const seen = new WeakSet()
+
+  function visit(item) {
+    if (typeof item === 'string') return redactJsonString(item)
+    if (!item || typeof item !== 'object') return item
+    if (item instanceof Date) return item.toJSON()
+    if (seen.has(item)) return '[Circular]'
+    seen.add(item)
+
+    if (Array.isArray(item)) return item.map(visit)
+
+    return Object.fromEntries(
+      Object.entries(item).map(([key, entry]) => [key, visit(entry)])
+    )
+  }
+
+  return visit(value)
+}
+
 export function redact(value) {
   let text = typeof value === 'string' ? value : JSON.stringify(value)
   for (const pattern of SECRET_PATTERNS) {

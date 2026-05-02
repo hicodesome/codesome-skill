@@ -8,12 +8,15 @@ Run:
 
 ```bash
 npm run test:unix-entry
+npm run test:json-safety
 npm run test:smoke
 node ./bin/codesome.js version
 node ./bin/codesome.js --help
 ```
 
 `test:unix-entry` verifies that Unix entrypoints stay LF-only. This protects Linux/macOS users from bash CRLF parse errors and shebang failures such as `/usr/bin/env: node\r`.
+
+`test:json-safety` verifies recursive JSON redaction so nested fields such as `api_key.key` cannot print a full API key.
 
 ## HTTP Login Mock Test
 
@@ -32,6 +35,7 @@ This uses a local mock API through the real CLI entry point. It covers:
 - browser session fallback
 - token refresh
 - logout cleanup
+- `auth logout --help` prints help without logging out or deleting credentials
 
 ## Sub2API Instance Mock Test
 

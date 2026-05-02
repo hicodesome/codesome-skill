@@ -54,12 +54,12 @@ codesome skill 针对 sub2api 项目的适配兼容已获得作者许可，sub2a
 如果你想让 Agent 安装测试版，可以把下面这段提示词发给它。测试版用于提前验证修复，不会改变默认稳定版安装方式：
 
 ```text
-请帮我安装并配置 Codesome Skill 测试版 v0.5.1-rc.1：https://github.com/hicodesome/codesome-skill/releases/tag/v0.5.1-rc.1
+请帮我安装并配置 Codesome Skill 测试版 v0.5.1-rc.2：https://github.com/hicodesome/codesome-skill/releases/tag/v0.5.1-rc.2
 
 请按当前系统安装本地 codesome CLI，并把 Codesome Skill 安装到常见 Agent 客户端的用户级技能目录。
 
 安装要求：
-1. 使用 CODESOME_CLI_VERSION=v0.5.1-rc.1。
+1. 使用 CODESOME_CLI_VERSION=v0.5.1-rc.2。
 2. Windows 使用 install.ps1。
 3. Linux / WSL / macOS 使用 install.sh。
 4. 安装后验证 codesome version、codesome auth status、codesome instance list。
@@ -87,20 +87,20 @@ curl -fsSL https://raw.githubusercontent.com/hicodesome/codesome-skill/main/inst
 
 ### 测试版安装方式
 
-测试版用于提前验证修复。当前测试版：`v0.5.1-rc.1`。
+测试版用于提前验证修复。当前测试版：`v0.5.1-rc.2`。
 
 Windows：
 
 ```powershell
-$env:CODESOME_CLI_VERSION="v0.5.1-rc.1"
-iwr https://raw.githubusercontent.com/hicodesome/codesome-skill/v0.5.1-rc.1/install.ps1 -UseB | iex
+$env:CODESOME_CLI_VERSION="v0.5.1-rc.2"
+iwr https://raw.githubusercontent.com/hicodesome/codesome-skill/v0.5.1-rc.2/install.ps1 -UseB | iex
 Remove-Item Env:\CODESOME_CLI_VERSION
 ```
 
 Linux / WSL / macOS：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/hicodesome/codesome-skill/v0.5.1-rc.1/install.sh | CODESOME_CLI_VERSION=v0.5.1-rc.1 bash
+curl -fsSL https://raw.githubusercontent.com/hicodesome/codesome-skill/v0.5.1-rc.2/install.sh | CODESOME_CLI_VERSION=v0.5.1-rc.2 bash
 ```
 
 测试版安装后验证：
