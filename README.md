@@ -43,6 +43,26 @@ Codesome Skill 是给 Agent 使用的 Codesome 助手。安装后，你可以直
 安全要求：不要输出 Cookie、Token、Session 或完整 API Key。
 ```
 
+### 给 Agent 看的测试版安装
+
+如果你想让 Agent 安装测试版，可以把下面这段提示词发给它。测试版用于提前验证修复，不会改变默认稳定版安装方式：
+
+```text
+请帮我安装并配置 Codesome Skill 测试版 v0.5.1-rc.1：https://github.com/hicodesome/codesome-skill/releases/tag/v0.5.1-rc.1
+
+请按当前系统安装本地 codesome CLI，并把 Codesome Skill 安装到常见 Agent 客户端的用户级技能目录。
+
+安装要求：
+1. 使用 CODESOME_CLI_VERSION=v0.5.1-rc.1。
+2. Windows 使用 install.ps1。
+3. Linux / WSL / macOS 使用 install.sh。
+4. 安装后验证 codesome version、codesome auth status、codesome instance list。
+5. 如果未登录，执行 codesome auth login；如果遇到验证码、二次验证或风控，再使用 codesome auth login --browser。
+6. 告诉我 CLI 安装目录、Skill 安装目录和当前安装的测试版 tag。
+
+安全要求：不要输出 Cookie、Token、Session 或完整 API Key。
+```
+
 ## 给人类看的
 
 推荐直接使用安装脚本。脚本会下载对应系统的预编译 `codesome` CLI 二进制，并安装 Codesome Skill。
@@ -57,6 +77,32 @@ Linux / WSL / macOS：
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/hicodesome/codesome-skill/main/install.sh | bash
+```
+
+### 测试版安装方式
+
+测试版用于提前验证修复。当前测试版：`v0.5.1-rc.1`。
+
+Windows：
+
+```powershell
+$env:CODESOME_CLI_VERSION="v0.5.1-rc.1"
+iwr https://raw.githubusercontent.com/hicodesome/codesome-skill/v0.5.1-rc.1/install.ps1 -UseB | iex
+Remove-Item Env:\CODESOME_CLI_VERSION
+```
+
+Linux / WSL / macOS：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/hicodesome/codesome-skill/v0.5.1-rc.1/install.sh | CODESOME_CLI_VERSION=v0.5.1-rc.1 bash
+```
+
+测试版安装后验证：
+
+```bash
+codesome version
+codesome auth status
+codesome instance list
 ```
 
 安装后验证：
@@ -267,12 +313,12 @@ OpenCode 原生: ~/.config/opencode/skill/codesome/SKILL.md
 
 ## macOS 未签名提示
 
-macOS 二进制可能需要本机临时签名或移除下载隔离标记。若首次运行被拦截，可执行：
+安装脚本会在 macOS 上自动尝试移除下载隔离标记并执行本机临时签名。若首次运行仍被拦截，可手动执行：
 
 ```bash
 chmod +x ~/.codesome/bin/codesome
-codesign --sign - ~/.codesome/bin/codesome 2>/dev/null || true
 xattr -dr com.apple.quarantine ~/.codesome/bin/codesome 2>/dev/null || true
+codesign --force --sign - ~/.codesome/bin/codesome 2>/dev/null || true
 codesome version
 ```
 

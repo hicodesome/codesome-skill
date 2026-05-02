@@ -110,6 +110,12 @@ download_to "$url" "$tmp" || fail_download
 if [ "$DRY_RUN" != "1" ]; then
   chmod +x "$tmp"
   mv "$tmp" "$target"
+  if [ "$os_name" = "darwin" ]; then
+    xattr -dr com.apple.quarantine "$target" 2>/dev/null || true
+    if command -v codesign >/dev/null 2>&1; then
+      codesign --force --sign - "$target" >/dev/null 2>&1 || step "macOS ad-hoc codesign skipped; if first run is blocked, run: codesign --force --sign - \"$target\""
+    fi
+  fi
 fi
 
 case ":$PATH:" in

@@ -7,9 +7,13 @@ This file documents the minimum checks required before code is published in this
 Run:
 
 ```bash
+npm run test:unix-entry
+npm run test:smoke
 node ./bin/codesome.js version
 node ./bin/codesome.js --help
 ```
+
+`test:unix-entry` verifies that Unix entrypoints stay LF-only. This protects Linux/macOS users from bash CRLF parse errors and shebang failures such as `/usr/bin/env: node\r`.
 
 ## HTTP Login Mock Test
 
@@ -83,8 +87,11 @@ Remove-Item Env:\CODESOME_INSTALL_HOME
 Linux / macOS / WSL:
 
 ```bash
+bash -n ./install.sh
 CODESOME_INSTALL_DRY_RUN=1 CODESOME_INSTALL_HOME=/tmp/codesome-install-dryrun bash ./install.sh
 ```
+
+On macOS, also verify that `install.sh` attempts the post-download `xattr` cleanup and ad-hoc `codesign --force --sign -` before running `codesome version`.
 
 Expected output must include:
 

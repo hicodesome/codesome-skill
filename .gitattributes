@@ -1,0 +1,9 @@
+* text=auto
+
+# Unix entrypoints must stay LF-only. CRLF breaks bash and shebang
+# resolution on Linux/macOS, for example `/usr/bin/env: node\r`.
+*.sh text eol=lf
+bin/*.js text eol=lf
+
+# PowerShell scripts are Windows-facing entrypoints.
+*.ps1 text eol=crlf
