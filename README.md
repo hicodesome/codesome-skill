@@ -1,12 +1,18 @@
-# Codesome Skill
+ # Codesome Skill
 
-Codesome Skill 是给 Agent 使用的 Codesome 助手。安装后，你可以直接让 Agent 帮你完成余额查询、订阅查询、用量查询、兑换码充值、API Key 管理和分组切换等操作，不需要自己在网页后台来回找入口。
+codesome skill 是一款 x2agent 的解决方案，它主要完成围绕任意agent tools 的自助 token 服务，比如你可以让你的龙虾自动通过 codeosme skill 来使用你的 token。
+
+这将 任何 agent 对 token 的使用消费推向了下一个时代，“自助餐”模式。
+
+Codesome Skill 安装后，你可以直接让 Agent 帮你完成在 codesome.ai 或者其他基于 sub2api 完成的Token API 站点进行余额查询、订阅查询、用量查询、兑换码充值、API Key 管理和分组切换等操作，不需要自己在网页后台来回找入口。
+
+codesome skill 针对 sub2api 项目的适配兼容已获得作者许可，sub2api传送门：https://github.com/Wei-Shaw/sub2api 
 
 当前稳定版本：`v0.5.0`
 
 每个公开版本都有独立 Release 和更新说明。升级前可以查看 [CHANGELOG.md](CHANGELOG.md)，了解本次增加了什么、修复了什么，以及还有哪些已知边界。
 
-它适合这些场景：
+它适合这些场景：（当然，前提是你有一个 codesome.ai 的账号）
 
 - 想快速查看 Codesome 账户余额和订阅状态。
 - 想安全预检并确认兑换 Codesome 兑换码。
