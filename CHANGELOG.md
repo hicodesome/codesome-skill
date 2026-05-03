@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.5.2-rc.2 - 2026-05-03
+
+### 修复
+
+- GitHub Release 预编译二进制现在同时产出并安装独立 `codesome-hotskills` 入口：Windows amd64、Linux amd64、Linux arm64、macOS Intel、macOS Apple Silicon 均包含对应资产。
+- 安装脚本现在会下载 `codesome` 和 `codesome-hotskills` 两个二进制，并在独立 hotskills 二进制可用时验证 `codesome version` 与 `codesome-hotskills --help`；旧 release 缺少独立 hotskills 资产时会提示并继续安装主 CLI。
+- `@codesome/cli` NPM 源码包 runtime engine 从 Node.js `>=20` 调整为 `>=18`，与当前 esbuild/pkg 构建目标和 Linux Node 18 实测结果一致，避免 Node 18 用户安装 `.tgz` 时出现误导性 `EBADENGINE` 警告。
+
+### 验证重点
+
+- 补测 Windows amd64 二进制和安装脚本。
+- 补测真实 Sub2API 自托管实例登录和只读业务命令。
+- 明确记录 macOS 真机和 Linux arm64 真机仍未覆盖，不把交叉构建成功误写成真实平台验证通过。
+
 ## v0.5.2-rc.1 - 2026-05-03
 
 ### 新增

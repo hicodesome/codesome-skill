@@ -12,6 +12,7 @@ npm run test:json-safety
 npm run test:smoke
 node ./bin/codesome.js version
 node ./bin/codesome.js --help
+node ./bin/codesome-hotskills.js --help
 ```
 
 `test:unix-entry` verifies that Unix entrypoints stay LF-only. This protects Linux/macOS users from bash CRLF parse errors and shebang failures such as `/usr/bin/env: node\r`.
@@ -67,14 +68,19 @@ Then verify at least the host binary:
 
 ```bash
 dist/codesome-windows-amd64.exe version
+dist/codesome-hotskills-windows-amd64.exe --help
 ```
 
 On Linux:
 
 ```bash
 chmod +x dist/codesome-linux-amd64
+chmod +x dist/codesome-hotskills-linux-amd64
 dist/codesome-linux-amd64 version
+dist/codesome-hotskills-linux-amd64 --help
 ```
+
+`npm run build:release` also runs `scripts/verify-release-assets.cjs`, which requires both `codesome-*` and `codesome-hotskills-*` binaries for Windows amd64, Linux amd64, Linux arm64, macOS Intel, and macOS Apple Silicon, plus matching checksum entries.
 
 ## Installer Dry-Run Tests
 
@@ -101,6 +107,7 @@ Expected output must include:
 
 ```text
 CLI install directory
+Hotskills executable
 ~/.agents/skills/codesome
 ~/.claude/skills/codesome
 ~/.hermes/skills/codesome
@@ -201,6 +208,35 @@ Current real-backend coverage: quota, expiry, rate limits, IP whitelist/blacklis
 
 Do not paste Cookie, Token, session storage, or full API keys into issues, pull requests, logs, or chat.
 
+## Real Sub2API Instance Checks
+
+Use a temporary `CODESOME_HOME` when testing third-party or self-hosted Sub2API instances:
+
+```bash
+export CODESOME_HOME=/tmp/codesome-test-home
+codesome instance add <name> --base-url <url>
+printf '%s' "$CODESOME_TEST_PASSWORD" | codesome auth login --instance <name> --username <email> --password-stdin
+codesome auth status --instance <name> --verify
+codesome balance show --instance <name> --json
+codesome subscription active --instance <name> --json
+codesome group list --instance <name> --json
+codesome key list --instance <name> --limit 3 --json
+rm -rf "$CODESOME_HOME"
+```
+
+2026-05-03 `v0.5.2-rc.2` real-instance coverage: `debian-1` (`Linux debian-1 6.5.0-0.deb12.4-amd64`, Node.js `v18.20.4`) tested a user-provided self-hosted Sub2API instance with a user-provided account. Instance add, HTTP login, `auth status --verify`, balance, subscription, group list, and key list all returned successfully. `key list --json` emitted `0` full API keys. The account used for this check had no active subscription data in the CLI output.
+
+Do not store real Sub2API passwords in this repository, reports, shell history, or committed docs. Use one-shot environment variables or stdin only.
+
+## Platform Coverage Notes
+
+2026-05-03 `v0.5.2-rc.2` coverage:
+
+- Windows amd64: `codesome-windows-amd64.exe version`, `codesome-hotskills-windows-amd64.exe --help`, and `install.ps1` installation into a temporary home passed.
+- Linux amd64: `debian-1` ran `codesome-linux-amd64 version`, `codesome-hotskills-linux-amd64 --help`, and NPM `.tgz` install on Node.js 18 without `EBADENGINE`.
+- macOS Intel / Apple Silicon: cross-build assets are produced, but real macOS execution is not covered.
+- Linux arm64: cross-build asset is produced, but real Linux arm64 execution is not covered.
+
 ## NPM Package Checks
 
 Run before every NPM publish:
@@ -232,6 +268,7 @@ codesome version
 codesome --help
 codesome auth status
 codesome hotskills
+codesome-hotskills --help
 ```
 
 For one-off execution, prefer the explicit package form when testing locally or in CI:

@@ -31,10 +31,22 @@
 npm install
 node .\bin\codesome.js version
 node .\bin\codesome.js --help
+node .\bin\codesome-hotskills.js --help
+npm run test:npm-pack
 npm run scan:public-safety
 npm run build:release
 .\dist\codesome-windows-amd64.exe version
+.\dist\codesome-hotskills-windows-amd64.exe --help
 ```
+
+跨平台候选发布还需要记录：
+
+- [ ] Windows amd64 预编译二进制已在 Windows 真机运行。
+- [ ] Linux amd64 预编译二进制已在 `debian-1` 测试环境运行。
+- [ ] Linux amd64 NPM `.tgz` 已在 Node.js 18 环境安装，且无 `EBADENGINE`。
+- [ ] 真实 Sub2API 自托管实例已完成登记、登录、远程校验和至少一个只读业务命令。
+- [ ] macOS 真机状态已记录为通过或未覆盖。
+- [ ] Linux arm64 真机状态已记录为通过或未覆盖。
 
 ## 5. 发布回写
 

@@ -90,15 +90,21 @@ case "$arch" in
 esac
 
 bin_name="codesome-${os_name}-${arch_name}"
+hotskills_bin_name="codesome-hotskills-${os_name}-${arch_name}"
 url="$BASE_URL/$bin_name"
+hotskills_url="$BASE_URL/$hotskills_bin_name"
 tmp="${TMPDIR:-/tmp}/$bin_name.$$"
+hotskills_tmp="${TMPDIR:-/tmp}/$hotskills_bin_name.$$"
 target="$INSTALL_DIR/codesome"
+hotskills_target="$INSTALL_DIR/codesome-hotskills"
+hotskills_available=1
 
 step "Installing Codesome CLI for ${os_name}/${arch_name}"
 step "CLI version: $CLI_VERSION"
 step "CLI download base: $BASE_URL"
 step "CLI install directory: $INSTALL_DIR"
 step "CLI executable: $target"
+step "Hotskills executable: $hotskills_target"
 step "Skill raw source: $RAW_BASE_URL"
 if [ "$DRY_RUN" = "1" ]; then
   step "Dry-run mode: no files will be written."
@@ -106,14 +112,30 @@ fi
 mkdir_safe "$INSTALL_DIR"
 
 download_to "$url" "$tmp" || fail_download
+download_to "$hotskills_url" "$hotskills_tmp" || {
+  hotskills_available=0
+  rm -f "$hotskills_tmp" 2>/dev/null || true
+  step "Optional hotskills binary is not available in this release: $hotskills_url"
+  step "The main CLI still supports the same feature as: codesome hotskills"
+}
 
 if [ "$DRY_RUN" != "1" ]; then
   chmod +x "$tmp"
   mv "$tmp" "$target"
+  if [ "$hotskills_available" = "1" ]; then
+    chmod +x "$hotskills_tmp"
+    mv "$hotskills_tmp" "$hotskills_target"
+  fi
   if [ "$os_name" = "darwin" ]; then
     xattr -dr com.apple.quarantine "$target" 2>/dev/null || true
+    if [ "$hotskills_available" = "1" ]; then
+      xattr -dr com.apple.quarantine "$hotskills_target" 2>/dev/null || true
+    fi
     if command -v codesign >/dev/null 2>&1; then
       codesign --force --sign - "$target" >/dev/null 2>&1 || step "macOS ad-hoc codesign skipped; if first run is blocked, run: codesign --force --sign - \"$target\""
+      if [ "$hotskills_available" = "1" ]; then
+        codesign --force --sign - "$hotskills_target" >/dev/null 2>&1 || step "macOS ad-hoc codesign skipped for codesome-hotskills; if first run is blocked, run: codesign --force --sign - \"$hotskills_target\""
+      fi
     fi
   fi
 fi
@@ -151,4 +173,7 @@ step "Project-level directories are not modified by default. If needed, copy thi
 
 if [ "$DRY_RUN" != "1" ]; then
   "$target" version
+  if [ "$hotskills_available" = "1" ]; then
+    "$hotskills_target" --help >/dev/null
+  fi
 fi

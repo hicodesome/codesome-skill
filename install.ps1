@@ -10,7 +10,9 @@ $UserHome = if ($env:CODESOME_INSTALL_HOME) { $env:CODESOME_INSTALL_HOME } else 
 $DryRun = $env:CODESOME_INSTALL_DRY_RUN -eq "1"
 $InstallDir = Join-Path $UserHome ".codesome\bin"
 $BinPath = Join-Path $InstallDir "codesome.exe"
+$HotskillsBinPath = Join-Path $InstallDir "codesome-hotskills.exe"
 $TmpPath = Join-Path $env:TEMP "codesome.exe"
+$HotskillsTmpPath = Join-Path $env:TEMP "codesome-hotskills.exe"
 $SkillName = "codesome"
 $SkillFiles = @(
   "SKILL.md",
@@ -91,6 +93,7 @@ Write-Step "CLI version: $CliVersion"
 Write-Step "CLI download base: $BaseUrl"
 Write-Step "CLI install directory: $InstallDir"
 Write-Step "CLI executable: $BinPath"
+Write-Step "Hotskills executable: $HotskillsBinPath"
 Write-Step "Skill raw source: $RawBaseUrl"
 if ($DryRun) {
   Write-Step "Dry-run mode: no files will be written."
@@ -98,6 +101,7 @@ if ($DryRun) {
 
 Ensure-Directory $InstallDir
 $Url = "$BaseUrl/codesome-windows-amd64.exe"
+$HotskillsUrl = "$BaseUrl/codesome-hotskills-windows-amd64.exe"
 
 try {
   Download-File $Url $TmpPath
@@ -105,8 +109,23 @@ try {
   Write-Error "Download failed: $Url. Confirm GitHub Release $CliVersion contains codesome-windows-amd64.exe, or set CODESOME_CLI_VERSION / CODESOME_CLI_BASE_URL to another verified release."
 }
 
+$HotskillsAvailable = $true
+try {
+  Download-File $HotskillsUrl $HotskillsTmpPath
+} catch {
+  $HotskillsAvailable = $false
+  if (Test-Path $HotskillsTmpPath) {
+    Remove-Item -Force $HotskillsTmpPath -ErrorAction SilentlyContinue
+  }
+  Write-Step "Optional hotskills binary is not available in this release: $HotskillsUrl"
+  Write-Step "The main CLI still supports the same feature as: codesome hotskills"
+}
+
 if (-not $DryRun) {
   Move-Item -Force $TmpPath $BinPath
+  if ($HotskillsAvailable) {
+    Move-Item -Force $HotskillsTmpPath $HotskillsBinPath
+  }
 }
 Add-ToUserPath $InstallDir
 
@@ -123,4 +142,7 @@ Write-Step "Project-level directories are not modified by default. If needed, co
 
 if (-not $DryRun) {
   & $BinPath version
+  if ($HotskillsAvailable) {
+    & $HotskillsBinPath --help | Out-Null
+  }
 }

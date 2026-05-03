@@ -71,7 +71,7 @@ codesome skill 针对 sub2api 项目的适配兼容已获得作者许可，sub2a
 
 ## 给人类看的
 
-如果你已经安装 Node.js 20+，可以直接使用 NPM 源码包安装 CLI：
+如果你已经安装 Node.js 18+，可以直接使用 NPM 源码包安装 CLI：
 
 ```bash
 npm install -g @codesome/cli
@@ -156,7 +156,7 @@ codesome balance show
 推荐方式可以按环境选择：
 
 ```text
-已有 Node.js 20+: NPM 源码包
+已有 Node.js 18+: NPM 源码包
 不想依赖 Node.js: 安装脚本 + GitHub Release 预编译二进制
 ```
 
@@ -170,10 +170,15 @@ codesome balance show
 
 ```text
 Windows amd64: codesome-windows-amd64.exe
+Windows amd64 hotskills: codesome-hotskills-windows-amd64.exe（v0.5.2-rc.2 起）
 Linux / WSL amd64: codesome-linux-amd64
+Linux / WSL amd64 hotskills: codesome-hotskills-linux-amd64（v0.5.2-rc.2 起）
 Linux arm64 / aarch64: codesome-linux-arm64
+Linux arm64 / aarch64 hotskills: codesome-hotskills-linux-arm64（v0.5.2-rc.2 起）
 macOS Intel: codesome-darwin-amd64
+macOS Intel hotskills: codesome-hotskills-darwin-amd64（v0.5.2-rc.2 起）
 macOS Apple Silicon / M 系列: codesome-darwin-arm64
+macOS Apple Silicon / M 系列 hotskills: codesome-hotskills-darwin-arm64（v0.5.2-rc.2 起）
 ```
 
 默认下载源是本仓库 GitHub Release 当前稳定版本 `v0.5.1`：
@@ -183,6 +188,8 @@ macOS Apple Silicon / M 系列: codesome-darwin-arm64
 - `https://github.com/hicodesome/codesome-skill/releases/download/v0.5.1/codesome-linux-arm64`
 - `https://github.com/hicodesome/codesome-skill/releases/download/v0.5.1/codesome-darwin-amd64`
 - `https://github.com/hicodesome/codesome-skill/releases/download/v0.5.1/codesome-darwin-arm64`
+
+`codesome-hotskills-*` 独立二进制从 `v0.5.2-rc.2` 起随 GitHub Release 提供；更早版本仍可通过 `codesome hotskills` 使用同一功能。
 
 可通过环境变量指定版本或经过验证的镜像：
 
