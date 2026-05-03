@@ -20,6 +20,32 @@ node ./bin/codesome.js version
 node ./bin/codesome.js --help
 ```
 
+## NPM Source Package
+
+The public NPM package is `@codesome/cli`. It ships the tested source CLI and requires Node.js 20+ at runtime.
+
+Before publishing, verify the package metadata and tarball allowlist:
+
+```bash
+npm run test:npm-pack
+```
+
+The package exposes these commands through `bin`:
+
+```text
+codesome
+codesome-hotskills
+```
+
+Local package install check:
+
+```bash
+npm pack
+npm install -g ./codesome-cli-*.tgz
+codesome version
+codesome --help
+```
+
 ## Build Release Binaries
 
 ```bash
@@ -41,4 +67,4 @@ dist/checksums.txt
 
 - macOS binaries built on non-macOS hosts may need `codesign` before real user distribution.
 - Do not commit `dist/`, `node_modules/`, local sessions, secrets, or tokens.
-- The NPM wrapper package is planned separately.
+- NPM source publishing uses `@codesome/cli`; binary wrapper/platform packages are not part of the first NPM release.

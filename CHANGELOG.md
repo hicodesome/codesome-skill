@@ -1,6 +1,32 @@
 # Changelog
 
+## v0.5.2-rc.1 - 2026-05-03
+
+### 新增
+
+- 新增 GitHub 预发布候选包，用于验证 `@codesome/cli` NPM 源码分发和 GitHub Release 二进制安装链路。
+- NPM 源码包继续使用 public scoped package、`Apache-2.0`、`files` 白名单和 tarball 审计。本次 GitHub prerelease 会附带 `.tgz` 包供测试，不更新 npm registry。
+
+### 验证重点
+
+- 验证 GitHub Release 指定版本安装，以及从 release `.tgz` 资产本地安装 `@codesome/cli`。
+- 验证 `codesome version` 输出 `codesome 0.5.2-rc.1`。
+- 验证 `auth logout --help` 无副作用、`usage recent --json` 递归脱敏、Unix 入口 LF 换行检查和公开安全扫描。
+
+### 已知边界
+
+- 这是 prerelease，不会更新稳定版 `latest`。
+- NPM Trusted Publishing workflow 需要带 `workflow` scope 的 GitHub 凭据，未包含在本次预发布提交中。
+- macOS 二进制仍为交叉构建产物，尚未在 macOS 真机运行验证。
+- Linux arm64 二进制仍未在 Linux arm64 真机运行验证。
+
 ## v0.5.1 - 2026-05-03
+
+### 新增
+
+- 新增 NPM 源码包发布准备：`@codesome/cli` 移除 private 限制，声明 `Apache-2.0`，补齐 package metadata、`files` 白名单和 public provenance 发布配置。
+- 新增 NPM tarball 审计脚本 `npm run test:npm-pack`，发布前检查必需文件和禁止发布的私有 docs、session、token 扫描产物、构建产物、图片和平台二进制。
+- NPM Trusted Publishing workflow 需要带 `workflow` scope 的 GitHub 凭据另行提交；本轮先完成 package metadata、tarball 审计和 GitHub prerelease 测试包。
 
 ### 修复
 

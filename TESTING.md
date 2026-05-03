@@ -200,3 +200,42 @@ node ./bin/codesome.js key update --name "<test-key>" --quota 0 --confirm
 Current real-backend coverage: quota, expiry, rate limits, IP whitelist/blacklist, clear operations, reset commands with non-zero usage counters, JSON redaction, redeem preview, redeem confirm, redeem history, repeated redeem failure, and final cleanup passed by 2026-04-28. macOS binaries still need signing plus real-machine execution.
 
 Do not paste Cookie, Token, session storage, or full API keys into issues, pull requests, logs, or chat.
+
+## NPM Package Checks
+
+Run before every NPM publish:
+
+```bash
+npm run test:npm-pack
+```
+
+This runs `npm pack --dry-run --json` and verifies:
+
+- package is not private
+- license is `Apache-2.0`
+- `publishConfig.access` is `public`
+- `publishConfig.provenance` is enabled
+- required CLI, source, docs, and audit scripts are present
+- private docs, sessions, token scan artifacts, images, binaries, build outputs, and temporary planning files are absent
+
+The full publish gate is:
+
+```bash
+npm run prepublishOnly
+```
+
+After `npm pack`, verify the local tarball in a clean shell:
+
+```bash
+npm install -g ./codesome-cli-*.tgz
+codesome version
+codesome --help
+codesome auth status
+codesome hotskills
+```
+
+For one-off execution, prefer the explicit package form when testing locally or in CI:
+
+```bash
+npx --package @codesome/cli codesome version
+```

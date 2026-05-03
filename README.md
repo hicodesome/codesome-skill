@@ -51,7 +51,7 @@ codesome skill 针对 sub2api 项目的适配兼容已获得作者许可，sub2a
 
 ### 给 Agent 看的指定版本 / 测试版安装
 
-如果你想让 Agent 安装某个测试版或固定版本，可以把下面这段提示词发给它。把 `<release-tag>` 替换为 GitHub Release tag，例如 `v0.5.1-rc.2` 或 `v0.5.1`。指定版本安装不会改变默认稳定版安装方式：
+如果你想让 Agent 安装某个测试版或固定版本，可以把下面这段提示词发给它。把 `<release-tag>` 替换为 GitHub Release tag，例如 `v0.5.2-rc.1` 或 `v0.5.1`。指定版本安装不会改变默认稳定版安装方式：
 
 ```text
 请帮我安装并配置 Codesome Skill 指定版本 <release-tag>：https://github.com/hicodesome/codesome-skill/releases/tag/<release-tag>
@@ -71,7 +71,28 @@ codesome skill 针对 sub2api 项目的适配兼容已获得作者许可，sub2a
 
 ## 给人类看的
 
-推荐直接使用安装脚本。脚本会下载对应系统的预编译 `codesome` CLI 二进制，并安装 Codesome Skill。
+如果你已经安装 Node.js 20+，可以直接使用 NPM 源码包安装 CLI：
+
+```bash
+npm install -g @codesome/cli
+codesome version
+codesome auth status
+```
+
+临时运行可以使用：
+
+```bash
+npx --package @codesome/cli codesome version
+npx @codesome/cli version
+```
+
+由于 NPM 对多 `bin` 包的自动命令推断依赖客户端版本，CI 和 Agent 环境推荐使用显式 `--package` 写法。
+
+NPM registry 发布仍在候选验证中；如果 `npm install -g @codesome/cli` 暂时查不到版本，请先使用 GitHub Release 安装脚本，或下载 prerelease 附带的 `.tgz` 后本地安装。
+
+NPM 包安装的是公开源码 CLI，不下载预编译二进制。它适合已经有 Node.js 的开发环境、CI 和 Agent 工作台。
+
+如果你不想依赖本机 Node.js，可以使用安装脚本。脚本会下载对应系统的预编译 `codesome` CLI 二进制，并安装 Codesome Skill。
 
 Windows：
 
@@ -87,7 +108,7 @@ curl -fsSL https://raw.githubusercontent.com/hicodesome/codesome-skill/main/inst
 
 ### 指定版本 / 测试版安装方式
 
-默认安装当前稳定版。如需安装某个测试版或固定版本，把下面命令里的 `<release-tag>` 替换成 GitHub Release tag，例如 `v0.5.1-rc.2` 或 `v0.5.1`。
+默认安装当前稳定版。如需安装某个测试版或固定版本，把下面命令里的 `<release-tag>` 替换成 GitHub Release tag，例如 `v0.5.2-rc.1` 或 `v0.5.1`。
 
 Windows：
 
@@ -132,7 +153,14 @@ codesome balance show
 
 ## 推荐安装方式
 
-推荐方式：
+推荐方式可以按环境选择：
+
+```text
+已有 Node.js 20+: NPM 源码包
+不想依赖 Node.js: 安装脚本 + GitHub Release 预编译二进制
+```
+
+预编译二进制安装方式：
 
 ```text
 安装脚本 + GitHub Release 预编译二进制
@@ -183,6 +211,14 @@ curl -fsSL https://raw.githubusercontent.com/hicodesome/codesome-skill/main/inst
 
 - GitHub Release 页面，方便下载预编译包时查看。
 - [CHANGELOG.md](CHANGELOG.md)，方便在仓库中追踪连续变化。
+
+NPM 源码包发布到：
+
+```text
+@codesome/cli
+```
+
+发布前会运行 `npm run prepublishOnly`，其中包含公开安全扫描、mock 回归、smoke 测试和 `npm pack --dry-run` tarball 审计。
 
 ## 支持的功能
 
