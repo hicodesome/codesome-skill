@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v0.5.1 - 2026-05-03
 
 ### 修复
 
@@ -16,6 +16,13 @@
 - 新增 `npm run test:json-safety`，覆盖递归 JSON API Key 脱敏。
 - `npm run test:auth-http` 新增 `auth logout --help` 无副作用回归。
 - 新增 `.gitattributes`，固定 `*.sh` 和 `bin/*.js` 为 LF。
+- `v0.5.1-rc.2` 已在 2026-05-03 Linux/WSL 联网回归通过：`auth logout --help` 无副作用、`usage recent --json` 未输出完整 `sk-...` API Key，核心读操作和安全预检正常。
+
+### 已知边界
+
+- macOS 二进制仍为交叉构建产物，尚未在 macOS 真机运行验证。
+- Linux arm64 二进制仍未在 Linux arm64 真机运行验证。
+- 浏览器兜底运行时需要按需执行 `codesome browser install`；默认 HTTP 登录路径不依赖浏览器运行时。
 
 ## v0.5.0 - 2026-04-29
 

@@ -1,6 +1,6 @@
 {
     "name": "@codesome/cli",
-    "version": "0.5.1-rc.2",
+    "version": "0.5.1",
     "private": true,
     "description": "Private Codesome CLI workspace",
     "type": "module",

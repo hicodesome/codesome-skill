@@ -8,7 +8,7 @@ Codesome Skill 安装后，你可以直接让 Agent 帮你完成在 codesome.ai 
 
 codesome skill 针对 sub2api 项目的适配兼容已获得作者许可，sub2api传送门：https://github.com/Wei-Shaw/sub2api 
 
-当前稳定版本：`v0.5.0`
+当前稳定版本：`v0.5.1`
 
 每个公开版本都有独立 Release 和更新说明。升级前可以查看 [CHANGELOG.md](CHANGELOG.md)，了解本次增加了什么、修复了什么，以及还有哪些已知边界。
 
@@ -49,22 +49,22 @@ codesome skill 针对 sub2api 项目的适配兼容已获得作者许可，sub2a
 安全要求：不要输出 Cookie、Token、Session 或完整 API Key。
 ```
 
-### 给 Agent 看的测试版安装
+### 给 Agent 看的指定版本 / 测试版安装
 
-如果你想让 Agent 安装测试版，可以把下面这段提示词发给它。测试版用于提前验证修复，不会改变默认稳定版安装方式：
+如果你想让 Agent 安装某个测试版或固定版本，可以把下面这段提示词发给它。把 `<release-tag>` 替换为 GitHub Release tag，例如 `v0.5.1-rc.2` 或 `v0.5.1`。指定版本安装不会改变默认稳定版安装方式：
 
 ```text
-请帮我安装并配置 Codesome Skill 测试版 v0.5.1-rc.2：https://github.com/hicodesome/codesome-skill/releases/tag/v0.5.1-rc.2
+请帮我安装并配置 Codesome Skill 指定版本 <release-tag>：https://github.com/hicodesome/codesome-skill/releases/tag/<release-tag>
 
 请按当前系统安装本地 codesome CLI，并把 Codesome Skill 安装到常见 Agent 客户端的用户级技能目录。
 
 安装要求：
-1. 使用 CODESOME_CLI_VERSION=v0.5.1-rc.2。
+1. 使用 CODESOME_CLI_VERSION=<release-tag>。
 2. Windows 使用 install.ps1。
 3. Linux / WSL / macOS 使用 install.sh。
 4. 安装后验证 codesome version、codesome auth status、codesome instance list。
 5. 如果未登录，执行 codesome auth login；如果遇到验证码、二次验证或风控，再使用 codesome auth login --browser。
-6. 告诉我 CLI 安装目录、Skill 安装目录和当前安装的测试版 tag。
+6. 告诉我 CLI 安装目录、Skill 安装目录和当前安装的 release tag。
 
 安全要求：不要输出 Cookie、Token、Session 或完整 API Key。
 ```
@@ -85,22 +85,22 @@ Linux / WSL / macOS：
 curl -fsSL https://raw.githubusercontent.com/hicodesome/codesome-skill/main/install.sh | bash
 ```
 
-### 测试版安装方式
+### 指定版本 / 测试版安装方式
 
-测试版用于提前验证修复。当前测试版：`v0.5.1-rc.2`。
+默认安装当前稳定版。如需安装某个测试版或固定版本，把下面命令里的 `<release-tag>` 替换成 GitHub Release tag，例如 `v0.5.1-rc.2` 或 `v0.5.1`。
 
 Windows：
 
 ```powershell
-$env:CODESOME_CLI_VERSION="v0.5.1-rc.2"
-iwr https://raw.githubusercontent.com/hicodesome/codesome-skill/v0.5.1-rc.2/install.ps1 -UseB | iex
+$env:CODESOME_CLI_VERSION="<release-tag>"
+iwr https://raw.githubusercontent.com/hicodesome/codesome-skill/<release-tag>/install.ps1 -UseB | iex
 Remove-Item Env:\CODESOME_CLI_VERSION
 ```
 
 Linux / WSL / macOS：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/hicodesome/codesome-skill/v0.5.1-rc.2/install.sh | CODESOME_CLI_VERSION=v0.5.1-rc.2 bash
+curl -fsSL https://raw.githubusercontent.com/hicodesome/codesome-skill/<release-tag>/install.sh | CODESOME_CLI_VERSION=<release-tag> bash
 ```
 
 测试版安装后验证：
@@ -148,13 +148,13 @@ macOS Intel: codesome-darwin-amd64
 macOS Apple Silicon / M 系列: codesome-darwin-arm64
 ```
 
-默认下载源是本仓库 GitHub Release 当前稳定版本 `v0.5.0`：
+默认下载源是本仓库 GitHub Release 当前稳定版本 `v0.5.1`：
 
-- `https://github.com/hicodesome/codesome-skill/releases/download/v0.5.0/codesome-windows-amd64.exe`
-- `https://github.com/hicodesome/codesome-skill/releases/download/v0.5.0/codesome-linux-amd64`
-- `https://github.com/hicodesome/codesome-skill/releases/download/v0.5.0/codesome-linux-arm64`
-- `https://github.com/hicodesome/codesome-skill/releases/download/v0.5.0/codesome-darwin-amd64`
-- `https://github.com/hicodesome/codesome-skill/releases/download/v0.5.0/codesome-darwin-arm64`
+- `https://github.com/hicodesome/codesome-skill/releases/download/v0.5.1/codesome-windows-amd64.exe`
+- `https://github.com/hicodesome/codesome-skill/releases/download/v0.5.1/codesome-linux-amd64`
+- `https://github.com/hicodesome/codesome-skill/releases/download/v0.5.1/codesome-linux-arm64`
+- `https://github.com/hicodesome/codesome-skill/releases/download/v0.5.1/codesome-darwin-amd64`
+- `https://github.com/hicodesome/codesome-skill/releases/download/v0.5.1/codesome-darwin-arm64`
 
 可通过环境变量指定版本或经过验证的镜像：
 
@@ -167,12 +167,12 @@ CODESOME_SKILL_RAW_BASE_URL
 示例：
 
 ```powershell
-$env:CODESOME_CLI_VERSION="v0.5.0"
+$env:CODESOME_CLI_VERSION="v0.5.1"
 iwr https://raw.githubusercontent.com/hicodesome/codesome-skill/main/install.ps1 -UseB | iex
 ```
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/hicodesome/codesome-skill/main/install.sh | CODESOME_CLI_VERSION=v0.5.0 bash
+curl -fsSL https://raw.githubusercontent.com/hicodesome/codesome-skill/main/install.sh | CODESOME_CLI_VERSION=v0.5.1 bash
 ```
 
 `latest` 只作为兼容别名保留；面向用户的发布说明和安装验证以明确版本号为准。
