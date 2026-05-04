@@ -1,16 +1,42 @@
 # Changelog
 
+## v0.5.2 - 2026-05-04
+
+### 新增
+
+- 新增 Claude Code plugin marketplace 结构，支持通过 `claude plugin marketplace add hicodesome/codesome-skill` 后安装 `codesome@codesome-skills`。
+- README 增加通用 `npx skills add`、`npx skills update`、Claude Code plugin marketplace 和 NPM 源码包安装说明。
+
+### 修复
+
+- GitHub Release 预编译二进制现在同时产出并安装独立 `codesome-hotskills` 入口，覆盖 Windows amd64、Linux amd64、Linux arm64、macOS Intel 和 macOS Apple Silicon。
+- 安装脚本现在会下载 `codesome` 和 `codesome-hotskills` 两个二进制，并在独立 hotskills 二进制可用时验证 `codesome version` 与 `codesome-hotskills --help`。
+- Windows `install.ps1` 会把 `~\.codesome\bin` 移到用户 PATH 前面，并检测 `codesome` / `codesome-hotskills` 是否被旧 npm、pnpm 或其他 shim 抢先解析。
+- `@codesome/cli` NPM 源码包 runtime engine 从 Node.js `>=20` 调整为 `>=18`，与当前 esbuild/pkg 构建目标和 Linux Node 18 实测结果一致。
+
+### 验证
+
+- 发布前已按 SOP 覆盖 Windows PowerShell、本机 release build、NPM `.tgz` 包审计、公开安全扫描和 Windows amd64 二进制冒烟；`v0.5.2-rc.2` 已在 `debian-1` Linux amd64 完成远程回归。
+- macOS 真机和 Linux arm64 真机仍未覆盖；本版本只声明这些平台的交叉构建资产已产出并通过资产清单校验。
+
 ## v0.5.2-rc.2 - 2026-05-03
+
+### 新增
+
+- 新增 Claude Code plugin marketplace 结构：`.claude-plugin/marketplace.json`、`plugins/codesome/.claude-plugin/plugin.json` 和 `plugins/codesome/skills/codesome/SKILL.md`，支持 `claude plugin marketplace add hicodesome/codesome-skill` 后安装 `codesome@codesome-skills`。
+- README 增加通用 `npx skills add hicodesome/codesome-skill --skill codesome -g -y` 安装方式、`npx skills update codesome -g` 更新方式，以及 Claude Code plugin marketplace 安装/更新命令。
 
 ### 修复
 
 - GitHub Release 预编译二进制现在同时产出并安装独立 `codesome-hotskills` 入口：Windows amd64、Linux amd64、Linux arm64、macOS Intel、macOS Apple Silicon 均包含对应资产。
 - 安装脚本现在会下载 `codesome` 和 `codesome-hotskills` 两个二进制，并在独立 hotskills 二进制可用时验证 `codesome version` 与 `codesome-hotskills --help`；旧 release 缺少独立 hotskills 资产时会提示并继续安装主 CLI。
+- Windows `install.ps1` 会把 `~\.codesome\bin` 移到用户 PATH 前面，并检测 `codesome` / `codesome-hotskills` 是否被旧 npm/pnpm shim 抢先解析；如仍有冲突，会打印可直接运行的安装路径和所有候选命令来源。
 - `@codesome/cli` NPM 源码包 runtime engine 从 Node.js `>=20` 调整为 `>=18`，与当前 esbuild/pkg 构建目标和 Linux Node 18 实测结果一致，避免 Node 18 用户安装 `.tgz` 时出现误导性 `EBADENGINE` 警告。
 
 ### 验证重点
 
 - 补测 Windows amd64 二进制和安装脚本。
+- 补测 Windows 本机旧 npm wrapper 抢先解析时，安装脚本可修正新终端 PATH 顺序，并在当前安装会话中验证命令解析。
 - 补测真实 Sub2API 自托管实例登录和只读业务命令。
 - 明确记录 macOS 真机和 Linux arm64 真机仍未覆盖，不把交叉构建成功误写成真实平台验证通过。
 

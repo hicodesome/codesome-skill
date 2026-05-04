@@ -233,6 +233,7 @@ Do not store real Sub2API passwords in this repository, reports, shell history, 
 2026-05-03 `v0.5.2-rc.2` coverage:
 
 - Windows amd64: `codesome-windows-amd64.exe version`, `codesome-hotskills-windows-amd64.exe --help`, and `install.ps1` installation into a temporary home passed.
+- Windows PowerShell: `install.ps1` now moves `~\.codesome\bin` to the front of user PATH and verifies command resolution for `codesome` and `codesome-hotskills`; a simulated fresh environment resolves bare `codesome version` to `codesome 0.5.2-rc.2` even when older npm shims are still present later in PATH.
 - Linux amd64: `debian-1` ran `codesome-linux-amd64 version`, `codesome-hotskills-linux-amd64 --help`, and NPM `.tgz` install on Node.js 18 without `EBADENGINE`.
 - macOS Intel / Apple Silicon: cross-build assets are produced, but real macOS execution is not covered.
 - Linux arm64: cross-build asset is produced, but real Linux arm64 execution is not covered.

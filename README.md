@@ -8,7 +8,7 @@ Codesome Skill 安装后，你可以直接让 Agent 帮你完成在 codesome.ai 
 
 codesome skill 针对 sub2api 项目的适配兼容已获得作者许可，sub2api传送门：https://github.com/Wei-Shaw/sub2api 
 
-当前稳定版本：`v0.5.1`
+当前稳定版本：`v0.5.2`
 
 每个公开版本都有独立 Release 和更新说明。升级前可以查看 [CHANGELOG.md](CHANGELOG.md)，了解本次增加了什么、修复了什么，以及还有哪些已知边界。
 
@@ -51,7 +51,7 @@ codesome skill 针对 sub2api 项目的适配兼容已获得作者许可，sub2a
 
 ### 给 Agent 看的指定版本 / 测试版安装
 
-如果你想让 Agent 安装某个测试版或固定版本，可以把下面这段提示词发给它。把 `<release-tag>` 替换为 GitHub Release tag，例如 `v0.5.2-rc.1` 或 `v0.5.1`。指定版本安装不会改变默认稳定版安装方式：
+如果你想让 Agent 安装某个测试版或固定版本，可以把下面这段提示词发给它。把 `<release-tag>` 替换为 GitHub Release tag，例如 `v0.5.2` 或 `v0.5.2-rc.2`。指定版本安装不会改变默认稳定版安装方式：
 
 ```text
 请帮我安装并配置 Codesome Skill 指定版本 <release-tag>：https://github.com/hicodesome/codesome-skill/releases/tag/<release-tag>
@@ -71,6 +71,37 @@ codesome skill 针对 sub2api 项目的适配兼容已获得作者许可，sub2a
 
 ## 给人类看的
 
+如果你只想把 Codesome Skill 安装到 Agent 客户端，可以使用通用 Skills 安装方式：
+
+```bash
+npx skills add hicodesome/codesome-skill --skill codesome -g -y
+```
+
+更新 Codesome Skill：
+
+```bash
+npx skills update codesome -g
+```
+
+也可以重新运行同一条 `npx skills add ...` 命令。
+
+Claude Code 用户也可以通过插件市场安装：
+
+```bash
+claude plugin marketplace add hicodesome/codesome-skill
+claude plugin install codesome@codesome-skills
+```
+
+Claude Code 插件市场安装的用户更新方式：
+
+```bash
+claude plugin marketplace update codesome-skills
+claude plugin update codesome@codesome-skills
+/reload-plugins
+```
+
+说明：Agent Skill / Claude plugin 只负责让 Agent 识别 Codesome 工作流；本地 `codesome` CLI 仍需要通过 NPM 源码包或 GitHub Release 安装脚本安装。
+
 如果你已经安装 Node.js 18+，可以直接使用 NPM 源码包安装 CLI：
 
 ```bash
@@ -88,7 +119,7 @@ npx @codesome/cli version
 
 由于 NPM 对多 `bin` 包的自动命令推断依赖客户端版本，CI 和 Agent 环境推荐使用显式 `--package` 写法。
 
-NPM registry 发布仍在候选验证中；如果 `npm install -g @codesome/cli` 暂时查不到版本，请先使用 GitHub Release 安装脚本，或下载 prerelease 附带的 `.tgz` 后本地安装。
+GitHub Release 会附带可本地安装的 `.tgz` 源码包；如果 `npm install -g @codesome/cli` 暂时查不到版本，请先使用 GitHub Release 安装脚本，或下载 release 附带的 `.tgz` 后本地安装。
 
 NPM 包安装的是公开源码 CLI，不下载预编译二进制。它适合已经有 Node.js 的开发环境、CI 和 Agent 工作台。
 
@@ -100,6 +131,14 @@ Windows：
 iwr https://raw.githubusercontent.com/hicodesome/codesome-skill/main/install.ps1 -UseB | iex
 ```
 
+Windows 安装脚本会把 `~\.codesome\bin` 移到用户 PATH 前面，并检查 `codesome` / `codesome-hotskills` 是否仍被旧 npm、pnpm 或其他 shim 抢先解析。安装后新开 PowerShell 再运行：
+
+```powershell
+codesome version
+```
+
+如果当前会话仍解析到旧命令，安装器会打印冲突来源和可直接运行的 `~\.codesome\bin\codesome.exe` 路径。
+
 Linux / WSL / macOS：
 
 ```bash
@@ -108,7 +147,7 @@ curl -fsSL https://raw.githubusercontent.com/hicodesome/codesome-skill/main/inst
 
 ### 指定版本 / 测试版安装方式
 
-默认安装当前稳定版。如需安装某个测试版或固定版本，把下面命令里的 `<release-tag>` 替换成 GitHub Release tag，例如 `v0.5.2-rc.1` 或 `v0.5.1`。
+默认安装当前稳定版。如需安装某个测试版或固定版本，把下面命令里的 `<release-tag>` 替换成 GitHub Release tag，例如 `v0.5.2` 或 `v0.5.2-rc.2`。
 
 Windows：
 
@@ -124,7 +163,7 @@ Linux / WSL / macOS：
 curl -fsSL https://raw.githubusercontent.com/hicodesome/codesome-skill/<release-tag>/install.sh | CODESOME_CLI_VERSION=<release-tag> bash
 ```
 
-测试版安装后验证：
+指定版本安装后验证：
 
 ```bash
 codesome version
@@ -170,26 +209,26 @@ codesome balance show
 
 ```text
 Windows amd64: codesome-windows-amd64.exe
-Windows amd64 hotskills: codesome-hotskills-windows-amd64.exe（v0.5.2-rc.2 起）
+Windows amd64 hotskills: codesome-hotskills-windows-amd64.exe（v0.5.2 起）
 Linux / WSL amd64: codesome-linux-amd64
-Linux / WSL amd64 hotskills: codesome-hotskills-linux-amd64（v0.5.2-rc.2 起）
+Linux / WSL amd64 hotskills: codesome-hotskills-linux-amd64（v0.5.2 起）
 Linux arm64 / aarch64: codesome-linux-arm64
-Linux arm64 / aarch64 hotskills: codesome-hotskills-linux-arm64（v0.5.2-rc.2 起）
+Linux arm64 / aarch64 hotskills: codesome-hotskills-linux-arm64（v0.5.2 起）
 macOS Intel: codesome-darwin-amd64
-macOS Intel hotskills: codesome-hotskills-darwin-amd64（v0.5.2-rc.2 起）
+macOS Intel hotskills: codesome-hotskills-darwin-amd64（v0.5.2 起）
 macOS Apple Silicon / M 系列: codesome-darwin-arm64
-macOS Apple Silicon / M 系列 hotskills: codesome-hotskills-darwin-arm64（v0.5.2-rc.2 起）
+macOS Apple Silicon / M 系列 hotskills: codesome-hotskills-darwin-arm64（v0.5.2 起）
 ```
 
-默认下载源是本仓库 GitHub Release 当前稳定版本 `v0.5.1`：
+默认下载源是本仓库 GitHub Release 当前稳定版本 `v0.5.2`：
 
-- `https://github.com/hicodesome/codesome-skill/releases/download/v0.5.1/codesome-windows-amd64.exe`
-- `https://github.com/hicodesome/codesome-skill/releases/download/v0.5.1/codesome-linux-amd64`
-- `https://github.com/hicodesome/codesome-skill/releases/download/v0.5.1/codesome-linux-arm64`
-- `https://github.com/hicodesome/codesome-skill/releases/download/v0.5.1/codesome-darwin-amd64`
-- `https://github.com/hicodesome/codesome-skill/releases/download/v0.5.1/codesome-darwin-arm64`
+- `https://github.com/hicodesome/codesome-skill/releases/download/v0.5.2/codesome-windows-amd64.exe`
+- `https://github.com/hicodesome/codesome-skill/releases/download/v0.5.2/codesome-linux-amd64`
+- `https://github.com/hicodesome/codesome-skill/releases/download/v0.5.2/codesome-linux-arm64`
+- `https://github.com/hicodesome/codesome-skill/releases/download/v0.5.2/codesome-darwin-amd64`
+- `https://github.com/hicodesome/codesome-skill/releases/download/v0.5.2/codesome-darwin-arm64`
 
-`codesome-hotskills-*` 独立二进制从 `v0.5.2-rc.2` 起随 GitHub Release 提供；更早版本仍可通过 `codesome hotskills` 使用同一功能。
+`codesome-hotskills-*` 独立二进制从 `v0.5.2` 起随 GitHub Release 提供；更早版本仍可通过 `codesome hotskills` 使用同一功能。
 
 可通过环境变量指定版本或经过验证的镜像：
 
@@ -202,12 +241,12 @@ CODESOME_SKILL_RAW_BASE_URL
 示例：
 
 ```powershell
-$env:CODESOME_CLI_VERSION="v0.5.1"
+$env:CODESOME_CLI_VERSION="v0.5.2"
 iwr https://raw.githubusercontent.com/hicodesome/codesome-skill/main/install.ps1 -UseB | iex
 ```
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/hicodesome/codesome-skill/main/install.sh | CODESOME_CLI_VERSION=v0.5.1 bash
+curl -fsSL https://raw.githubusercontent.com/hicodesome/codesome-skill/main/install.sh | CODESOME_CLI_VERSION=v0.5.2 bash
 ```
 
 `latest` 只作为兼容别名保留；面向用户的发布说明和安装验证以明确版本号为准。

@@ -6,6 +6,7 @@
 sessions/
 secrets/
 *.tmp
+*.tgz
 dist/
 build/
 *.exe

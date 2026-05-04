@@ -1,6 +1,6 @@
 {
     "name": "@codesome/cli",
-    "version": "0.5.2-rc.2",
+    "version": "0.5.2",
     "description": "Codesome CLI for Codesome and Sub2API account, token, key, and skill management.",
     "license": "Apache-2.0",
     "author": "Codesome",
@@ -48,8 +48,9 @@
     },
     "scripts": {
         "start": "node ./bin/codesome.js",
-        "test:smoke": "npm run test:unix-entry && npm run test:json-safety && node ./bin/codesome.js --help && node ./bin/codesome.js version && node ./bin/codesome.js auth status && node ./bin/codesome-hotskills.js --help",
+        "test:smoke": "npm run test:unix-entry && npm run test:windows-installer && npm run test:json-safety && node ./bin/codesome.js --help && node ./bin/codesome.js version && node ./bin/codesome.js auth status && node ./bin/codesome-hotskills.js --help",
         "test:unix-entry": "node ./scripts/verify-unix-entry-line-endings.cjs",
+        "test:windows-installer": "node ./scripts/verify-windows-installer.cjs",
         "test:json-safety": "node ./scripts/test-json-safety.cjs",
         "test:npm-pack": "node ./scripts/verify-npm-package.cjs",
         "prepublishOnly": "npm run test:unix-entry && npm run test:json-safety && npm run scan:public-safety && npm run test:auth-http && npm run test:instance && npm run test:key-config && npm run test:multi-account && npm run test:redeem && npm run test:smoke && npm run test:npm-pack",

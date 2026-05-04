@@ -1,0 +1,19 @@
+{
+  "name": "codesome",
+  "description": "Manage Codesome and Sub2API workflows through the local codesome CLI.",
+  "version": "0.5.2",
+  "author": {
+    "name": "Codesome"
+  },
+  "homepage": "https://github.com/hicodesome/codesome-skill#readme",
+  "repository": "https://github.com/hicodesome/codesome-skill",
+  "license": "Apache-2.0",
+  "keywords": [
+    "codesome",
+    "sub2api",
+    "cli",
+    "agent-skills",
+    "token",
+    "api-key"
+  ]
+}

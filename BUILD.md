@@ -73,7 +73,7 @@ dist/checksums.txt
 ## Notes
 
 - macOS binaries built on non-macOS hosts may need `codesign` before real user distribution.
-- `v0.5.2-rc.2` and later release builds include both `codesome-*` and `codesome-hotskills-*` platform binaries. `scripts/verify-release-assets.cjs` fails the build if either entrypoint is missing from `dist/` or `checksums.txt`.
+- `v0.5.2` and later release builds include both `codesome-*` and `codesome-hotskills-*` platform binaries. `scripts/verify-release-assets.cjs` fails the build if either entrypoint is missing from `dist/` or `checksums.txt`.
 - `scripts/build-release.mjs` writes the same checksum manifest to `dist/checksums.txt` and root `checksums.txt`; the root file is included in the NPM source package as the release checksum reference.
 - Do not commit `dist/`, `node_modules/`, local sessions, secrets, or tokens.
 - NPM source publishing uses `@codesome/cli`; binary wrapper/platform packages are not part of the first NPM release.

@@ -1,6 +1,6 @@
 $ErrorActionPreference = "Stop"
 
-$DefaultCliVersion = "v0.5.1"
+$DefaultCliVersion = "v0.5.2"
 $CliVersion = if ($env:CODESOME_CLI_VERSION) { $env:CODESOME_CLI_VERSION.Trim() } else { $DefaultCliVersion }
 $DefaultBaseUrl = "https://github.com/hicodesome/codesome-skill/releases/download/$CliVersion"
 $DefaultRawBaseUrl = "https://raw.githubusercontent.com/hicodesome/codesome-skill/$CliVersion"
@@ -38,19 +38,103 @@ function Write-Step($Message) {
   Write-Host "[codesome] $Message"
 }
 
+function Normalize-PathForCompare($PathValue) {
+  if (-not $PathValue) { return "" }
+  $value = $PathValue.Trim().Trim('"')
+  if (-not $value) { return "" }
+  try {
+    return ([System.IO.Path]::GetFullPath($value)).TrimEnd('\', '/').ToLowerInvariant()
+  } catch {
+    return $value.TrimEnd('\', '/').ToLowerInvariant()
+  }
+}
+
+function Split-PathList($PathValue) {
+  if (-not $PathValue) { return @() }
+  return @($PathValue.Split(';') | Where-Object { $_ -and $_.Trim() })
+}
+
+function Move-ToPathFront($PathValue, $Dir) {
+  $normalizedDir = Normalize-PathForCompare $Dir
+  $parts = Split-PathList $PathValue
+  $filtered = @()
+  foreach ($part in $parts) {
+    if ((Normalize-PathForCompare $part) -ne $normalizedDir) {
+      $filtered += $part
+    }
+  }
+  return (@($Dir) + $filtered) -join ';'
+}
+
 function Add-ToUserPath($Dir) {
   if ($DryRun) {
-    Write-Step "[dry-run] would add to user PATH: $Dir"
+    Write-Step "[dry-run] would move to the front of user PATH: $Dir"
     return
   }
   $current = [Environment]::GetEnvironmentVariable("Path", "User")
   if (-not $current) { $current = "" }
-  $parts = $current.Split(';') | Where-Object { $_ }
-  if ($parts -notcontains $Dir) {
-    $newPath = if ($current) { "$current;$Dir" } else { $Dir }
-    [Environment]::SetEnvironmentVariable("Path", $newPath, "User")
-    $env:Path = "$env:Path;$Dir"
-    Write-Step "Added to user PATH: $Dir"
+  $newPath = Move-ToPathFront $current $Dir
+  [Environment]::SetEnvironmentVariable("Path", $newPath, "User")
+  $env:Path = Move-ToPathFront $env:Path $Dir
+  Write-Step "Moved to the front of user PATH: $Dir"
+}
+
+function Get-CommandSource($Command) {
+  if (-not $Command) { return "" }
+  if ($Command.Source) { return $Command.Source }
+  if ($Command.Path) { return $Command.Path }
+  if ($Command.Definition) { return $Command.Definition }
+  return ""
+}
+
+function Get-CommandCandidatesForPath($CommandName, $PathValue) {
+  $oldPath = $env:Path
+  try {
+    $env:Path = $PathValue
+    return @(Get-Command $CommandName -All -ErrorAction SilentlyContinue)
+  } finally {
+    $env:Path = $oldPath
+  }
+}
+
+function Test-CommandCandidateList($Label, $CommandName, $ExpectedPath, $Commands) {
+  $expected = Normalize-PathForCompare $ExpectedPath
+  if (-not $Commands.Count) {
+    Write-Step "PATH note ($Label): '$CommandName' is not visible. Open a new PowerShell window, or run directly: $ExpectedPath"
+    return $false
+  }
+  $first = $Commands[0]
+  $firstSource = Get-CommandSource $first
+  if ((Normalize-PathForCompare $firstSource) -eq $expected) {
+    Write-Step "Command resolution verified ($Label): $CommandName -> $ExpectedPath"
+    return $true
+  }
+
+  Write-Step "PATH warning ($Label): '$CommandName' currently resolves to '$firstSource' before '$ExpectedPath'."
+  Write-Step "This usually means an older npm/pnpm shim or another wrapper appears earlier in PATH."
+  Write-Step "This installer moved '$InstallDir' to the front of your user PATH; open a new PowerShell window and run: $CommandName version"
+  Write-Step "You can always run the installed binary directly: $ExpectedPath"
+  Write-Step "All visible '$CommandName' candidates for ${Label}:"
+  foreach ($command in $Commands) {
+    Write-Step " - $(Get-CommandSource $command)"
+  }
+  return $false
+}
+
+function Test-CommandResolution($CommandName, $ExpectedPath) {
+  if ($DryRun) {
+    Write-Step "[dry-run] would verify command resolution: $CommandName -> $ExpectedPath"
+    return
+  }
+  $currentCommands = @(Get-Command $CommandName -All -ErrorAction SilentlyContinue)
+  [void](Test-CommandCandidateList "current shell" $CommandName $ExpectedPath $currentCommands)
+
+  $machinePath = [Environment]::GetEnvironmentVariable("Path", "Machine")
+  $userPath = [Environment]::GetEnvironmentVariable("Path", "User")
+  $freshPath = (@($machinePath, $userPath) | Where-Object { $_ }) -join ';'
+  if ($freshPath) {
+    $freshCommands = Get-CommandCandidatesForPath $CommandName $freshPath
+    [void](Test-CommandCandidateList "new shell" $CommandName $ExpectedPath $freshCommands)
   }
 }
 
@@ -144,5 +228,9 @@ if (-not $DryRun) {
   & $BinPath version
   if ($HotskillsAvailable) {
     & $HotskillsBinPath --help | Out-Null
+  }
+  Test-CommandResolution "codesome" $BinPath
+  if ($HotskillsAvailable) {
+    Test-CommandResolution "codesome-hotskills" $HotskillsBinPath
   }
 }

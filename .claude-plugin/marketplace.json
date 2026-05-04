@@ -1,0 +1,31 @@
+{
+  "name": "codesome-skills",
+  "owner": {
+    "name": "Codesome"
+  },
+  "description": "Codesome Agent Skills for Codesome and Sub2API account, token, key, and skill management.",
+  "version": "0.5.2",
+  "plugins": [
+    {
+      "name": "codesome",
+      "source": "./plugins/codesome",
+      "description": "Manage Codesome and Sub2API workflows through the local codesome CLI.",
+      "version": "0.5.2",
+      "author": {
+        "name": "Codesome"
+      },
+      "homepage": "https://github.com/hicodesome/codesome-skill#readme",
+      "repository": "https://github.com/hicodesome/codesome-skill",
+      "license": "Apache-2.0",
+      "keywords": [
+        "codesome",
+        "sub2api",
+        "cli",
+        "agent-skills",
+        "token",
+        "api-key"
+      ],
+      "category": "productivity"
+    }
+  ]
+}
