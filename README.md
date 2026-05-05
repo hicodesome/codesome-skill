@@ -14,26 +14,27 @@ codesome skill 针对 sub2api 项目的适配兼容已获得作者许可，sub2a
 
 ## 测试版优先试用：NPM 安装
 
-当前分页修复测试版：`v0.5.3-rc.1`。这是 npm 安装的源码包测试版，适合已经安装 Node.js 18+ 的 Windows、Linux、WSL、macOS 环境优先验证。
+当前分页修复测试版：`v0.5.3-rc.3`。这是 npm 安装的源码包测试版，适合已经安装 Node.js 18+ 的 Windows、Linux、WSL、macOS 环境优先验证。
 
-GitHub Release 会附带 `codesome-cli-0.5.3-rc.1.tgz`。下载后在文件所在目录运行：
+优先使用 npm registry 安装测试版：
 
 ```bash
-npm install -g ./codesome-cli-0.5.3-rc.1.tgz
+npm install -g codesome-cli@0.5.3-rc.3 --registry=https://registry.npmjs.org
 codesome version
 codesome auth status
-```
-
-如果后续该 rc 已发布到 npm registry，可以直接使用：
-
-```bash
-npm install -g @codesome/cli@0.5.3-rc.1
 ```
 
 临时运行可使用：
 
 ```bash
-npx --package @codesome/cli@0.5.3-rc.1 codesome version
+npx --package codesome-cli@0.5.3-rc.3 codesome version
+```
+
+GitHub Release 也会附带 `codesome-cli-0.5.3-rc.3.tgz`。下载后在文件所在目录运行：
+
+```bash
+npm install -g ./codesome-cli-0.5.3-rc.3.tgz
+codesome version
 ```
 
 测试版验证重点：
@@ -44,7 +45,7 @@ codesome usage recent --days 18 --page 2 --page-size 10
 codesome usage key --name "<key_name>" --days 18 --scan-page-size 500
 ```
 
-这是 prerelease，不会改变默认稳定版 `v0.5.2` 或 `latest`。
+这是 prerelease，不会改变 GitHub 默认稳定版 `v0.5.2`。无前缀 npm 包名当前用于 rc 测试，推荐显式指定 `codesome-cli@0.5.3-rc.3`。
 
 它适合这些场景：（当然，前提是你有一个 codesome.ai 的账号）
 
@@ -139,7 +140,7 @@ claude plugin update codesome@codesome-skills
 如果你已经安装 Node.js 18+，可以直接使用 NPM 源码包安装 CLI：
 
 ```bash
-npm install -g @codesome/cli
+npm install -g codesome-cli --registry=https://registry.npmjs.org
 codesome version
 codesome auth status
 ```
@@ -147,13 +148,13 @@ codesome auth status
 临时运行可以使用：
 
 ```bash
-npx --package @codesome/cli codesome version
-npx @codesome/cli version
+npx --package codesome-cli codesome version
+npx codesome-cli version
 ```
 
 由于 NPM 对多 `bin` 包的自动命令推断依赖客户端版本，CI 和 Agent 环境推荐使用显式 `--package` 写法。
 
-GitHub Release 会附带可本地安装的 `.tgz` 源码包；如果 `npm install -g @codesome/cli` 暂时查不到版本，请先使用 GitHub Release 安装脚本，或下载 release 附带的 `.tgz` 后本地安装。
+GitHub Release 会附带可本地安装的 `.tgz` 源码包；如果 `npm install -g codesome-cli` 暂时查不到版本，请先使用 GitHub Release 安装脚本，或下载 release 附带的 `.tgz` 后本地安装。
 
 NPM 包安装的是公开源码 CLI，不下载预编译二进制。它适合已经有 Node.js 的开发环境、CI 和 Agent 工作台。
 
@@ -295,7 +296,7 @@ curl -fsSL https://raw.githubusercontent.com/hicodesome/codesome-skill/main/inst
 NPM 源码包发布到：
 
 ```text
-@codesome/cli
+codesome-cli
 ```
 
 发布前会运行 `npm run prepublishOnly`，其中包含公开安全扫描、mock 回归、smoke 测试和 `npm pack --dry-run` tarball 审计。

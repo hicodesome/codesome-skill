@@ -1,6 +1,6 @@
 {
-    "name": "@codesome/cli",
-    "version": "0.5.3-rc.1",
+    "name": "codesome-cli",
+    "version": "0.5.3-rc.3",
     "description": "Codesome CLI for Codesome and Sub2API account, token, key, and skill management.",
     "license": "Apache-2.0",
     "author": "Codesome",

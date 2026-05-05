@@ -56,7 +56,7 @@ const manifest = readPackageJson()
 
 if (manifest.private === true) fail('package.json must not be private for public npm publishing.')
 if (manifest.license !== 'Apache-2.0') fail('package.json license must be Apache-2.0.')
-if (manifest.name !== '@codesome/cli') fail('package name must stay @codesome/cli.')
+if (manifest.name !== 'codesome-cli') fail('package name must stay codesome-cli.')
 if (!manifest.bin?.codesome || !manifest.bin?.['codesome-hotskills']) {
   fail('package.json must expose both codesome and codesome-hotskills bin entries.')
 }

@@ -1,5 +1,40 @@
 # Changelog
 
+## v0.5.3-rc.3 - 2026-05-05
+
+### 变更
+
+- README 前置测试版安装命令调整为 `npm install -g codesome-cli@0.5.3-rc.3 --registry=https://registry.npmjs.org`。
+- GitHub Release、源码包版本号和 CLI `version` 输出统一到 `0.5.3-rc.3`。
+
+### 验证
+
+- `codesome-cli@0.5.3-rc.3` 已发布到 npm registry，并完成 registry 全局安装验证。
+- 继承 `v0.5.3-rc.1` 分页修复验证结果：Windows npm 安装测试通过，远程 `Test` Linux amd64 真实账号验证通过。
+
+### 已知边界
+
+- 这是 prerelease，不更新 GitHub 当前稳定版 `v0.5.2`。
+- 无前缀 npm 包名当前用于 rc 测试，README 推荐显式安装 `codesome-cli@0.5.3-rc.3`。
+
+## v0.5.3-rc.2 - 2026-05-05
+
+### 变更
+
+- NPM 源码包名从临时 scoped package 切换为公开无前缀包名 `codesome-cli`。
+- README 前置测试版安装命令调整为 `npm install -g codesome-cli@0.5.3-rc.2 --registry=https://registry.npmjs.org`。
+
+### 验证
+
+- `npm view codesome-cli` 在发布前返回 404，未发现公开 registry 中已有同名包记录。
+- `codesome-cli@0.5.3-rc.2` 已发布到 npm registry，并完成 registry 全局安装验证。
+- 继承 `v0.5.3-rc.1` 分页修复验证结果：Windows npm 安装测试通过，远程 `Test` Linux amd64 真实账号验证通过。
+
+### 已知边界
+
+- 这是 prerelease，不更新 GitHub 当前稳定版 `v0.5.2`。
+- 这是无前缀包名的首个 npm 版本，npm registry 同时保留了 `latest` 和 `rc` dist-tag 指向 `0.5.3-rc.2`；README 仍推荐显式安装 `codesome-cli@0.5.3-rc.2`。
+
 ## v0.5.3-rc.1 - 2026-05-05
 
 ### 修复

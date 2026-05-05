@@ -251,9 +251,10 @@ Do not store real Sub2API passwords in this repository, reports, shell history, 
 - Windows PowerShell: `install.ps1` now moves `~\.codesome\bin` to the front of user PATH and verifies command resolution for `codesome` and `codesome-hotskills`; a simulated fresh environment resolves bare `codesome version` to `codesome 0.5.2-rc.2` even when older npm shims are still present later in PATH.
 - Linux amd64: `debian-1` ran `codesome-linux-amd64 version`, `codesome-hotskills-linux-amd64 --help`, and NPM `.tgz` install on Node.js 18 without `EBADENGINE`.
 
-2026-05-05 `v0.5.3-rc.1` coverage:
+2026-05-05 `v0.5.3-rc.3` coverage:
 
 - Windows npm install test passed for the rc package.
+- NPM package metadata was switched to the public unscoped package name `codesome-cli`; `npm view codesome-cli` returned 404 before release, indicating no existing package record in the public registry.
 - Remote `Test` Linux amd64 real account test passed for `auth status --verify`, `key list --page/--page-size`, `usage recent --page/--page-size`, `usage key --scan-page-size`, and duplicate key lookup with `--group-id`.
 - macOS Intel / Apple Silicon: cross-build assets are produced, but real macOS execution is not covered.
 - Linux arm64: cross-build asset is produced, but real Linux arm64 execution is not covered.
@@ -295,5 +296,5 @@ codesome-hotskills --help
 For one-off execution, prefer the explicit package form when testing locally or in CI:
 
 ```bash
-npx --package @codesome/cli codesome version
+npx --package codesome-cli codesome version
 ```
