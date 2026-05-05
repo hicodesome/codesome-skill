@@ -1,7 +1,7 @@
 $ErrorActionPreference = "Stop"
 
 $PackageName = "codesome-cli"
-$PackageVersion = if ($env:CODESOME_REPAIR_VERSION) { $env:CODESOME_REPAIR_VERSION.Trim() } else { "0.5.3" }
+$PackageVersion = if ($env:CODESOME_REPAIR_VERSION) { $env:CODESOME_REPAIR_VERSION.Trim() } else { "0.5.4" }
 $InstallSpec = "$PackageName@$PackageVersion"
 $DryRun = $env:CODESOME_REPAIR_DRY_RUN -eq "1"
 $BackupDir = if ($env:CODESOME_REPAIR_BACKUP_DIR) {

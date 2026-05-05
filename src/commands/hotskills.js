@@ -7,7 +7,7 @@ const SKILLS = [
   {
     name: 'dbskill',
     display_name: 'dbskill',
-    title: 'dontbesilent 商业诊断工具箱',
+    title: 'dontbesilent',
     summary: '从 12,307 条推文中提炼方法论，做成 13 个 Claude Code / Codex 可用的 Agent skills。',
     repo: 'https://github.com/dontbesilent2025/dbskill',
     installer_source: 'dontbesilent2025/dbskill',
@@ -30,7 +30,7 @@ const SKILLS = [
       { name: 'dbs-agent-migration', trigger: '/dbs-agent-migration', description: 'Agent 工作台迁移，整理 Claude Code / Codex 双端一致性' }
     ],
     install_notes: [
-      '默认安装预检不写入文件；追加 --confirm 才会调用 skills CLI。',
+      '确认安装后会调用 skills CLI。',
       '默认按全局安装处理，方便不同项目和 Agent 客户端复用。',
       '如只想安装到当前项目，可加 --project；如只安装到特定目录，可加 --target-dir。',
       '真实安装会自动给底层 skills CLI 加 --yes，避免进入交互选择。'
@@ -134,8 +134,6 @@ function printSkillList(args) {
 
   console.log('Codesome Hot Skills')
   console.log('')
-  console.log('精选 Agent Skill 导航。默认用窄屏友好的文本卡片展示，不自动安装。')
-  console.log('')
   for (const skill of SKILLS) {
     console.log(`${skill.display_name} - ${skill.title}`)
     console.log(`用途：${skill.summary}`)
@@ -146,6 +144,7 @@ function printSkillList(args) {
     console.log(`来源：${skill.repo}`)
     console.log('')
   }
+  console.log('是否安装？同意请执行：codesome hotskills install dbskill --confirm')
 }
 
 function printSkillInfo(skill, args) {

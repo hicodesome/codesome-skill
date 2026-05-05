@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.5.4 - 2026-05-06
+
+### 修复
+
+- 修复 `codesome hotskills` 默认文案：删除“窄屏友好”和“默认不自动安装”的说明句，推荐项标题不再展示“商业诊断工具箱”。
+- `codesome hotskills` 末尾改为询问是否安装，并给出一次确认安装命令：`codesome hotskills install dbskill --confirm`。
+- 修复 npm 安装修复脚本默认版本：`repair-npm-install.ps1` 和 `repair-npm-install.sh` 默认安装 `codesome-cli@0.5.4`，避免老用户运行 raw 脚本又被装回 `0.5.3`。
+
+### 验证
+
+- 已验证 npm registry 的 `codesome-cli` latest 为 `0.5.4`。
+- 已同步修复脚本审计用例，防止默认安装版本再次落后。让修复脚本装旧版这种事，就像请保洁把灰尘扫回屋里，已经加门槛拦住。
+
 ## v0.5.3 - 2026-05-05
 
 ### 修复
