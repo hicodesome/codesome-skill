@@ -17,7 +17,8 @@ const shell = read('scripts/repair-npm-install.sh')
 const powershell = read('scripts/repair-npm-install.ps1')
 
 const requiredShellSnippets = [
-  'PACKAGE_VERSION="${CODESOME_REPAIR_VERSION:-0.5.4}"',
+  'PACKAGE_VERSION="${CODESOME_REPAIR_VERSION:-}"',
+  'INSTALL_SPEC="${PACKAGE_NAME}@latest"',
   'USE_SUDO_NPM="${CODESOME_REPAIR_USE_SUDO_NPM:-0}"',
   'npm uninstall -g codesome-cli @codesome/cli @leo_aifirst/codesome-cli',
   'backup_if_exists "$HOME/.codesome/bin/codesome"',
@@ -35,7 +36,8 @@ for (const snippet of requiredShellSnippets) {
 
 const requiredPowerShellSnippets = [
   '$PackageVersion = if ($env:CODESOME_REPAIR_VERSION)',
-  'else { "0.5.4" }',
+  'else { "" }',
+  '"$PackageName@latest"',
   '"uninstall", "-g", "codesome-cli", "@codesome/cli", "@leo_aifirst/codesome-cli"',
   '.codesome\\bin\\codesome.exe',
   '.codesome\\bin\\codesome-hotskills.exe',

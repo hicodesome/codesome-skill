@@ -18,7 +18,7 @@ codesome version
 codesome auth status
 ```
 
-如果你以前安装过旧版，或者安装后 `codesome version` 显示的不是当前版本，可以直接使用修复脚本重新安装。脚本会处理历史安装残留，不会删除 Codesome 登录态、账号凭据、配置或浏览器数据。
+如果你以前安装过旧版，或者安装后 `codesome version` 显示的不是当前版本，可以直接使用修复脚本重新安装。脚本会处理历史安装残留，默认安装 npm registry 上的 `codesome-cli@latest`，不会删除 Codesome 登录态、账号凭据、配置或浏览器数据。
 
 macOS / Linux / WSL：
 
@@ -35,6 +35,8 @@ iwr https://raw.githubusercontent.com/hicodesome/codesome-skill/main/scripts/rep
 codesome version
 codesome auth status
 ```
+
+如需回滚或验证固定版本，可以先设置 `CODESOME_REPAIR_VERSION`；不设置时永远跟随 npm latest。
 
 ## 给 Agent 看的
 

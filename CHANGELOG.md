@@ -6,7 +6,7 @@
 
 - 修复 `codesome hotskills` 默认文案：删除“窄屏友好”和“默认不自动安装”的说明句，推荐项标题不再展示“商业诊断工具箱”。
 - `codesome hotskills` 末尾改为询问是否安装，并给出一次确认安装命令：`codesome hotskills install dbskill --confirm`。
-- 修复 npm 安装修复脚本默认版本：`repair-npm-install.ps1` 和 `repair-npm-install.sh` 默认安装 `codesome-cli@0.5.4`，避免老用户运行 raw 脚本又被装回 `0.5.3`。
+- 修复 npm 安装修复脚本默认版本策略：`repair-npm-install.ps1` 和 `repair-npm-install.sh` 默认安装 `codesome-cli@latest`，避免后续发新版后 raw 修复脚本继续把用户装回旧版本。只有显式设置 `CODESOME_REPAIR_VERSION` 时才安装固定版本。
 
 ### 验证
 
