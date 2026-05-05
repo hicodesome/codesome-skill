@@ -16,10 +16,10 @@ codesome skill 针对 sub2api 项目的适配兼容已获得作者许可，sub2a
 
 当前分页修复测试版：`v0.5.3-rc.3`。这是 npm 安装的源码包测试版，适合已经安装 Node.js 18+ 的 Windows、Linux、WSL、macOS 环境优先验证。
 
-优先使用 npm registry 安装测试版：
+优先使用 npm 安装测试版：
 
 ```bash
-npm install -g codesome-cli@0.5.3-rc.3 --registry=https://registry.npmjs.org
+npm install -g codesome-cli@0.5.3-rc.3
 codesome version
 codesome auth status
 ```
@@ -140,7 +140,7 @@ claude plugin update codesome@codesome-skills
 如果你已经安装 Node.js 18+，可以直接使用 NPM 源码包安装 CLI：
 
 ```bash
-npm install -g codesome-cli --registry=https://registry.npmjs.org
+npm install -g codesome-cli
 codesome version
 codesome auth status
 ```
@@ -154,7 +154,7 @@ npx codesome-cli version
 
 由于 NPM 对多 `bin` 包的自动命令推断依赖客户端版本，CI 和 Agent 环境推荐使用显式 `--package` 写法。
 
-GitHub Release 会附带可本地安装的 `.tgz` 源码包；如果 `npm install -g codesome-cli` 暂时查不到版本，请先使用 GitHub Release 安装脚本，或下载 release 附带的 `.tgz` 后本地安装。
+GitHub Release 会附带可本地安装的 `.tgz` 源码包；如果 `npm install -g codesome-cli` 暂时查不到版本，通常是本机 npm 配置了镜像、私服或缓存 registry。可以先尝试追加 `--registry=https://registry.npmjs.org`，或使用 GitHub Release 安装脚本，或下载 release 附带的 `.tgz` 后本地安装。
 
 NPM 包安装的是公开源码 CLI，不下载预编译二进制。它适合已经有 Node.js 的开发环境、CI 和 Agent 工作台。
 

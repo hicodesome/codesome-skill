@@ -4,7 +4,7 @@
 
 ### 变更
 
-- README 前置测试版安装命令调整为 `npm install -g codesome-cli@0.5.3-rc.3 --registry=https://registry.npmjs.org`。
+- README 前置测试版安装命令调整为 `npm install -g codesome-cli@0.5.3-rc.3`；官方 registry 参数只作为镜像/私服排查时的可选兜底。
 - GitHub Release、源码包版本号和 CLI `version` 输出统一到 `0.5.3-rc.3`。
 
 ### 验证
