@@ -1,16 +1,12 @@
- # Codesome Skill
+# Codesome Skill
 
-codesome skill 是一款 x2agent 的解决方案，它主要完成围绕任意agent tools 的自助 token 服务，比如你可以让你的龙虾自动通过 codeosme skill 来使用你的 token。
+Codesome Skill 是一款 x2agent 解决方案，主要围绕任意 Agent tools 提供自助 token 服务，比如你可以让你的龙虾自动通过 Codesome Skill 使用你的 token。
 
-这将 任何 agent 对 token 的使用消费推向了下一个时代，“自助餐”模式。
+这将任何 Agent 对 token 的使用消费推向下一个时代：一种“自助餐”模式。
 
-Codesome Skill 安装后，你可以直接让 Agent 帮你完成在 codesome.ai 或者其他基于 sub2api 完成的Token API 站点进行余额查询、订阅查询、用量查询、兑换码充值、API Key 管理和分组切换等操作，不需要自己在网页后台来回找入口。
+Codesome Skill 安装后，你可以直接让 Agent 帮你完成在 codesome.ai 或者其他基于 Sub2API 的 Token API 站点进行余额查询、订阅查询、用量查询、兑换码充值、API Key 管理和分组切换等操作，不需要自己在网页后台来回找入口。
 
-codesome skill 针对 sub2api 项目的适配兼容已获得作者许可，sub2api传送门：https://github.com/Wei-Shaw/sub2api 
-
-当前稳定版本：`v0.5.3`
-
-每个公开版本都有独立 Release 和更新说明。升级前可以查看 [CHANGELOG.md](CHANGELOG.md)，了解本次增加了什么、修复了什么，以及还有哪些已知边界。
+Codesome Skill 针对 Sub2API 项目的适配兼容已获得作者许可。Sub2API 传送门：https://github.com/Wei-Shaw/sub2api
 
 ## 安装 Codesome CLI
 
@@ -22,9 +18,7 @@ codesome version
 codesome auth status
 ```
 
-如果你以前安装过旧版，尤其是用过旧 GitHub Release 安装脚本，可能出现“npm 已经装了新版，但终端实际运行旧版”的情况。典型表现是 `codesome version` 不是 `0.5.3`，或 `which -a codesome` / `Get-Command codesome -All` 里旧路径排在前面。
-
-老用户建议直接使用残留清理修复脚本。脚本会卸载历史 npm 包名，备份并移除旧的命令入口，然后安装 `codesome-cli@0.5.3`。它不会删除 Codesome 登录态、账号凭据、配置或浏览器数据。
+如果你以前安装过旧版，或者安装后 `codesome version` 显示的不是当前版本，可以直接使用修复脚本重新安装。脚本会处理历史安装残留，不会删除 Codesome 登录态、账号凭据、配置或浏览器数据。
 
 macOS / Linux / WSL：
 
@@ -42,41 +36,6 @@ codesome version
 codesome auth status
 ```
 
-修复后可以确认实际调用路径：
-
-```bash
-which -a codesome
-codesome version
-```
-
-临时运行可以使用：
-
-```bash
-npx --package codesome-cli codesome version
-```
-
-分页修复验证重点：
-
-```bash
-codesome key list --page 2 --page-size 10
-codesome usage recent --days 18 --page 2 --page-size 10
-codesome usage key --name "<key_name>" --days 18 --scan-page-size 500
-```
-
-它适合这些场景：（当然，前提是你有一个 codesome.ai 的账号）
-
-- 想快速查看 Codesome 账户余额和订阅状态。
-- 想安全预检并确认兑换 Codesome 兑换码。
-- 想管理自己的 API Key，例如创建、改名、启用、禁用、切换分组或删除。
-- 想查看某个 API Key 的近期用量。
-- 想把任意 Sub2API 兼容自部署站点登记为本机实例，并用 `--instance` 操作它。
-- 想查看 Codesome 推荐的优秀 Agent Skills，并安全安装白名单推荐项。
-- 想让 Codex、Claude Code、OpenClaw、Hermes、OpenCode 等 Agent 客户端识别 Codesome Skill。
-
-### 使用反馈和答疑欢迎进群交流
-
-![codesome 使用反馈和答疑群](images/codesome-support-group.png)
-
 ## 给 Agent 看的
 
 把下面这段提示词发给你的 Agent，它会按你的系统自动安装：
@@ -90,7 +49,7 @@ codesome usage key --name "<key_name>" --days 18 --scan-page-size 500
 
 npm install -g codesome-cli
 
-如果机器上以前装过旧版 Codesome CLI，或安装后 codesome version 仍不是 0.5.3，请先运行残留清理修复脚本：
+如果机器上以前装过旧版 Codesome CLI，或安装后 codesome version 不是预期版本，请先运行修复脚本：
 
 macOS / Linux / WSL:
 curl -fsSL https://raw.githubusercontent.com/hicodesome/codesome-skill/main/scripts/repair-npm-install.sh | bash
@@ -101,39 +60,13 @@ iwr https://raw.githubusercontent.com/hicodesome/codesome-skill/main/scripts/rep
 安装后请验证：
 1. codesome version
 2. codesome auth status
-3. codesome instance list
-4. codesome hotskills
-5. 如果未登录，执行 codesome auth login，用 CLI 的安全提示完成账号密码登录
-6. 登录后执行 codesome balance show 验证可用
-7. 如果我要使用自部署 Sub2API 站点，先执行 codesome instance add <name> --base-url <url>，后续命令都带 --instance <name>
-8. 如果遇到验证码、二次验证或风控，再使用 codesome auth login --browser 走浏览器兜底
-9. 告诉我 CLI 安装目录和 Skill 安装目录
-10. 如果 codesome 实际路径不是 npm 全局入口，请展示 which -a codesome 或 Get-Command codesome -All 的脱敏摘要，并运行上面的修复脚本
+3. 如果未登录，执行 codesome auth login
+4. 登录后执行 codesome balance show 验证可用
 
 安全要求：不要输出 Cookie、Token、Session 或完整 API Key。
 ```
 
-### 给 Agent 看的指定版本 / 测试版安装
-
-如果你想让 Agent 安装某个测试版或固定版本，可以把下面这段提示词发给它。把 `<release-tag>` 替换为 GitHub Release tag，例如 `v0.5.3` 或 `v0.5.3-rc.3`。指定版本安装不会改变默认稳定版安装方式：
-
-```text
-请帮我安装并配置 Codesome Skill 指定版本 <release-tag>：https://github.com/hicodesome/codesome-skill/releases/tag/<release-tag>
-
-请按当前系统安装本地 codesome CLI，并把 Codesome Skill 安装到常见 Agent 客户端的用户级技能目录。
-
-安装要求：
-1. 使用 CODESOME_CLI_VERSION=<release-tag>。
-2. Windows 使用 install.ps1。
-3. Linux / WSL / macOS 使用 install.sh。
-4. 安装后验证 codesome version、codesome auth status、codesome instance list。
-5. 如果未登录，执行 codesome auth login；如果遇到验证码、二次验证或风控，再使用 codesome auth login --browser。
-6. 告诉我 CLI 安装目录、Skill 安装目录和当前安装的 release tag。
-
-安全要求：不要输出 Cookie、Token、Session 或完整 API Key。
-```
-
-## 给人类看的
+## 手动安装 Skill
 
 如果你只想把 Codesome Skill 安装到 Agent 客户端，可以使用通用 Skills 安装方式：
 
@@ -146,8 +79,6 @@ npx skills add hicodesome/codesome-skill --skill codesome -g -y
 ```bash
 npx skills update codesome -g
 ```
-
-也可以重新运行同一条 `npx skills add ...` 命令。
 
 Claude Code 用户也可以通过插件市场安装：
 
@@ -164,367 +95,64 @@ claude plugin update codesome@codesome-skills
 /reload-plugins
 ```
 
-说明：Agent Skill / Claude plugin 只负责让 Agent 识别 Codesome 工作流；本地 `codesome` CLI 仍需要通过 NPM 源码包或 GitHub Release 安装脚本安装。
+说明：Agent Skill / Claude plugin 负责让 Agent 识别 Codesome 工作流；本地 `codesome` CLI 仍需要按上面的方式安装。
 
-如果你已经安装 Node.js 18+，可以直接使用 NPM 源码包安装 CLI：
+## 常用功能
 
-```bash
-npm install -g codesome-cli
-codesome version
-codesome auth status
-```
+- 查看 Codesome 账户余额和订阅状态。
+- 查看近期用量和指定 API Key 的用量。
+- 创建、更新、启用、禁用、删除 API Key。
+- 兑换 Codesome 充值码。
+- 查看 Codesome 推荐的 Agent Skills，并安装白名单推荐项。
+- 连接兼容 Sub2API 的自部署站点。
 
-临时运行可以使用：
-
-```bash
-npx --package codesome-cli codesome version
-npx codesome-cli version
-```
-
-由于 NPM 对多 `bin` 包的自动命令推断依赖客户端版本，CI 和 Agent 环境推荐使用显式 `--package` 写法。
-
-GitHub Release 会附带可本地安装的 `.tgz` 源码包；如果 `npm install -g codesome-cli` 暂时查不到版本，通常是本机 npm 配置了镜像、私服或缓存 registry。可以先尝试追加 `--registry=https://registry.npmjs.org`，或使用 GitHub Release 安装脚本，或下载 release 附带的 `.tgz` 后本地安装。
-
-NPM 包安装的是公开源码 CLI，不下载预编译二进制。它适合已经有 Node.js 的开发环境、CI 和 Agent 工作台。
-
-### 老用户残留清理
-
-旧版 Codesome CLI 可能来自旧 npm 包名，也可能来自旧 GitHub Release 安装脚本写入的 `~/.codesome/bin/codesome`。如果旧入口在 PATH 里排在 npm 全局入口前面，重复运行 `npm install -g codesome-cli` 仍可能继续执行旧版。
-
-一键修复脚本会：
-
-- 卸载 `codesome-cli`、`@codesome/cli`、`@leo_aifirst/codesome-cli` 等历史全局 npm 包名。
-- 备份并移除旧的 `~/.codesome/bin/codesome` 和 `~/.codesome/bin/codesome-hotskills` 命令入口。
-- 清理常见系统级旧入口，例如 `/usr/local/bin/codesome`、`/opt/homebrew/bin/codesome`。
-- 安装 `codesome-cli@0.5.3` 并验证实际执行路径。
-
-脚本不会删除 Codesome 登录态、账号凭据、配置或浏览器数据。
-
-macOS / Linux / WSL：
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/hicodesome/codesome-skill/main/scripts/repair-npm-install.sh | bash
-```
-
-Windows PowerShell：
-
-```powershell
-iwr https://raw.githubusercontent.com/hicodesome/codesome-skill/main/scripts/repair-npm-install.ps1 -UseB | iex
-```
-
-修复后验证：
-
-```bash
-which -a codesome
-codesome version
-```
-
-Windows PowerShell：
-
-```powershell
-Get-Command codesome -All
-codesome version
-```
-
-如果你不想依赖本机 Node.js，可以使用安装脚本。脚本会下载对应系统的预编译 `codesome` CLI 二进制，并安装 Codesome Skill。
-
-Windows：
-
-```powershell
-iwr https://raw.githubusercontent.com/hicodesome/codesome-skill/main/install.ps1 -UseB | iex
-```
-
-Windows 安装脚本会把 `~\.codesome\bin` 移到用户 PATH 前面，并检查 `codesome` / `codesome-hotskills` 是否仍被旧 npm、pnpm 或其他 shim 抢先解析。安装后新开 PowerShell 再运行：
-
-```powershell
-codesome version
-```
-
-如果当前会话仍解析到旧命令，安装器会打印冲突来源和可直接运行的 `~\.codesome\bin\codesome.exe` 路径。
-
-Linux / WSL / macOS：
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/hicodesome/codesome-skill/main/install.sh | bash
-```
-
-### 指定版本 / 测试版安装方式
-
-默认安装当前稳定版。如需安装某个测试版或固定版本，把下面命令里的 `<release-tag>` 替换成 GitHub Release tag，例如 `v0.5.3` 或 `v0.5.3-rc.3`。
-
-Windows：
-
-```powershell
-$env:CODESOME_CLI_VERSION="<release-tag>"
-iwr https://raw.githubusercontent.com/hicodesome/codesome-skill/<release-tag>/install.ps1 -UseB | iex
-Remove-Item Env:\CODESOME_CLI_VERSION
-```
-
-Linux / WSL / macOS：
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/hicodesome/codesome-skill/<release-tag>/install.sh | CODESOME_CLI_VERSION=<release-tag> bash
-```
-
-指定版本安装后验证：
-
-```bash
-codesome version
-codesome auth status
-codesome instance list
-```
-
-安装后验证：
-
-```bash
-codesome version
-codesome auth status
-```
-
-如果未登录：
+常用命令：
 
 ```bash
 codesome auth login
-```
-
-登录后可继续验证：
-
-```bash
+codesome auth status
 codesome balance show
+codesome subscription active
+codesome usage stats
+codesome key list
+codesome redeem apply --code "<code>"
+codesome hotskills
 ```
 
-## 推荐安装方式
-
-推荐方式可以按环境选择：
-
-```text
-已有 Node.js 18+: NPM 源码包
-不想依赖 Node.js: 安装脚本 + GitHub Release 预编译二进制
-```
-
-预编译二进制安装方式：
-
-```text
-安装脚本 + GitHub Release 预编译二进制
-```
-
-安装脚本会自动选择对应平台的二进制：
-
-```text
-Windows amd64: codesome-windows-amd64.exe
-Windows amd64 hotskills: codesome-hotskills-windows-amd64.exe（v0.5.2 起）
-Linux / WSL amd64: codesome-linux-amd64
-Linux / WSL amd64 hotskills: codesome-hotskills-linux-amd64（v0.5.2 起）
-Linux arm64 / aarch64: codesome-linux-arm64
-Linux arm64 / aarch64 hotskills: codesome-hotskills-linux-arm64（v0.5.2 起）
-macOS Intel: codesome-darwin-amd64
-macOS Intel hotskills: codesome-hotskills-darwin-amd64（v0.5.2 起）
-macOS Apple Silicon / M 系列: codesome-darwin-arm64
-macOS Apple Silicon / M 系列 hotskills: codesome-hotskills-darwin-arm64（v0.5.2 起）
-```
-
-默认下载源是本仓库 GitHub Release 当前稳定版本 `v0.5.3`：
-
-- `https://github.com/hicodesome/codesome-skill/releases/download/v0.5.3/codesome-windows-amd64.exe`
-- `https://github.com/hicodesome/codesome-skill/releases/download/v0.5.3/codesome-linux-amd64`
-- `https://github.com/hicodesome/codesome-skill/releases/download/v0.5.3/codesome-linux-arm64`
-- `https://github.com/hicodesome/codesome-skill/releases/download/v0.5.3/codesome-darwin-amd64`
-- `https://github.com/hicodesome/codesome-skill/releases/download/v0.5.3/codesome-darwin-arm64`
-
-`codesome-hotskills-*` 独立二进制从 `v0.5.2` 起随 GitHub Release 提供；更早版本仍可通过 `codesome hotskills` 使用同一功能。
-
-可通过环境变量指定版本或经过验证的镜像：
-
-```text
-CODESOME_CLI_VERSION
-CODESOME_CLI_BASE_URL
-CODESOME_SKILL_RAW_BASE_URL
-```
-
-示例：
-
-```powershell
-$env:CODESOME_CLI_VERSION="v0.5.3"
-iwr https://raw.githubusercontent.com/hicodesome/codesome-skill/main/install.ps1 -UseB | iex
-```
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/hicodesome/codesome-skill/main/install.sh | CODESOME_CLI_VERSION=v0.5.3 bash
-```
-
-`latest` 只作为兼容别名保留；面向用户的发布说明和安装验证以明确版本号为准。
-
-## 更新日志
-
-每次功能发布都会对应一个不可变版本，例如 `v0.3.0`。版本说明记录在两个地方：
-
-- GitHub Release 页面，方便下载预编译包时查看。
-- [CHANGELOG.md](CHANGELOG.md)，方便在仓库中追踪连续变化。
-
-NPM 源码包发布到：
-
-```text
-codesome-cli
-```
-
-发布前会运行 `npm run prepublishOnly`，其中包含公开安全扫描、mock 回归、smoke 测试和 `npm pack --dry-run` tarball 审计。
-
-## 支持的功能
-
-- `codesome auth login`
-- `codesome auth status`
-- `codesome auth logout`
-- `codesome instance list`
-- `codesome instance current`
-- `codesome instance add <name> --base-url <url>`
-- `codesome instance switch <name>`
-- `codesome instance status <name>`
-- `codesome instance remove <name> --confirm`
-- `codesome browser install`
-- `codesome browser status`
-- `codesome browser uninstall`
-- `codesome account list`
-- `codesome account current`
-- `codesome account add --name "<alias>"`
-- `codesome account switch <alias>`
-- `codesome account rename <old> <new>`
-- `codesome account remove <alias> --confirm`
-- `codesome balance show`
-- `codesome subscription active`
-- `codesome subscription list`
-- `codesome usage stats`
-- `codesome usage recent`
-- `codesome usage key --name "<key_name>" --days 30`
-- `codesome group list`
-- `codesome redeem apply --code "<code>"`
-- `codesome redeem apply --code "<code>" --confirm`
-- `codesome redeem history`
-- `codesome key list`
-- `codesome key show --name "<key_name>"`
-- `codesome key create`
-- `codesome key update --name "<key_name>" --quota <usd>`
-- `codesome key update --name "<key_name>" --expires-at <iso|none>`
-- `codesome key update --name "<key_name>" --rate-limit-5h <usd> --rate-limit-1d <usd> --rate-limit-7d <usd>`
-- `codesome key update --name "<key_name>" --ip-whitelist <a,b> --ip-blacklist <a,b>`
-- `codesome key update --name "<key_name>" --clear-expires-at --clear-ip-whitelist --clear-ip-blacklist`
-- `codesome key switch-group`
-- `codesome key delete`
-- `codesome hotskills`
-- `codesome hotskills info dbskill`
-- `codesome hotskills install dbskill`
-
-写操作默认先做 dry-run 预检，展示原值和目标值；追加 `--confirm` 才会写入。兑换码默认也只做预检，确认兑换时才追加 `--confirm`。
+写操作默认先做预检，展示原值和目标值；追加 `--confirm` 才会写入。兑换码默认也只做预检，确认兑换时再追加 `--confirm`。
 
 ## 自部署 Sub2API 实例
 
-除了默认 Codesome 实例，也可以把任意 Sub2API 兼容 HTTPS 站点登记为本机实例：
+除了默认 Codesome 实例，也可以把兼容 Sub2API 的 HTTPS 站点登记为本机实例：
 
 ```bash
 codesome instance add my-sub2api --base-url https://api.example.com
 codesome auth login --instance my-sub2api
 codesome balance show --instance my-sub2api
-codesome key list --instance my-sub2api
 ```
 
-`instance add` 是本机信任登记，不是平台审核或官方白名单。登录凭证、浏览器登录态和 browser profile 会按实例隔离保存。带账号密码、token 或 refresh token 的请求只允许发往默认官方地址或已登记实例，避免临时恶意 URL 接管凭据。
-
-## Hot Skills 推荐
-
-`codesome hotskills` 会展示 Codesome 当前推荐的优秀 Agent Skills。默认输出为窄屏友好的文本卡片，也支持 `--json` 给 Agent 客户端二次渲染。
-
-当前首个推荐项是 `dbskill`，来源为 `dontbesilent2025/dbskill`，包含 13 个商业诊断、对标分析、内容创作和 Agent 工作台迁移相关 skills。
-
-```bash
-codesome hotskills
-codesome hotskills info dbskill
-codesome hotskills install dbskill
-```
-
-安装命令默认只做预检；确认安装时使用：
-
-```bash
-codesome hotskills install dbskill --confirm
-```
+`instance add` 是本机信任登记，不是平台审核或官方白名单。登录凭证会按实例隔离保存。
 
 ## 登录
 
-`codesome auth login` 默认使用账号密码 HTTP 登录，并把 token / refresh token 加密保存在本机账号目录中。正常情况下不需要先下载或打开浏览器。
+```bash
+codesome auth login
+```
 
-如果遇到验证码、二次验证、风控或你明确想用网页登录，可以使用浏览器兜底：
+如果遇到验证码、二次验证、风控，或你明确想用网页登录，可以使用浏览器兜底：
 
 ```bash
 codesome auth login --browser
 ```
 
-浏览器兜底使用 Codesome 管理的 Chrome for Testing。如缺少浏览器运行时，再执行：
+## 使用反馈
 
-```bash
-codesome browser install
-```
+欢迎进群交流使用反馈和答疑：
 
-多账号登录会为每个账号隔离 HTTP 凭证；浏览器兜底也会使用独立 browser profile，避免不同账号共用网页登录态。自部署实例还会额外按实例隔离，目录位于 `~/.codesome/instances/<instance-id>/accounts/<alias>/`。
+![codesome 使用反馈和答疑群](images/codesome-support-group.png)
 
-## 安装位置
+## 安全说明
 
-脚本运行时会打印实际安装路径。
+Codesome CLI 不会输出 Cookie、Token、Session 或完整 API Key。涉及账号凭据的请求只会发送到默认官方地址或你已登记的自部署实例。
 
-CLI 默认安装到：
-
-```text
-Windows: %USERPROFILE%\.codesome\bin\codesome.exe
-Linux / macOS: ~/.codesome/bin/codesome
-```
-
-浏览器运行时默认安装到：
-
-```text
-Windows: %USERPROFILE%\.codesome\browser
-Linux / macOS: ~/.codesome/browser
-```
-
-Skill 默认安装或更新到这些用户级目录：
-
-```text
-Codex 官方用户级 Skill: ~/.agents/skills/codesome/SKILL.md
-Claude Code / OpenCode 兼容: ~/.claude/skills/codesome/SKILL.md
-Hermes Agent: ~/.hermes/skills/codesome/SKILL.md
-OpenClaw 用户级: ~/.openclaw/skills/codesome/SKILL.md
-OpenCode 原生: ~/.config/opencode/skill/codesome/SKILL.md
-```
-
-说明：`~/.codex` 主要用于 Codex 全局规则，例如 `AGENTS.md`。Codex 官方用户级 Skill 搜索目录是 `~/.agents/skills/<skill-name>/SKILL.md`。
-
-安装脚本默认不写入项目级目录。如需项目级安装，可以手动复制到：
-
-```text
-<repo>/.agents/skills/codesome/SKILL.md
-<repo>/.claude/skills/codesome/SKILL.md
-<repo>/.opencode/skill/codesome/SKILL.md
-```
-
-## macOS 未签名提示
-
-安装脚本会在 macOS 上自动尝试移除下载隔离标记并执行本机临时签名。若首次运行仍被拦截，可手动执行：
-
-```bash
-chmod +x ~/.codesome/bin/codesome
-xattr -dr com.apple.quarantine ~/.codesome/bin/codesome 2>/dev/null || true
-codesign --force --sign - ~/.codesome/bin/codesome 2>/dev/null || true
-codesome version
-```
-
-## 仓库结构
-
-```text
-SKILL.md                 Skill 主说明
-CHANGELOG.md             版本更新日志
-references/              Skill 参考文档
-install.ps1              Windows 安装脚本
-install.sh               Linux / WSL / macOS 安装脚本
-bin/codesome.js          CLI 入口
-src/                     CLI 源码
-scripts/                 构建、验证和安全扫描脚本
-BUILD.md                 构建说明
-TESTING.md               测试说明
-SECURITY.md              安全说明
-```
+Codesome Skill 针对 Sub2API 项目的适配兼容已获得作者许可。Sub2API 项目地址：https://github.com/Wei-Shaw/sub2api
