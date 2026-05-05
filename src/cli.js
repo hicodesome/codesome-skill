@@ -12,7 +12,7 @@ import { handleHotskills } from './commands/hotskills.js'
 import { runCommand } from './commands/run.js'
 import { hasFlag, printJson, getOption } from './output/format.js'
 
-const VERSION = '0.5.2'
+const VERSION = '0.5.3-rc.1'
 
 export async function main(args) {
   const [command, subcommand] = args
@@ -232,4 +232,3 @@ Instance note:
   自定义实例通过 instance add 在本机登记，任意 Sub2API 兼容 HTTPS 地址均可使用，无需平台审核。
 `)
 }
-

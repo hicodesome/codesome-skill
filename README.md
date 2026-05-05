@@ -12,6 +12,40 @@ codesome skill 针对 sub2api 项目的适配兼容已获得作者许可，sub2a
 
 每个公开版本都有独立 Release 和更新说明。升级前可以查看 [CHANGELOG.md](CHANGELOG.md)，了解本次增加了什么、修复了什么，以及还有哪些已知边界。
 
+## 测试版优先试用：NPM 安装
+
+当前分页修复测试版：`v0.5.3-rc.1`。这是 npm 安装的源码包测试版，适合已经安装 Node.js 18+ 的 Windows、Linux、WSL、macOS 环境优先验证。
+
+GitHub Release 会附带 `codesome-cli-0.5.3-rc.1.tgz`。下载后在文件所在目录运行：
+
+```bash
+npm install -g ./codesome-cli-0.5.3-rc.1.tgz
+codesome version
+codesome auth status
+```
+
+如果后续该 rc 已发布到 npm registry，可以直接使用：
+
+```bash
+npm install -g @codesome/cli@0.5.3-rc.1
+```
+
+临时运行可使用：
+
+```bash
+npx --package @codesome/cli@0.5.3-rc.1 codesome version
+```
+
+测试版验证重点：
+
+```bash
+codesome key list --page 2 --page-size 10
+codesome usage recent --days 18 --page 2 --page-size 10
+codesome usage key --name "<key_name>" --days 18 --scan-page-size 500
+```
+
+这是 prerelease，不会改变默认稳定版 `v0.5.2` 或 `latest`。
+
 它适合这些场景：（当然，前提是你有一个 codesome.ai 的账号）
 
 - 想快速查看 Codesome 账户余额和订阅状态。

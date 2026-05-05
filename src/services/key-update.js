@@ -176,13 +176,20 @@ async function buildUpdatePlan(key, options = {}) {
 export async function findKeyByName(name, options = {}) {
   const query = String(name || '').trim()
   if (!query) throw new Error('必须指定 Key 名称：--name <name>。')
+  const groupId = hasValue(options.groupId) ? Number(options.groupId) : null
+  if (hasValue(options.groupId) && (!Number.isInteger(groupId) || groupId <= 0)) throw new Error('--group-id 必须是正整数。')
   const data = await listKeys({
     ...options,
     pageSize: 100,
-    search: query
+    search: query,
+    groupId: options.groupId
   })
   const exact = data.items.filter((item) => item.name === query)
   if (exact.length === 1) return exact[0]
+  if (exact.length > 1 && groupId) {
+    const groupMatch = exact.filter((item) => Number(item.group_id) === groupId || Number(item.group?.id) === groupId)
+    if (groupMatch.length === 1) return groupMatch[0]
+  }
   if (exact.length > 1) throw new Error(`找到多个同名 Key：${query}。请使用 --id。`)
   if (data.items.length === 1) return data.items[0]
   if (data.items.length > 1) {

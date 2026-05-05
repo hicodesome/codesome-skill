@@ -1,6 +1,6 @@
 {
     "name": "@codesome/cli",
-    "version": "0.5.2",
+    "version": "0.5.3-rc.1",
     "description": "Codesome CLI for Codesome and Sub2API account, token, key, and skill management.",
     "license": "Apache-2.0",
     "author": "Codesome",
@@ -53,11 +53,12 @@
         "test:windows-installer": "node ./scripts/verify-windows-installer.cjs",
         "test:json-safety": "node ./scripts/test-json-safety.cjs",
         "test:npm-pack": "node ./scripts/verify-npm-package.cjs",
-        "prepublishOnly": "npm run test:unix-entry && npm run test:json-safety && npm run scan:public-safety && npm run test:auth-http && npm run test:instance && npm run test:key-config && npm run test:multi-account && npm run test:redeem && npm run test:smoke && npm run test:npm-pack",
+        "prepublishOnly": "npm run test:unix-entry && npm run test:json-safety && npm run scan:public-safety && npm run test:auth-http && npm run test:instance && npm run test:key-config && npm run test:pagination-usage && npm run test:multi-account && npm run test:redeem && npm run test:smoke && npm run test:npm-pack",
         "scan:public-safety": "node ./scripts/scan-public-safety.cjs --public",
         "test:auth-http": "node ./scripts/test-auth-http-mock.cjs",
         "test:instance": "node ./scripts/test-instance-mock.cjs",
         "test:key-config": "node ./scripts/test-key-config-mock.cjs",
+        "test:pagination-usage": "node ./scripts/test-pagination-usage-mock.cjs",
         "test:multi-account": "node ./scripts/test-multi-account-mock.cjs",
         "test:redeem": "node ./scripts/test-redeem-mock.cjs",
         "build:release": "node ./scripts/build-release.mjs && node ./scripts/verify-release-assets.cjs"

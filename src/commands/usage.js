@@ -2,6 +2,18 @@ import { getKeyUsage, getRecentUsage, getUsageStats } from '../services/usage.js
 import { getOption, hasFlag, printJson } from '../output/format.js'
 import { accountJson, accountServiceOptions, printAccountLine, resolveCommandAccount } from './account-context.js'
 
+function positiveIntegerOption(args, names, fallback) {
+  for (const name of names) {
+    const value = getOption(args, name)
+    if (value !== undefined) {
+      const parsed = Number(String(value).trim())
+      if (!Number.isInteger(parsed) || parsed <= 0) throw new Error(`${name} 必须是正整数。`)
+      return parsed
+    }
+  }
+  return fallback
+}
+
 function money(value) {
   if (value === undefined || value === null || Number.isNaN(Number(value))) return '-'
   return `$${Number(value).toFixed(4)}`
@@ -42,7 +54,14 @@ export async function handleUsage(args) {
   }
 
   if (subcommand === 'recent') {
-    const data = await getRecentUsage({ ...serviceOptions, days, startDate, endDate, pageSize: getOption(args, '--limit') || 10 })
+    const data = await getRecentUsage({
+      ...serviceOptions,
+      days,
+      startDate,
+      endDate,
+      page: positiveIntegerOption(args, ['--page'], 1),
+      pageSize: positiveIntegerOption(args, ['--page-size', '--limit'], 10)
+    })
     if (json) {
       printJson({ account_context: accountJson(account), ...data })
       return
@@ -58,7 +77,8 @@ export async function handleUsage(args) {
       days: getOption(args, '--days') || 30,
       startDate,
       endDate,
-      recentLimit: getOption(args, '--recent-limit') || 5
+      recentLimit: positiveIntegerOption(args, ['--recent-limit'], 5),
+      scanPageSize: positiveIntegerOption(args, ['--scan-page-size'], 500)
     })
     if (json) {
       printJson({ account_context: accountJson(account), ...data })
@@ -141,8 +161,8 @@ export function printUsageHelp() {
 
 Usage:
   codesome usage stats [--account <alias>] [--days 7] [--start-date YYYY-MM-DD --end-date YYYY-MM-DD] [--json]
-  codesome usage recent [--account <alias>] [--days 7] [--limit 10] [--json]
-  codesome usage key --account <alias> --name <key_name> [--days 30] [--start-date YYYY-MM-DD --end-date YYYY-MM-DD] [--recent-limit 5] [--json]
+  codesome usage recent [--account <alias>] [--days 7] [--page 1] [--page-size 10] [--limit 10] [--json]
+  codesome usage key --account <alias> --name <key_name> [--days 30] [--start-date YYYY-MM-DD --end-date YYYY-MM-DD] [--recent-limit 5] [--scan-page-size 500] [--json]
 
 Shows selected-range usage statistics, recent usage records, or usage aggregated by a specific API Key name.
 `)

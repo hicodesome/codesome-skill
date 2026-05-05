@@ -80,6 +80,7 @@ export async function handleKeyShow(args) {
     ...accountServiceOptions(account),
     id: getOption(args, '--id'),
     name: getOption(args, '--name'),
+    groupId: getOption(args, '--group-id'),
     baseUrl: getOption(args, '--base-url')
   })
 
@@ -141,7 +142,7 @@ export function printKeyUpdateHelp() {
   console.log(`Codesome key update
 
 Usage:
-  codesome key show [--account <alias>] --name <name> [--json]
+  codesome key show [--account <alias>] --name <name> [--group-id <id>] [--json]
   codesome key show [--account <alias>] --id <id> [--json]
   codesome key update [--account <alias>] --name <name> --new-name <new-name> [--confirm]
   codesome key update [--account <alias>] --name <name> --group <group-name> [--confirm]

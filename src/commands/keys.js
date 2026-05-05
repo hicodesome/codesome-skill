@@ -5,6 +5,18 @@ import { handleKeyDelete, printKeyDeleteHelp } from './key-delete.js'
 import { handleKeyShow, handleKeySwitchGroup, handleKeyUpdate, printKeyUpdateHelp } from './key-update.js'
 import { accountJson, accountServiceOptions, printAccountLine, resolveCommandAccount } from './account-context.js'
 
+function positiveIntegerOption(args, names, fallback) {
+  for (const name of names) {
+    const value = getOption(args, name)
+    if (value !== undefined) {
+      const parsed = Number(String(value).trim())
+      if (!Number.isInteger(parsed) || parsed <= 0) throw new Error(`${name} 必须是正整数。`)
+      return parsed
+    }
+  }
+  return fallback
+}
+
 function money(value) {
   if (value === undefined || value === null || Number.isNaN(Number(value))) return '-'
   return `$${Number(value).toFixed(4)}`
@@ -60,9 +72,12 @@ export async function handleKey(args) {
 
   const json = hasFlag(args, '--json')
   const account = await resolveCommandAccount(args)
+  const page = positiveIntegerOption(args, ['--page'], 1)
+  const pageSize = positiveIntegerOption(args, ['--page-size', '--limit'], 20)
   const data = await listKeys({
     ...accountServiceOptions(account),
-    pageSize: getOption(args, '--limit') || 20,
+    page,
+    pageSize,
     search: getOption(args, '--search'),
     status: getOption(args, '--status'),
     groupId: getOption(args, '--group-id')
@@ -97,8 +112,8 @@ export function printKeyHelp() {
   console.log(`Codesome key commands
 
 Usage:
-  codesome key list [--account <alias>] [--limit 20] [--search <text>] [--status active|inactive] [--json]
-  codesome key show [--account <alias>] --name <name> [--json]
+  codesome key list [--account <alias>] [--page 1] [--page-size 20] [--limit 20] [--search <text>] [--status active|inactive] [--json]
+  codesome key show [--account <alias>] --name <name> [--group-id <id>] [--json]
   codesome key create [--account <alias>] --name <name> --group <group-name>
   codesome key update [--account <alias>] --name <name> --quota <usd> --confirm
   codesome key update [--account <alias>] --name <name> --expires-at <iso|none> --confirm

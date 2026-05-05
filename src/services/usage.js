@@ -142,9 +142,9 @@ function normalizeRecentUsageItem(item) {
   return result
 }
 
-async function aggregateKeyUsage(client, keyId, range, recentLimit) {
+async function aggregateKeyUsage(client, keyId, range, recentLimit, scanPageSize) {
   const aggregation = emptyAggregation()
-  const pageSize = 100
+  const pageSize = scanPageSize
   let page = 1
   let scannedRecords = 0
   let serverTotalRecords = 0
@@ -155,7 +155,6 @@ async function aggregateKeyUsage(client, keyId, range, recentLimit) {
       page_size: pageSize,
       start_date: range.start_date,
       end_date: range.end_date,
-      api_key_id: keyId,
       sort_by: 'created_at',
       sort_order: 'desc'
     })
@@ -217,6 +216,8 @@ export async function getRecentUsage(options = {}) {
 export async function getKeyUsage(options = {}) {
   if (!options.name) throw new Error('缺少 --name <key_name>。')
   const recentLimit = Number(options.recentLimit || 5)
+  const scanPageSize = Number(options.scanPageSize || 500)
+  if (!Number.isInteger(scanPageSize) || scanPageSize <= 0) throw new Error('--scan-page-size 必须是正整数。')
   return withApiClient(options, async (client) => {
     const key = await findKeyByName(client, options.name)
     const customRange = options.startDate || options.endDate ? {
@@ -231,7 +232,7 @@ export async function getKeyUsage(options = {}) {
     ]
     const results = []
     for (const item of ranges) {
-      const result = await aggregateKeyUsage(client, key.id, item.range, recentLimit)
+      const result = await aggregateKeyUsage(client, key.id, item.range, recentLimit, scanPageSize)
       result.label = item.label
       results.push(result)
     }

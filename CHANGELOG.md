@@ -1,5 +1,29 @@
 # Changelog
 
+## v0.5.3-rc.1 - 2026-05-05
+
+### 修复
+
+- 修复 `codesome key list` 未传递 `--page` 和 `--page-size` 的问题；`--limit` 仍作为 `--page-size` 的兼容别名。
+- 修复 `codesome usage recent` 未传递 `--page` 的问题。
+- 修复 `codesome usage key` 依赖后端单 Key 过滤导致大用量 Key 可能被截断的问题；现在会扫描 `/usage` 全量分页后按 `api_key_id` 本地聚合。
+- `codesome key show --name` 增加 `--group-id`，用于同名 Key 分属不同分组时消歧。
+
+### 文档
+
+- README 前置 npm 测试版安装说明，明确 rc 版本可以通过 GitHub Release 附带的 `.tgz` 源码包用 npm 安装。
+
+### 验证
+
+- 新增 `npm run test:pagination-usage`，覆盖 Key 分页、recent 分页、Key 用量全量扫描聚合和同名 Key 消歧。
+- Windows npm 安装测试已通过。
+- 远程 `Test` Linux amd64 真实账号验证通过：登录校验、Key 分页、recent 分页、`usage key --scan-page-size` 和同名 Key `--group-id` 查询。
+
+### 已知边界
+
+- 这是 prerelease，不更新当前稳定版 `v0.5.2` 或 `latest`。
+- `usage key` 为避免截断会扫描范围内全量用量记录；大时间范围下耗时会比旧实现更长。
+
 ## v0.5.2 - 2026-05-04
 
 ### 新增
