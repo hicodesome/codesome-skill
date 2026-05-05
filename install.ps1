@@ -1,6 +1,6 @@
 $ErrorActionPreference = "Stop"
 
-$DefaultCliVersion = "v0.5.2"
+$DefaultCliVersion = "v0.5.3"
 $CliVersion = if ($env:CODESOME_CLI_VERSION) { $env:CODESOME_CLI_VERSION.Trim() } else { $DefaultCliVersion }
 $DefaultBaseUrl = "https://github.com/hicodesome/codesome-skill/releases/download/$CliVersion"
 $DefaultRawBaseUrl = "https://raw.githubusercontent.com/hicodesome/codesome-skill/$CliVersion"

@@ -86,7 +86,10 @@ const requiredFiles = [
   'src/auth/auth.js',
   'src/commands/hotskills.js',
   'references/basic-usage.md',
-  'scripts/scan-public-safety.cjs'
+  'scripts/scan-public-safety.cjs',
+  'scripts/repair-npm-install.sh',
+  'scripts/repair-npm-install.ps1',
+  'scripts/verify-repair-scripts.cjs'
 ]
 
 const missing = requiredFiles.filter((filePath) => !fileSet.has(filePath))

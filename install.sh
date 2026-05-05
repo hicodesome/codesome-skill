@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-DEFAULT_CLI_VERSION="v0.5.2"
+DEFAULT_CLI_VERSION="v0.5.3"
 CLI_VERSION="${CODESOME_CLI_VERSION:-$DEFAULT_CLI_VERSION}"
 DEFAULT_BASE_URL="https://github.com/hicodesome/codesome-skill/releases/download/$CLI_VERSION"
 DEFAULT_RAW_BASE_URL="https://raw.githubusercontent.com/hicodesome/codesome-skill/$CLI_VERSION"

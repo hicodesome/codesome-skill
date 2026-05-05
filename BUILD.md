@@ -47,6 +47,15 @@ codesome --help
 codesome-hotskills --help
 ```
 
+Old-install repair scripts are included in the npm source package:
+
+```bash
+scripts/repair-npm-install.sh
+scripts/repair-npm-install.ps1
+```
+
+They remove old command entrypoints and historical global package names before reinstalling `codesome-cli@0.5.3`; they must not delete the Codesome home directory or user credentials.
+
 ## Build Release Binaries
 
 ```bash

@@ -1,5 +1,24 @@
 # Changelog
 
+## v0.5.3 - 2026-05-05
+
+### 修复
+
+- 正式发布分页修复：`codesome key list`、`codesome usage recent` 会正确传递分页参数，`codesome usage key` 会扫描 `/usage` 分页后按 `api_key_id` 本地聚合，避免大用量 Key 被截断。
+- 新增老用户 npm 安装修复脚本：处理旧 npm 包名和旧 GitHub Release 安装脚本留下的命令入口，避免安装新版 npm 包后仍执行旧版 `codesome`。
+
+### 安装
+
+- 新用户推荐直接使用 `npm install -g codesome-cli`。
+- 老用户如果遇到旧版本抢占 PATH，推荐运行 `scripts/repair-npm-install.sh` 或 `scripts/repair-npm-install.ps1`。修复脚本只备份/移除旧命令入口，不删除 Codesome 登录态、账号凭据、配置或浏览器数据。
+- GitHub Release 安装脚本默认版本更新为 `v0.5.3`。
+
+### 验证
+
+- 新增 `npm run test:repair-scripts`，静态验证修复脚本会卸载历史包名、备份旧入口、安装 `codesome-cli@0.5.3`，且不会删除整个 Codesome home。
+- `npm run prepublishOnly` 已纳入修复脚本审计。
+- 继承 `v0.5.3-rc.3` 的 Windows npm 安装测试和远程 `Test` Linux amd64 真实账号分页验证结果。
+
 ## v0.5.3-rc.3 - 2026-05-05
 
 ### 变更

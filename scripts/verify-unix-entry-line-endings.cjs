@@ -19,6 +19,7 @@ function listBinEntrypoints() {
 
 const files = [
   ...existingFiles('install.sh'),
+  ...existingFiles(path.join('scripts', 'repair-npm-install.sh')),
   ...listBinEntrypoints()
 ]
 

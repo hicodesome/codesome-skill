@@ -8,44 +8,60 @@ Codesome Skill 安装后，你可以直接让 Agent 帮你完成在 codesome.ai 
 
 codesome skill 针对 sub2api 项目的适配兼容已获得作者许可，sub2api传送门：https://github.com/Wei-Shaw/sub2api 
 
-当前稳定版本：`v0.5.2`
+当前稳定版本：`v0.5.3`
 
 每个公开版本都有独立 Release 和更新说明。升级前可以查看 [CHANGELOG.md](CHANGELOG.md)，了解本次增加了什么、修复了什么，以及还有哪些已知边界。
 
-## 测试版优先试用：NPM 安装
+## 安装 Codesome CLI
 
-当前分页修复测试版：`v0.5.3-rc.3`。这是 npm 安装的源码包测试版，适合已经安装 Node.js 18+ 的 Windows、Linux、WSL、macOS 环境优先验证。
-
-优先使用 npm 安装测试版：
+如果你已经安装 Node.js 18+，新用户优先使用 npm 安装：
 
 ```bash
-npm install -g codesome-cli@0.5.3-rc.3
+npm install -g codesome-cli
 codesome version
 codesome auth status
 ```
 
-临时运行可使用：
+如果你以前安装过旧版，尤其是用过旧 GitHub Release 安装脚本，可能出现“npm 已经装了新版，但终端实际运行旧版”的情况。典型表现是 `codesome version` 不是 `0.5.3`，或 `which -a codesome` / `Get-Command codesome -All` 里旧路径排在前面。
+
+老用户建议直接使用残留清理修复脚本。脚本会卸载历史 npm 包名，备份并移除旧的命令入口，然后安装 `codesome-cli@0.5.3`。它不会删除 Codesome 登录态、账号凭据、配置或浏览器数据。
+
+macOS / Linux / WSL：
 
 ```bash
-npx --package codesome-cli@0.5.3-rc.3 codesome version
+curl -fsSL https://raw.githubusercontent.com/hicodesome/codesome-skill/main/scripts/repair-npm-install.sh | bash
+codesome version
+codesome auth status
 ```
 
-GitHub Release 也会附带 `codesome-cli-0.5.3-rc.3.tgz`。下载后在文件所在目录运行：
+Windows PowerShell：
+
+```powershell
+iwr https://raw.githubusercontent.com/hicodesome/codesome-skill/main/scripts/repair-npm-install.ps1 -UseB | iex
+codesome version
+codesome auth status
+```
+
+修复后可以确认实际调用路径：
 
 ```bash
-npm install -g ./codesome-cli-0.5.3-rc.3.tgz
+which -a codesome
 codesome version
 ```
 
-测试版验证重点：
+临时运行可以使用：
+
+```bash
+npx --package codesome-cli codesome version
+```
+
+分页修复验证重点：
 
 ```bash
 codesome key list --page 2 --page-size 10
 codesome usage recent --days 18 --page 2 --page-size 10
 codesome usage key --name "<key_name>" --days 18 --scan-page-size 500
 ```
-
-这是 prerelease，不会改变 GitHub 默认稳定版 `v0.5.2`。无前缀 npm 包名当前用于 rc 测试，推荐显式指定 `codesome-cli@0.5.3-rc.3`。
 
 它适合这些场景：（当然，前提是你有一个 codesome.ai 的账号）
 
@@ -70,6 +86,18 @@ codesome usage key --name "<key_name>" --days 18 --scan-page-size 500
 
 请按当前系统安装本地 codesome CLI，并把 Codesome Skill 安装到常见 Agent 客户端的用户级技能目录。
 
+如果这是新机器，优先使用：
+
+npm install -g codesome-cli
+
+如果机器上以前装过旧版 Codesome CLI，或安装后 codesome version 仍不是 0.5.3，请先运行残留清理修复脚本：
+
+macOS / Linux / WSL:
+curl -fsSL https://raw.githubusercontent.com/hicodesome/codesome-skill/main/scripts/repair-npm-install.sh | bash
+
+Windows PowerShell:
+iwr https://raw.githubusercontent.com/hicodesome/codesome-skill/main/scripts/repair-npm-install.ps1 -UseB | iex
+
 安装后请验证：
 1. codesome version
 2. codesome auth status
@@ -80,13 +108,14 @@ codesome usage key --name "<key_name>" --days 18 --scan-page-size 500
 7. 如果我要使用自部署 Sub2API 站点，先执行 codesome instance add <name> --base-url <url>，后续命令都带 --instance <name>
 8. 如果遇到验证码、二次验证或风控，再使用 codesome auth login --browser 走浏览器兜底
 9. 告诉我 CLI 安装目录和 Skill 安装目录
+10. 如果 codesome 实际路径不是 npm 全局入口，请展示 which -a codesome 或 Get-Command codesome -All 的脱敏摘要，并运行上面的修复脚本
 
 安全要求：不要输出 Cookie、Token、Session 或完整 API Key。
 ```
 
 ### 给 Agent 看的指定版本 / 测试版安装
 
-如果你想让 Agent 安装某个测试版或固定版本，可以把下面这段提示词发给它。把 `<release-tag>` 替换为 GitHub Release tag，例如 `v0.5.2` 或 `v0.5.2-rc.2`。指定版本安装不会改变默认稳定版安装方式：
+如果你想让 Agent 安装某个测试版或固定版本，可以把下面这段提示词发给它。把 `<release-tag>` 替换为 GitHub Release tag，例如 `v0.5.3` 或 `v0.5.3-rc.3`。指定版本安装不会改变默认稳定版安装方式：
 
 ```text
 请帮我安装并配置 Codesome Skill 指定版本 <release-tag>：https://github.com/hicodesome/codesome-skill/releases/tag/<release-tag>
@@ -158,6 +187,45 @@ GitHub Release 会附带可本地安装的 `.tgz` 源码包；如果 `npm instal
 
 NPM 包安装的是公开源码 CLI，不下载预编译二进制。它适合已经有 Node.js 的开发环境、CI 和 Agent 工作台。
 
+### 老用户残留清理
+
+旧版 Codesome CLI 可能来自旧 npm 包名，也可能来自旧 GitHub Release 安装脚本写入的 `~/.codesome/bin/codesome`。如果旧入口在 PATH 里排在 npm 全局入口前面，重复运行 `npm install -g codesome-cli` 仍可能继续执行旧版。
+
+一键修复脚本会：
+
+- 卸载 `codesome-cli`、`@codesome/cli`、`@leo_aifirst/codesome-cli` 等历史全局 npm 包名。
+- 备份并移除旧的 `~/.codesome/bin/codesome` 和 `~/.codesome/bin/codesome-hotskills` 命令入口。
+- 清理常见系统级旧入口，例如 `/usr/local/bin/codesome`、`/opt/homebrew/bin/codesome`。
+- 安装 `codesome-cli@0.5.3` 并验证实际执行路径。
+
+脚本不会删除 Codesome 登录态、账号凭据、配置或浏览器数据。
+
+macOS / Linux / WSL：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/hicodesome/codesome-skill/main/scripts/repair-npm-install.sh | bash
+```
+
+Windows PowerShell：
+
+```powershell
+iwr https://raw.githubusercontent.com/hicodesome/codesome-skill/main/scripts/repair-npm-install.ps1 -UseB | iex
+```
+
+修复后验证：
+
+```bash
+which -a codesome
+codesome version
+```
+
+Windows PowerShell：
+
+```powershell
+Get-Command codesome -All
+codesome version
+```
+
 如果你不想依赖本机 Node.js，可以使用安装脚本。脚本会下载对应系统的预编译 `codesome` CLI 二进制，并安装 Codesome Skill。
 
 Windows：
@@ -182,7 +250,7 @@ curl -fsSL https://raw.githubusercontent.com/hicodesome/codesome-skill/main/inst
 
 ### 指定版本 / 测试版安装方式
 
-默认安装当前稳定版。如需安装某个测试版或固定版本，把下面命令里的 `<release-tag>` 替换成 GitHub Release tag，例如 `v0.5.2` 或 `v0.5.2-rc.2`。
+默认安装当前稳定版。如需安装某个测试版或固定版本，把下面命令里的 `<release-tag>` 替换成 GitHub Release tag，例如 `v0.5.3` 或 `v0.5.3-rc.3`。
 
 Windows：
 
@@ -255,13 +323,13 @@ macOS Apple Silicon / M 系列: codesome-darwin-arm64
 macOS Apple Silicon / M 系列 hotskills: codesome-hotskills-darwin-arm64（v0.5.2 起）
 ```
 
-默认下载源是本仓库 GitHub Release 当前稳定版本 `v0.5.2`：
+默认下载源是本仓库 GitHub Release 当前稳定版本 `v0.5.3`：
 
-- `https://github.com/hicodesome/codesome-skill/releases/download/v0.5.2/codesome-windows-amd64.exe`
-- `https://github.com/hicodesome/codesome-skill/releases/download/v0.5.2/codesome-linux-amd64`
-- `https://github.com/hicodesome/codesome-skill/releases/download/v0.5.2/codesome-linux-arm64`
-- `https://github.com/hicodesome/codesome-skill/releases/download/v0.5.2/codesome-darwin-amd64`
-- `https://github.com/hicodesome/codesome-skill/releases/download/v0.5.2/codesome-darwin-arm64`
+- `https://github.com/hicodesome/codesome-skill/releases/download/v0.5.3/codesome-windows-amd64.exe`
+- `https://github.com/hicodesome/codesome-skill/releases/download/v0.5.3/codesome-linux-amd64`
+- `https://github.com/hicodesome/codesome-skill/releases/download/v0.5.3/codesome-linux-arm64`
+- `https://github.com/hicodesome/codesome-skill/releases/download/v0.5.3/codesome-darwin-amd64`
+- `https://github.com/hicodesome/codesome-skill/releases/download/v0.5.3/codesome-darwin-arm64`
 
 `codesome-hotskills-*` 独立二进制从 `v0.5.2` 起随 GitHub Release 提供；更早版本仍可通过 `codesome hotskills` 使用同一功能。
 
@@ -276,12 +344,12 @@ CODESOME_SKILL_RAW_BASE_URL
 示例：
 
 ```powershell
-$env:CODESOME_CLI_VERSION="v0.5.2"
+$env:CODESOME_CLI_VERSION="v0.5.3"
 iwr https://raw.githubusercontent.com/hicodesome/codesome-skill/main/install.ps1 -UseB | iex
 ```
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/hicodesome/codesome-skill/main/install.sh | CODESOME_CLI_VERSION=v0.5.2 bash
+curl -fsSL https://raw.githubusercontent.com/hicodesome/codesome-skill/main/install.sh | CODESOME_CLI_VERSION=v0.5.3 bash
 ```
 
 `latest` 只作为兼容别名保留；面向用户的发布说明和安装验证以明确版本号为准。
