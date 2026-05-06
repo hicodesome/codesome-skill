@@ -1,5 +1,25 @@
 # Changelog
 
+## v0.5.5 - 2026-05-06
+
+### 修复
+
+- `codesome hotskills` 改为运行时读取 `dontbesilent2025/dbskill` 的 GitHub README，并只展示 README 中可解析到的信息。
+- 移除 Hot Skills 中手写的推荐话术、旧版本号和旧 skill 数量，避免 README 已更新但 CLI 仍显示过期内容。
+- `hotskills --json` 现在包含 README 来源、README 标注版本、README 简介、更新说明、安装命令和工具箱表格解析结果。
+- GitHub Release 安装脚本默认版本更新为 `v0.5.5`。
+
+### 验证
+
+- 已验证 npm registry 的 `codesome-cli` latest 为 `0.5.5`。
+- 已验证 `test:hotskills-upstream` 能从 dbskill README 解析到 `v2.8.0` 和 17 个 skills。
+- 已验证源码入口 `codesome version` 显示 `0.5.5`，`codesome hotskills --json` 使用 `github-readme` 来源。
+
+### 已知边界
+
+- 本次没有做 Windows / macOS / Linux 的手工安装回归。
+- 本次 GitHub Release 二进制只做自动构建和命令冒烟，不代表所有平台真机已手工测试。
+
 ## v0.5.4 - 2026-05-06
 
 ### 修复

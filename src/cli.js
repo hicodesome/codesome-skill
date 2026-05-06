@@ -12,7 +12,7 @@ import { handleHotskills } from './commands/hotskills.js'
 import { runCommand } from './commands/run.js'
 import { hasFlag, printJson, getOption } from './output/format.js'
 
-const VERSION = '0.5.4'
+const VERSION = '0.5.5'
 
 export async function main(args) {
   const [command, subcommand] = args
