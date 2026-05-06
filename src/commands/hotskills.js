@@ -7,28 +7,17 @@ const SKILLS = [
   {
     name: 'dbskill',
     display_name: 'dbskill',
-    title: 'dontbesilent',
-    summary: '从 12,307 条推文中提炼方法论，做成 13 个 Claude Code / Codex 可用的 Agent skills。',
+    title: 'dbskill',
+    summary: 'GitHub README 信息获取中。',
     repo: 'https://github.com/dontbesilent2025/dbskill',
+    readme_url: 'https://raw.githubusercontent.com/dontbesilent2025/dbskill/main/README.md',
     installer_source: 'dontbesilent2025/dbskill',
-    license: 'CC BY-NC 4.0',
-    latest_readme_version: 'v2.6.7',
-    skill_count: 13,
-    best_for: [
-      '商业模式诊断、方向判断和问题消解',
-      '对标分析、内容创作、小红书标题和短视频开头优化',
-      'Agent 工作台迁移，统一 Claude Code / Codex 的规则和 skill bridge'
-    ],
-    core_skills: [
-      { name: 'dbs', trigger: '/dbs', description: '主入口，根据问题自动路由到合适诊断工具' },
-      { name: 'dbs-diagnosis', trigger: '/dbs-diagnosis', description: '商业模式诊断，消解问题或拆解业务' },
-      { name: 'dbs-benchmark', trigger: '/dbs-benchmark', description: '对标分析，用五重过滤法排除噪音' },
-      { name: 'dbs-content', trigger: '/dbs-content', description: '内容创作诊断，判断选题如何做成好内容' },
-      { name: 'dbs-hook', trigger: '/dbs-hook', description: '短视频开头优化，诊断并生成方案' },
-      { name: 'dbs-xhs-title', trigger: '/dbs-xhs-title', description: '小红书标题公式，从 75 个公式中选用' },
-      { name: 'dbs-ai-check', trigger: '/dbs-ai-check', description: 'AI 写作特征识别，默认只诊断不改写' },
-      { name: 'dbs-agent-migration', trigger: '/dbs-agent-migration', description: 'Agent 工作台迁移，整理 Claude Code / Codex 双端一致性' }
-    ],
+    latest_readme_version: undefined,
+    skill_count: 0,
+    readme_intro: [],
+    readme_updates: [],
+    install_commands: [],
+    core_skills: [],
     install_notes: [
       '确认安装后会调用 skills CLI。',
       '默认按全局安装处理，方便不同项目和 Agent 客户端复用。',
@@ -38,13 +27,15 @@ const SKILLS = [
   }
 ]
 
+const HOTSKILLS_FETCH_TIMEOUT_MS = 3500
 const INSTALL_FLAGS = new Set(['--confirm', '--project', '--copy', '--yes', '--json', '--markdown'])
 
 export async function handleHotskills(args) {
   const subcommand = args[0]
+  const skills = await getHotskills()
 
   if (!subcommand || subcommand === 'list' || subcommand === '--json' || subcommand === '--markdown') {
-    printSkillList(args)
+    printSkillList(skills, args)
     return
   }
 
@@ -54,14 +45,14 @@ export async function handleHotskills(args) {
   }
 
   if (subcommand === 'info') {
-    const skill = requireSkill(args[1])
+    const skill = requireSkill(skills, args[1])
     if (!skill) return
     printSkillInfo(skill, args.slice(2))
     return
   }
 
   if (subcommand === 'install') {
-    const skill = requireSkill(args[1])
+    const skill = requireSkill(skills, args[1])
     if (!skill) return
     const installArgs = args.slice(2)
     if (installArgs.includes('--help') || installArgs.includes('-h')) {
@@ -77,19 +68,182 @@ export async function handleHotskills(args) {
   process.exitCode = 2
 }
 
-function requireSkill(name) {
+function requireSkill(skills, name) {
   if (!name || name === '--help' || name === '-h') {
     printHotskillsHelp()
     return undefined
   }
-  const skill = SKILLS.find((item) => item.name === name)
+  const skill = skills.find((item) => item.name === name)
   if (!skill) {
     console.error(`未知推荐 skill：${name}`)
-    console.error(`当前可用：${SKILLS.map((item) => item.name).join(', ')}`)
+    console.error(`当前可用：${skills.map((item) => item.name).join(', ')}`)
     process.exitCode = 2
     return undefined
   }
   return skill
+}
+
+async function getHotskills() {
+  const skills = SKILLS.map((skill) => ({ ...skill }))
+  const updated = await Promise.all(skills.map(refreshSkillMetadata))
+  return updated
+}
+
+async function refreshSkillMetadata(skill) {
+  if (skill.name !== 'dbskill') return skill
+  try {
+    const readme = await fetchText(skill.readme_url)
+    const readmeInfo = parseReadme(readme)
+    return {
+      ...skill,
+      title: readmeInfo.title || skill.title,
+      summary: readmeInfo.summary || skill.summary,
+      latest_readme_version: readmeInfo.version,
+      skill_count: readmeInfo.skills.length,
+      readme_intro: readmeInfo.intro,
+      readme_updates: readmeInfo.updates,
+      install_commands: readmeInfo.installCommands,
+      core_skills: readmeInfo.skills,
+      upstream: {
+        source: 'github-readme',
+        refreshed_at: new Date().toISOString(),
+        readme: skill.readme_url
+      }
+    }
+  } catch {
+    return {
+      ...skill,
+      upstream: {
+        source: 'bundled-fallback'
+      }
+    }
+  }
+}
+
+async function fetchText(url) {
+  const response = await fetchWithTimeout(url, {
+    headers: {
+      accept: 'text/plain, text/markdown, */*',
+      'user-agent': 'codesome-cli'
+    }
+  })
+  if (!response.ok) throw new Error(`HTTP ${response.status}`)
+  return response.text()
+}
+
+async function fetchWithTimeout(url, options) {
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), HOTSKILLS_FETCH_TIMEOUT_MS)
+  try {
+    return await fetch(url, { ...options, signal: controller.signal })
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
+function parseReadme(readme) {
+  const lines = readme.split(/\r?\n/u)
+  const title = extractReadmeTitle(lines)
+  const intro = extractReadmeIntro(lines)
+  const updates = extractReadmeUpdates(lines)
+  const installCommands = extractReadmeInstallCommands(lines)
+  const skills = extractReadmeSkills(lines)
+
+  return {
+    title,
+    summary: intro[0],
+    version: extractReadmeVersion(readme),
+    intro,
+    updates,
+    installCommands,
+    skills
+  }
+}
+
+function extractReadmeTitle(lines) {
+  const heading = lines.find((line) => line.trim().startsWith('# '))
+  return heading ? heading.replace(/^#\s+/u, '').trim() : undefined
+}
+
+function extractReadmeIntro(lines) {
+  const intro = []
+  for (const rawLine of lines) {
+    const line = rawLine.trim()
+    if (!line || line.startsWith('# ') || line === '---' || line.startsWith('!')) continue
+    if (line.startsWith('## ')) break
+    if (line.startsWith('**最新更新')) continue
+    if (line.startsWith('**v')) continue
+    if (line.startsWith('**作者')) continue
+    intro.push(stripMarkdown(line))
+  }
+  return intro
+}
+
+function extractReadmeVersion(readme) {
+  const match = readme.match(/最新更新：\s*(v?\d+(?:\.\d+){1,3})/u)
+  if (!match) return undefined
+  return match[1].startsWith('v') ? match[1] : `v${match[1]}`
+}
+
+function extractReadmeUpdates(lines) {
+  const updates = []
+  for (const rawLine of lines) {
+    const line = rawLine.trim()
+    const match = line.match(/^\*\*(v?\d+(?:\.\d+){1,3})\s+新增\*\*：(.+)$/u)
+    if (match) updates.push(`${match[1].startsWith('v') ? match[1] : `v${match[1]}`} 新增：${stripMarkdown(match[2])}`)
+  }
+  return updates
+}
+
+function extractReadmeInstallCommands(lines) {
+  const commands = []
+  let inInstallSection = false
+  let inCodeBlock = false
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim()
+    if (line === '## 如何安装 dbskill') {
+      inInstallSection = true
+      continue
+    }
+    if (inInstallSection && line.startsWith('## ')) break
+    if (!inInstallSection) continue
+    if (line.startsWith('```')) {
+      inCodeBlock = !inCodeBlock
+      continue
+    }
+    if (inCodeBlock && line) commands.push(line)
+  }
+  return commands
+}
+
+function extractReadmeSkills(lines) {
+  const skills = []
+  const seen = new Set()
+  for (const rawLine of lines) {
+    const line = rawLine.trim()
+    const match = line.match(/^\|\s*`([^`]+)`(?:\s*或\s*`[^`]+`)?\s*\|\s*([^|]+)\|/u)
+    if (!match) continue
+    const trigger = match[1].trim()
+    if (!trigger.startsWith('/')) continue
+    const name = trigger.slice(1)
+    if (seen.has(name)) continue
+    seen.add(name)
+    skills.push({
+      name,
+      trigger,
+      description: stripMarkdown(match[2].trim())
+    })
+  }
+  return skills
+}
+
+function stripMarkdown(value) {
+  return value
+    .replace(/\[([^\]]+)\]\([^)]+\)/gu, '$1')
+    .replace(/`([^`]+)`/gu, '$1')
+    .replace(/\*\*([^*]+)\*\*/gu, '$1')
+    .trim()
 }
 
 function publicSkill(skill) {
@@ -99,52 +253,68 @@ function publicSkill(skill) {
     title: skill.title,
     summary: skill.summary,
     repo: skill.repo,
+    readme_url: skill.readme_url,
     installer_source: skill.installer_source,
-    license: skill.license,
     latest_readme_version: skill.latest_readme_version,
     skill_count: skill.skill_count,
-    best_for: skill.best_for,
+    readme_intro: skill.readme_intro,
+    readme_updates: skill.readme_updates,
+    install_commands: skill.install_commands,
     core_skills: skill.core_skills,
+    upstream: skill.upstream,
     install_preview_command: buildInstallCommand(skill, { global: true, agents: [] }).display
   }
 }
 
-function printSkillList(args) {
+function printSkillList(skills, args) {
   if (hasFlag(args, '--json')) {
-    printJson({ items: SKILLS.map(publicSkill) })
+    printJson({ items: skills.map(publicSkill) })
     return
   }
 
   if (hasFlag(args, '--markdown')) {
     console.log('# Codesome Hot Skills')
     console.log('')
-    for (const skill of SKILLS) {
+    for (const skill of skills) {
       console.log(`## ${skill.display_name}`)
       console.log('')
       console.log(skill.summary)
       console.log('')
       console.log(`- 来源：${skill.repo}`)
-      console.log(`- 许可证：${skill.license}`)
+      if (skill.latest_readme_version) console.log(`- README 标注版本：${skill.latest_readme_version}`)
+      console.log(`- README：${skill.readme_url}`)
       console.log(`- 查看详情：\`codesome hotskills info ${skill.name}\``)
-      console.log(`- 安装预检：\`codesome hotskills install ${skill.name}\``)
+      console.log(`- 立即安装：\`codesome hotskills install ${skill.name} --confirm\``)
       console.log('')
     }
     return
   }
 
-  console.log('Codesome Hot Skills')
+  console.log('Codesome Hot Skills：精选 Agent skills 推荐')
   console.log('')
-  for (const skill of SKILLS) {
-    console.log(`${skill.display_name} - ${skill.title}`)
-    console.log(`用途：${skill.summary}`)
-    console.log(`适合：${skill.best_for.slice(0, 2).join('；')}`)
-    console.log(`包含：${skill.skill_count} 个 skills，核心入口 ${skill.core_skills[0].trigger}`)
-    console.log(`详情：codesome hotskills info ${skill.name}`)
-    console.log(`安装预检：codesome hotskills install ${skill.name}`)
+  for (const skill of skills) {
+    console.log(`${skill.display_name}：${skill.title}`)
+    console.log('')
+    for (const paragraph of skill.readme_intro) console.log(paragraph)
+    if (!skill.readme_intro.length) console.log(skill.summary)
+    console.log('')
+    if (skill.readme_updates.length) {
+      console.log('README 最新更新')
+      for (const item of skill.readme_updates.slice(0, 2)) console.log(`- ${item}`)
+      console.log('')
+    }
+    console.log('README 工具箱')
+    for (const item of skill.core_skills.slice(0, 8)) console.log(`- ${item.trigger}：${item.description}`)
+    if (skill.core_skills.length > 8) console.log(`- 另有 ${skill.core_skills.length - 8} 个 skill，详情见 README。`)
+    console.log('')
+    console.log(`README 解析到：${skill.skill_count} 个 skills`)
     console.log(`来源：${skill.repo}`)
+    console.log(`README：${skill.readme_url}`)
+    console.log(`了解更多：codesome hotskills info ${skill.name}`)
+    console.log(`安装命令：codesome hotskills install ${skill.name} --confirm`)
     console.log('')
   }
-  console.log('是否安装？同意请执行：codesome hotskills install dbskill --confirm')
+  console.log('想让 Agent 马上用上这套方法论，直接执行上面的安装命令即可。')
 }
 
 function printSkillInfo(skill, args) {
@@ -158,10 +328,15 @@ function printSkillInfo(skill, args) {
     console.log('')
     console.log(skill.summary)
     console.log('')
-    console.log('## 适合场景')
-    for (const item of skill.best_for) console.log(`- ${item}`)
+    console.log('## README 简介')
+    for (const item of skill.readme_intro) console.log(`- ${item}`)
+    if (skill.readme_updates.length) {
+      console.log('')
+      console.log('## README 更新')
+      for (const item of skill.readme_updates) console.log(`- ${item}`)
+    }
     console.log('')
-    console.log('## 核心 skills')
+    console.log('## README 工具箱')
     for (const item of skill.core_skills) console.log(`- \`${item.trigger}\`：${item.description}`)
     console.log('')
     console.log('## 安装')
@@ -172,7 +347,7 @@ function printSkillInfo(skill, args) {
     console.log('```')
     console.log('')
     console.log(`来源：${skill.repo}`)
-    console.log(`许可证：${skill.license}`)
+    console.log(`README：${skill.readme_url}`)
     return
   }
 
@@ -180,21 +355,31 @@ function printSkillInfo(skill, args) {
   console.log('')
   console.log(`简介：${skill.summary}`)
   console.log(`来源：${skill.repo}`)
-  console.log(`许可证：${skill.license}`)
+  console.log(`README：${skill.readme_url}`)
   console.log(`README 标注版本：${skill.latest_readme_version}`)
   console.log('')
-  console.log('适合场景')
-  for (const item of skill.best_for) console.log(`- ${item}`)
+  console.log('README 简介')
+  for (const item of skill.readme_intro) console.log(`- ${item}`)
+  if (skill.readme_updates.length) {
+    console.log('')
+    console.log('README 更新')
+    for (const item of skill.readme_updates) console.log(`- ${item}`)
+  }
   console.log('')
-  console.log('核心 skills')
+  console.log('README 工具箱')
   for (const item of skill.core_skills) {
     console.log(`- ${item.trigger} (${item.name})`)
     console.log(`  ${item.description}`)
   }
+  if (skill.install_commands.length) {
+    console.log('')
+    console.log('README 安装命令')
+    for (const command of skill.install_commands) console.log(`- ${command}`)
+  }
   console.log('')
   console.log('安装')
-  console.log(`- 预检：codesome hotskills install ${skill.name}`)
-  console.log(`- 执行：codesome hotskills install ${skill.name} --confirm`)
+  console.log(`- 查看安装信息：codesome hotskills install ${skill.name}`)
+  console.log(`- 立即安装：codesome hotskills install ${skill.name} --confirm`)
   console.log(`- 指定客户端：codesome hotskills install ${skill.name} --confirm --agent codex`)
   console.log(`- 当前项目安装：codesome hotskills install ${skill.name} --confirm --project`)
   console.log(`- 临时目录安装：codesome hotskills install ${skill.name} --confirm --target-dir C:\\Users\\joe\\Downloads --copy`)
@@ -320,10 +505,10 @@ function buildInstallCommand(skill, options) {
 }
 
 function printInstallPreview(skill, command, options) {
-  console.log(`安装预检：${skill.display_name}`)
+  console.log(`安装信息：${skill.display_name}`)
   console.log('')
   console.log(`来源：${skill.repo}`)
-  console.log(`许可证：${skill.license}`)
+  console.log(`README：${skill.readme_url}`)
   console.log(`范围：${options.global ? '全局用户目录' : '当前项目目录'}`)
   if (options.targetDir) console.log(`目标目录：${options.targetDir}`)
   if (options.agents.length) console.log(`客户端：${options.agents.join(', ')}`)
@@ -340,10 +525,10 @@ function printInstallPreview(skill, command, options) {
 }
 
 function printInstallPreviewMarkdown(skill, command, options) {
-  console.log(`# ${skill.display_name} 安装预检`)
+  console.log(`# ${skill.display_name} 安装信息`)
   console.log('')
   console.log(`- 来源：${skill.repo}`)
-  console.log(`- 许可证：${skill.license}`)
+  console.log(`- README：${skill.readme_url}`)
   console.log(`- 范围：${options.global ? '全局用户目录' : '当前项目目录'}`)
   if (options.targetDir) console.log(`- 目标目录：${options.targetDir}`)
   console.log(`- 客户端：${options.agents.length ? options.agents.join(', ') : '由 skills CLI 检测或交互选择'}`)

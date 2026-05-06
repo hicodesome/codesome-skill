@@ -1,6 +1,6 @@
 {
     "name": "codesome-cli",
-    "version": "0.5.4",
+    "version": "0.5.5",
     "description": "Codesome CLI for Codesome and Sub2API account, token, key, and skill management.",
     "license": "Apache-2.0",
     "author": "Codesome",
@@ -59,6 +59,7 @@
         "test:auth-http": "node ./scripts/test-auth-http-mock.cjs",
         "test:instance": "node ./scripts/test-instance-mock.cjs",
         "test:key-config": "node ./scripts/test-key-config-mock.cjs",
+        "test:hotskills-upstream": "node ./scripts/check-hotskills-upstream.cjs",
         "test:pagination-usage": "node ./scripts/test-pagination-usage-mock.cjs",
         "test:multi-account": "node ./scripts/test-multi-account-mock.cjs",
         "test:redeem": "node ./scripts/test-redeem-mock.cjs",
