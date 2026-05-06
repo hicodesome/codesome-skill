@@ -1,4 +1,4 @@
-﻿import { login, logout, getAuthStatus } from './auth/auth.js'
+import { login, logout, getAuthStatus } from './auth/auth.js'
 import { handleBalance } from './commands/balance.js'
 import { handleSubscription } from './commands/subscriptions.js'
 import { handleUsage } from './commands/usage.js'
@@ -9,12 +9,19 @@ import { handleInstance } from './commands/instances.js'
 import { handleBrowser } from './commands/browser.js'
 import { handleRedeem } from './commands/redeem.js'
 import { handleHotskills } from './commands/hotskills.js'
+import { handleSync } from './commands/sync.js'
 import { runCommand } from './commands/run.js'
+import { isAutoSyncWorkerArgs, maybeStartAutoSync, runAutoSyncWorker } from './services/auto-sync.js'
 import { hasFlag, printJson, getOption } from './output/format.js'
 
-const VERSION = '0.5.5'
+const VERSION = '0.5.6'
 
 export async function main(args) {
+  if (isAutoSyncWorkerArgs(args)) {
+    await runAutoSyncWorker({ updateNpm: true })
+    return
+  }
+
   const [command, subcommand] = args
 
   if (!command || command === '--help' || command === '-h' || command === 'help') {
@@ -23,9 +30,12 @@ export async function main(args) {
   }
 
   if (command === 'version' || command === '--version' || command === '-v') {
+    await maybeStartAutoSync(args)
     console.log(`codesome ${VERSION}`)
     return
   }
+
+  await maybeStartAutoSync(args)
 
   if (command === 'auth') {
     await runCommand(() => handleAuth(subcommand, args.slice(2)))
@@ -77,6 +87,11 @@ export async function main(args) {
     return
   }
 
+  if (command === 'sync') {
+    await runCommand(() => handleSync(args.slice(1)))
+    return
+  }
+
   if (command === 'hotskills') {
     await runCommand(() => handleHotskills(args.slice(1)))
     return
@@ -84,7 +99,7 @@ export async function main(args) {
 
   if (['config', 'doctor'].includes(command)) {
     console.error(`命令尚未实现：codesome ${command}${subcommand ? ` ${subcommand}` : ''}`)
-    console.error('当前已实现：auth、instance、account、browser、balance、subscription、usage、key、group、redeem、hotskills、version、help。')
+    console.error('当前已实现：auth、instance、account、browser、balance、subscription、usage、key、group、redeem、sync、hotskills、version、help。')
     process.exitCode = 2
     return
   }
@@ -195,9 +210,10 @@ Commands:
   balance show     查询普通按量余额和用量概览
   subscription list/active
   usage stats/recent/key
-  key list/show/create/update/switch-group/delete
+  key list/show/use/create/update/switch-group/delete
   group list
   redeem apply/history
+  sync status/refresh 查看自动同步状态或手动刷新
   hotskills        查看优秀 Agent Skills，并安全安装白名单推荐项
   version          显示版本
 

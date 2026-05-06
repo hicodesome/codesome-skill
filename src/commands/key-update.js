@@ -1,4 +1,5 @@
 import { getKeyDetails, previewUpdateKey, updateKey } from '../services/key-update.js'
+import { getUseKeyInfo } from '../services/keys.js'
 import { getOption, hasFlag, printJson } from '../output/format.js'
 import { maskApiKey } from '../output/redact.js'
 import { accountJson, accountServiceOptions, printAccountLine, resolveCommandAccount } from './account-context.js'
@@ -73,6 +74,26 @@ function printKeyDetails(key, account) {
   console.log(`更新时间：${formatValue(key.updated_at)}`)
 }
 
+function printUseKeyInfo(data, account) {
+  const key = data.key
+  const useKey = data.use_key
+  const group = key.group?.name || key.group_id || '-'
+  console.log(`Codesome 使用密钥：${key.name}`)
+  printAccountLine(account)
+  console.log('')
+  console.log(`Key：${useKey.api_key_masked || key.key || key.masked_key}`)
+  console.log(`Base URL：${useKey.base_url || '-'}`)
+  console.log(`分组：${group}`)
+  console.log(`平台：${useKey.platform || '-'}`)
+  console.log(`状态：${useKey.status || '-'}`)
+  if (useKey.base_urls?.openai_base_url) console.log(`OpenAI Base URL：${useKey.base_urls.openai_base_url}`)
+  if (useKey.base_urls?.anthropic_base_url) console.log(`Anthropic Base URL：${useKey.base_urls.anthropic_base_url}`)
+  if (useKey.base_urls?.gemini_base_url) console.log(`Gemini Base URL：${useKey.base_urls.gemini_base_url}`)
+  if (useKey.base_urls?.antigravity_base_url) console.log(`Antigravity Base URL：${useKey.base_urls.antigravity_base_url}`)
+  console.log(`读取来源：${useKey.source.key} + ${useKey.source.public_settings}`)
+  for (const warning of useKey.warnings || []) console.log(`警告：${warning}`)
+}
+
 export async function handleKeyShow(args) {
   const json = hasFlag(args, '--json')
   const account = await resolveCommandAccount(args)
@@ -90,6 +111,27 @@ export async function handleKeyShow(args) {
     return
   }
   printKeyDetails(safe.key, account)
+}
+
+export async function handleKeyUse(args) {
+  const json = hasFlag(args, '--json')
+  const account = await resolveCommandAccount(args)
+  const serviceOptions = {
+    ...accountServiceOptions(account),
+    id: getOption(args, '--id'),
+    name: getOption(args, '--name'),
+    groupId: getOption(args, '--group-id'),
+    baseUrl: getOption(args, '--base-url')
+  }
+  const key = await getKeyDetails(serviceOptions)
+  const data = await getUseKeyInfo(key, serviceOptions)
+  const safe = makeSafe({ account_context: accountJson(account), ...data })
+
+  if (json) {
+    printJson(safe)
+    return
+  }
+  printUseKeyInfo(safe, account)
 }
 
 export async function handleKeyUpdate(args) {
@@ -144,6 +186,8 @@ export function printKeyUpdateHelp() {
 Usage:
   codesome key show [--account <alias>] --name <name> [--group-id <id>] [--json]
   codesome key show [--account <alias>] --id <id> [--json]
+  codesome key use [--account <alias>] --name <name> [--json]
+  codesome key use [--account <alias>] --id <id> [--json]
   codesome key update [--account <alias>] --name <name> --new-name <new-name> [--confirm]
   codesome key update [--account <alias>] --name <name> --group <group-name> [--confirm]
   codesome key update [--account <alias>] --name <name> --status active|inactive [--confirm]
@@ -163,6 +207,7 @@ Options:
 
 Notes:
   Without --confirm, update and switch-group only query the current key and print a dry-run diff.
+  key use reads base_url from Sub2API public settings, the same stable source as the web "使用密钥" modal.
   JSON and text output always mask key values.
 `)
 }

@@ -1,6 +1,7 @@
 import { spawn } from 'node:child_process'
 import fs from 'node:fs/promises'
 import path from 'node:path'
+import readline from 'node:readline/promises'
 import { hasFlag, printJson } from '../output/format.js'
 
 const SKILLS = [
@@ -14,6 +15,7 @@ const SKILLS = [
     installer_source: 'dontbesilent2025/dbskill',
     latest_readme_version: undefined,
     skill_count: 0,
+    readme_lead: [],
     readme_intro: [],
     readme_updates: [],
     install_commands: [],
@@ -29,18 +31,19 @@ const SKILLS = [
 
 const HOTSKILLS_FETCH_TIMEOUT_MS = 3500
 const INSTALL_FLAGS = new Set(['--confirm', '--project', '--copy', '--yes', '--json', '--markdown'])
+const LIST_FLAGS = new Set(['--json', '--markdown', '--install', '--no-install', '--yes', '--project', '--copy'])
 
 export async function handleHotskills(args) {
   const subcommand = args[0]
   const skills = await getHotskills()
 
-  if (!subcommand || subcommand === 'list' || subcommand === '--json' || subcommand === '--markdown') {
-    printSkillList(skills, args)
+  if (subcommand === '--help' || subcommand === '-h' || subcommand === 'help') {
+    printHotskillsHelp()
     return
   }
 
-  if (subcommand === '--help' || subcommand === '-h' || subcommand === 'help') {
-    printHotskillsHelp()
+  if (!subcommand || subcommand === 'list' || subcommand.startsWith('--')) {
+    await handleSkillList(skills, subcommand === 'list' ? args.slice(1) : args)
     return
   }
 
@@ -66,6 +69,121 @@ export async function handleHotskills(args) {
   console.error(`未知 hotskills 命令：${subcommand}`)
   printHotskillsHelp()
   process.exitCode = 2
+}
+
+async function handleSkillList(skills, args) {
+  const parsed = parseListArgs(args)
+  if (!parsed.ok) {
+    console.error(parsed.error)
+    printHotskillsHelp()
+    process.exitCode = 2
+    return
+  }
+
+  printSkillList(skills, args)
+  if (parsed.options.json || parsed.options.markdown) return
+
+  const skill = skills[0]
+  if (!skill) return
+
+  if (parsed.options.install) {
+    await installSkill(skill, buildListInstallArgs(parsed.options))
+    return
+  }
+
+  if (parsed.options.noInstall || !process.stdin.isTTY || !process.stdout.isTTY) return
+
+  const answer = await askInstallConfirmation()
+  if (/^(y|yes)$/iu.test(answer)) {
+    await installSkill(skill, buildListInstallArgs({ ...parsed.options, confirm: true, yes: true }))
+    return
+  }
+  console.log('已取消安装。')
+}
+
+function parseListArgs(args) {
+  const options = {
+    json: false,
+    markdown: false,
+    install: false,
+    noInstall: false,
+    confirm: false,
+    yes: false,
+    global: true,
+    copy: false,
+    targetDir: undefined,
+    agents: []
+  }
+
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index]
+    if (arg === '--agent') {
+      const value = args[index + 1]
+      if (!value || value.startsWith('--')) return { ok: false, error: '--agent 需要指定客户端名称。' }
+      options.agents.push(value)
+      index += 1
+      continue
+    }
+    if (arg.startsWith('--agent=')) {
+      const value = arg.slice('--agent='.length)
+      if (!value) return { ok: false, error: '--agent 需要指定客户端名称。' }
+      options.agents.push(value)
+      continue
+    }
+    if (arg === '--target-dir') {
+      const value = args[index + 1]
+      if (!value || value.startsWith('--')) return { ok: false, error: '--target-dir 需要指定目录。' }
+      options.targetDir = path.resolve(value)
+      options.global = false
+      index += 1
+      continue
+    }
+    if (arg.startsWith('--target-dir=')) {
+      const value = arg.slice('--target-dir='.length)
+      if (!value) return { ok: false, error: '--target-dir 需要指定目录。' }
+      options.targetDir = path.resolve(value)
+      options.global = false
+      continue
+    }
+    if (!LIST_FLAGS.has(arg)) return { ok: false, error: `不支持的 hotskills 参数：${arg}` }
+    if (arg === '--json') options.json = true
+    if (arg === '--markdown') options.markdown = true
+    if (arg === '--install') options.install = true
+    if (arg === '--no-install') options.noInstall = true
+    if (arg === '--yes') {
+      options.yes = true
+      options.confirm = true
+      options.install = true
+    }
+    if (arg === '--project') options.global = false
+    if (arg === '--copy') options.copy = true
+  }
+
+  if (options.install && options.noInstall) return { ok: false, error: '--install 和 --no-install 不能同时使用。' }
+  if ((options.json || options.markdown) && (options.install || options.noInstall || options.yes)) {
+    return { ok: false, error: '--json/--markdown 不能和安装参数同时使用。' }
+  }
+
+  return { ok: true, options }
+}
+
+function buildListInstallArgs(options) {
+  const args = ['--confirm']
+  for (const agent of options.agents || []) args.push('--agent', agent)
+  if (!options.global) args.push('--project')
+  if (options.targetDir) args.push('--target-dir', options.targetDir)
+  if (options.copy) args.push('--copy')
+  if (options.yes) args.push('--yes')
+  return args
+}
+
+async function askInstallConfirmation() {
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
+  try {
+    return (await rl.question('是否安装 dbskill？输入 Y 安装，输入 N 跳过：')).trim()
+  } finally {
+    rl.close()
+  }
 }
 
 function requireSkill(skills, name) {
@@ -100,6 +218,7 @@ async function refreshSkillMetadata(skill) {
       summary: readmeInfo.summary || skill.summary,
       latest_readme_version: readmeInfo.version,
       skill_count: readmeInfo.skills.length,
+      readme_lead: readmeInfo.lead,
       readme_intro: readmeInfo.intro,
       readme_updates: readmeInfo.updates,
       install_commands: readmeInfo.installCommands,
@@ -144,6 +263,7 @@ async function fetchWithTimeout(url, options) {
 function parseReadme(readme) {
   const lines = readme.split(/\r?\n/u)
   const title = extractReadmeTitle(lines)
+  const lead = extractReadmeLead(lines)
   const intro = extractReadmeIntro(lines)
   const updates = extractReadmeUpdates(lines)
   const installCommands = extractReadmeInstallCommands(lines)
@@ -151,6 +271,7 @@ function parseReadme(readme) {
 
   return {
     title,
+    lead,
     summary: intro[0],
     version: extractReadmeVersion(readme),
     intro,
@@ -163,6 +284,25 @@ function parseReadme(readme) {
 function extractReadmeTitle(lines) {
   const heading = lines.find((line) => line.trim().startsWith('# '))
   return heading ? heading.replace(/^#\s+/u, '').trim() : undefined
+}
+
+function extractReadmeLead(lines) {
+  const lead = []
+  let inLead = false
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim()
+    if (line.startsWith('# ')) {
+      inLead = true
+      continue
+    }
+    if (!inLead) continue
+    if (line.startsWith('## 如何安装')) break
+    if (!line || line === '---' || line.startsWith('!')) continue
+    lead.push(stripMarkdown(line))
+  }
+
+  return lead
 }
 
 function extractReadmeIntro(lines) {
@@ -257,6 +397,7 @@ function publicSkill(skill) {
     installer_source: skill.installer_source,
     latest_readme_version: skill.latest_readme_version,
     skill_count: skill.skill_count,
+    readme_lead: skill.readme_lead,
     readme_intro: skill.readme_intro,
     readme_updates: skill.readme_updates,
     install_commands: skill.install_commands,
@@ -290,31 +431,11 @@ function printSkillList(skills, args) {
     return
   }
 
-  console.log('Codesome Hot Skills：精选 Agent skills 推荐')
-  console.log('')
   for (const skill of skills) {
-    console.log(`${skill.display_name}：${skill.title}`)
-    console.log('')
-    for (const paragraph of skill.readme_intro) console.log(paragraph)
-    if (!skill.readme_intro.length) console.log(skill.summary)
-    console.log('')
-    if (skill.readme_updates.length) {
-      console.log('README 最新更新')
-      for (const item of skill.readme_updates.slice(0, 2)) console.log(`- ${item}`)
-      console.log('')
-    }
-    console.log('README 工具箱')
-    for (const item of skill.core_skills.slice(0, 8)) console.log(`- ${item.trigger}：${item.description}`)
-    if (skill.core_skills.length > 8) console.log(`- 另有 ${skill.core_skills.length - 8} 个 skill，详情见 README。`)
-    console.log('')
-    console.log(`README 解析到：${skill.skill_count} 个 skills`)
-    console.log(`来源：${skill.repo}`)
-    console.log(`README：${skill.readme_url}`)
-    console.log(`了解更多：codesome hotskills info ${skill.name}`)
-    console.log(`安装命令：codesome hotskills install ${skill.name} --confirm`)
+    for (const paragraph of skill.readme_lead) console.log(paragraph)
+    if (!skill.readme_lead.length) console.log(skill.summary)
     console.log('')
   }
-  console.log('想让 Agent 马上用上这套方法论，直接执行上面的安装命令即可。')
 }
 
 function printSkillInfo(skill, args) {
@@ -328,13 +449,8 @@ function printSkillInfo(skill, args) {
     console.log('')
     console.log(skill.summary)
     console.log('')
-    console.log('## README 简介')
-    for (const item of skill.readme_intro) console.log(`- ${item}`)
-    if (skill.readme_updates.length) {
-      console.log('')
-      console.log('## README 更新')
-      for (const item of skill.readme_updates) console.log(`- ${item}`)
-    }
+    console.log('## README 顶部介绍')
+    for (const item of skill.readme_lead) console.log(`- ${item}`)
     console.log('')
     console.log('## README 工具箱')
     for (const item of skill.core_skills) console.log(`- \`${item.trigger}\`：${item.description}`)
@@ -358,13 +474,8 @@ function printSkillInfo(skill, args) {
   console.log(`README：${skill.readme_url}`)
   console.log(`README 标注版本：${skill.latest_readme_version}`)
   console.log('')
-  console.log('README 简介')
-  for (const item of skill.readme_intro) console.log(`- ${item}`)
-  if (skill.readme_updates.length) {
-    console.log('')
-    console.log('README 更新')
-    for (const item of skill.readme_updates) console.log(`- ${item}`)
-  }
+  console.log('README 顶部介绍')
+  for (const item of skill.readme_lead) console.log(`- ${item}`)
   console.log('')
   console.log('README 工具箱')
   for (const item of skill.core_skills) {
@@ -491,7 +602,7 @@ function parseInstallArgs(args) {
 
 function buildInstallCommand(skill, options) {
   const bin = process.platform === 'win32' ? 'npx.cmd' : 'npx'
-  const args = ['--yes', 'skills', 'add', skill.installer_source]
+  const args = ['--yes', '--package', 'skills', 'skills', 'add', skill.installer_source]
   if (options.global) args.push('--global')
   for (const agent of options.agents || []) args.push('--agent', agent)
   if (options.copy) args.push('--copy')
@@ -579,12 +690,14 @@ function printHotskillsHelp() {
   console.log(`Codesome hotskills commands
 
 Usage:
-  codesome hotskills [--json] [--markdown]
+  codesome hotskills [--json] [--markdown] [--install|--no-install] [--yes] [--agent <name>] [--project] [--target-dir <dir>] [--copy]
   codesome hotskills info <name> [--json] [--markdown]
   codesome hotskills install <name> [--confirm] [--agent <name>] [--project] [--target-dir <dir>] [--copy] [--yes] [--json]
 
 Examples:
   codesome hotskills
+  codesome hotskills --install --yes
+  codesome hotskills --install --yes --agent codex
   codesome hotskills info dbskill
   codesome hotskills install dbskill
   codesome hotskills install dbskill --confirm --agent codex

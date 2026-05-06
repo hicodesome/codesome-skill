@@ -15,6 +15,7 @@ Behavior:
 
 - Without `--confirm`, `redeem apply` only previews the operation and does not consume the code.
 - With `--confirm`, `redeem apply` is a real write operation.
+- Confirmed redeem triggers a refresh. Balance/subscription state normally appears within 10-60 seconds; in edge cases wait 1-3 minutes and run `codesome balance show --refresh`.
 - `redeem history` shows prior redemption records.
 
 Safety:

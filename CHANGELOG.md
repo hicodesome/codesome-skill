@@ -1,5 +1,26 @@
 # Changelog
 
+## v0.5.6 - 2026-05-06
+
+### 新增
+
+- 新增自动同步机制：用户运行普通 CLI 命令时会尽力启动后台同步，刷新账户状态、余额快照、订阅数量和公开 API Base URL。
+- 新增 `codesome sync status` 和 `codesome sync refresh`，可查看最近同步状态或手动刷新；`sync refresh` 支持 `--account` 和 `--instance`。
+- `codesome balance show` 和 `codesome subscription active/list` 新增 `--refresh`，作为充值后状态未及时出现时的手动兜底。
+- `redeem apply --confirm` 成功后会触发状态刷新，并提示一般充值同步延迟：通常 10-60 秒，极端情况下等待 1-3 分钟后手动刷新。
+- 新增 `codesome key use`，读取 `GET /api/v1/settings/public` 的公开 `api_base_url`，输出和网页“使用密钥”弹窗一致的 Base URL 配置，并继续脱敏 API Key。
+
+### 修复
+
+- 公开仓库同步 `v0.5.6` npm 正式版源码、测试脚本和 HotSkills README 同步内容。
+- `prepublishOnly` 纳入自动同步、HotSkills 安装命令和密码提示相关 mock 回归，降低公开发布遗漏风险。
+
+### 验证
+
+- 已验证 npm registry 的 `codesome-cli` latest 为 `0.5.6`。
+- Mock 覆盖 `sync refresh`、`balance show --refresh`、充值后延迟文案、`key use` 读取公开设置、HotSkills 安装命令和密码提示。
+- 真实后台已完成一次用户授权账号验收：登录校验、兑换确认、余额刷新和订阅刷新均返回成功；公开记录不保存真实账号、密码或兑换码。
+
 ## v0.5.5 - 2026-05-06
 
 ### 修复

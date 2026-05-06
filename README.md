@@ -102,7 +102,10 @@ claude plugin update codesome@codesome-skills
 ## 常用功能
 
 - 查看 Codesome 账户余额和订阅状态。
+- 用户打开 CLI 或运行普通命令时会尽力在后台同步账户状态；充值后通常 10-60 秒内更新，极端情况下等待 1-3 分钟。
+- 支持手动刷新余额和订阅状态，避免充值后反复手动查询。
 - 查看近期用量和指定 API Key 的用量。
+- 查看 API Key 的使用配置，读取和网页“使用密钥”弹窗一致的公开 Base URL。
 - 创建、更新、启用、禁用、删除 API Key。
 - 兑换 Codesome 充值码。
 - 查看 Codesome 推荐的 Agent Skills，并安装白名单推荐项。
@@ -114,9 +117,14 @@ claude plugin update codesome@codesome-skills
 codesome auth login
 codesome auth status
 codesome balance show
+codesome balance show --refresh
 codesome subscription active
+codesome subscription active --refresh
+codesome sync status
+codesome sync refresh
 codesome usage stats
 codesome key list
+codesome key use --name "<key-name>"
 codesome redeem apply --code "<code>"
 codesome hotskills
 ```

@@ -1,4 +1,5 @@
 import { applyRedeem, listRedeemHistory, previewRedeem } from '../services/redeem.js'
+import { AUTO_SYNC_RECHARGE_DELAY_TEXT, refreshNow } from '../services/auto-sync.js'
 import { getOption, hasFlag, printJson } from '../output/format.js'
 import { accountJson, accountServiceOptions, printAccountLine, resolveCommandAccount } from './account-context.js'
 
@@ -93,9 +94,10 @@ async function handleRedeemApply(args) {
     code
   }
   const result = confirm ? await applyRedeem(options) : previewRedeem(options)
+  const syncStatus = confirm ? await refreshNow(options) : null
 
   if (json) {
-    printJson({ account: accountJson(account), ...result })
+    printJson({ account: accountJson(account), sync: syncStatus, ...result })
     return
   }
 
@@ -112,6 +114,9 @@ async function handleRedeemApply(args) {
   printAccountLine(account)
   console.log('')
   printRedeemItem(result.redeem)
+  console.log('')
+  console.log(`状态同步：已触发刷新。充值后${AUTO_SYNC_RECHARGE_DELAY_TEXT}`)
+  console.log('兜底刷新：codesome balance show --refresh')
 }
 
 async function handleRedeemHistory(args) {
