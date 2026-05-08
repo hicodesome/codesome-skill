@@ -85,8 +85,12 @@ const requiredFiles = [
   'src/api/client.js',
   'src/auth/auth.js',
   'src/commands/hotskills.js',
+  'src/data/hotskills/dbskill.js',
+  'src/data/hotskills/dbskill.json',
   'references/basic-usage.md',
   'scripts/scan-public-safety.cjs',
+  'scripts/hotskills-readme-parser.cjs',
+  'scripts/update-hotskills-snapshot.cjs',
   'scripts/repair-npm-install.sh',
   'scripts/repair-npm-install.ps1',
   'scripts/verify-repair-scripts.cjs'

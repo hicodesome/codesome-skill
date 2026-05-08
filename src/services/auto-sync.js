@@ -1,7 +1,6 @@
 import { spawn } from 'node:child_process'
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { fileURLToPath } from 'node:url'
 import { withApiClient } from '../api/client.js'
 import { AUTO_SYNC_STATE_PATH } from '../config/paths.js'
 import { buildUseBaseUrls, normalizePublicSettings } from './public-settings.js'
@@ -11,7 +10,6 @@ export const AUTO_SYNC_RECHARGE_DELAY_TEXT = '通常 10-60 秒内同步完成；
 
 const PACKAGE_NAME = 'codesome-cli'
 const BACKGROUND_FLAG = '--__codesome-auto-sync-worker'
-const PACKAGE_JSON_PATH = fileURLToPath(new URL('../../package.json', import.meta.url))
 
 function nowIso() {
   return new Date().toISOString()
@@ -22,6 +20,7 @@ function isDisabled() {
 }
 
 async function readJsonSafe(filePath) {
+  if (!filePath) return null
   try {
     return JSON.parse(await fs.readFile(filePath, 'utf8'))
   } catch {
@@ -78,7 +77,8 @@ export async function maybeStartAutoSync(args = []) {
     running_pid: process.pid
   })
 
-  const entry = fileURLToPath(new URL('../../bin/codesome.js', import.meta.url))
+  const entry = resolveCurrentEntrypoint()
+  if (!entry) return false
   const child = spawn(process.execPath, [entry, BACKGROUND_FLAG], {
     cwd: process.cwd(),
     detached: true,
@@ -175,8 +175,19 @@ async function autoUpdateNpmPackage() {
 
 async function resolveAutoUpdateTag() {
   if (process.env.CODESOME_AUTO_NPM_TAG) return process.env.CODESOME_AUTO_NPM_TAG
-  const pkg = await readJsonSafe(PACKAGE_JSON_PATH)
+  const pkg = await readJsonSafe(resolvePackageJsonPath())
   return String(pkg?.version || '').includes('-') ? 'beta' : 'latest'
+}
+
+function resolveCurrentEntrypoint() {
+  if (process.pkg) return null
+  return process.argv[1] ? path.resolve(process.argv[1]) : null
+}
+
+function resolvePackageJsonPath() {
+  const entry = resolveCurrentEntrypoint()
+  if (!entry) return null
+  return path.resolve(path.dirname(entry), '..', 'package.json')
 }
 
 export async function runAutoSyncWorker(options = {}) {

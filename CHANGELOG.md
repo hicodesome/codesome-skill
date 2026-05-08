@@ -1,5 +1,25 @@
 # Changelog
 
+## v0.5.7 - 2026-05-08
+
+### 修复
+
+- `codesome hotskills` 默认改为读取包内 dbskill 本地快照，避免首屏介绍等待 GitHub README 网络请求。
+- 新增 Hot Skills 本地缓存目录；只有 `--json`、`--refresh` 或需要刷新元数据的路径才尝试联网更新。
+- npm 包审计新增 dbskill 快照和 Hot Skills 解析脚本检查，降低公开包漏带快照文件的风险。
+- GitHub Release 安装脚本默认版本更新为 `v0.5.7`。
+
+### 验证
+
+- 已验证 npm registry 的 `codesome-cli` latest 为 `0.5.7`。
+- 已在 Windows 实机临时 npm prefix 自动化验证两轮：`codesome hotskills --no-install` 首屏平均约 109-113ms，且每次均返回 dbskill 介绍。
+- 已验证 `CODESOME_HOTSKILLS_NO_NETWORK=1 codesome hotskills --json` 来源为 `bundled-snapshot`，版本为 `v2.8.0`，共 17 个 skills。
+
+### 已知边界
+
+- 本地快照反映发布时的 dbskill README；需要强制刷新上游内容时使用 `--refresh` 或等待后续版本更新快照。
+- Windows 实机已覆盖 npm 包首屏体验；GitHub Release 二进制仍以自动构建和命令冒烟为主。
+
 ## v0.5.6 - 2026-05-06
 
 ### 新增

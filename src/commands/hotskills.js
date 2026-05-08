@@ -2,24 +2,26 @@ import { spawn } from 'node:child_process'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import readline from 'node:readline/promises'
+import bundledDbskill from '../data/hotskills/dbskill.js'
+import { HOTSKILLS_CACHE_DIR } from '../config/paths.js'
 import { hasFlag, printJson } from '../output/format.js'
 
 const SKILLS = [
   {
     name: 'dbskill',
     display_name: 'dbskill',
-    title: 'dbskill',
-    summary: 'GitHub README 信息获取中。',
+    title: bundledDbskill.title,
+    summary: bundledDbskill.summary,
     repo: 'https://github.com/dontbesilent2025/dbskill',
     readme_url: 'https://raw.githubusercontent.com/dontbesilent2025/dbskill/main/README.md',
     installer_source: 'dontbesilent2025/dbskill',
-    latest_readme_version: undefined,
-    skill_count: 0,
-    readme_lead: [],
-    readme_intro: [],
-    readme_updates: [],
-    install_commands: [],
-    core_skills: [],
+    latest_readme_version: bundledDbskill.latest_readme_version,
+    skill_count: bundledDbskill.skill_count,
+    readme_lead: bundledDbskill.readme_lead,
+    readme_intro: bundledDbskill.readme_intro,
+    readme_updates: bundledDbskill.readme_updates,
+    install_commands: bundledDbskill.install_commands,
+    core_skills: bundledDbskill.core_skills,
     install_notes: [
       '确认安装后会调用 skills CLI。',
       '默认按全局安装处理，方便不同项目和 Agent 客户端复用。',
@@ -30,12 +32,11 @@ const SKILLS = [
 ]
 
 const HOTSKILLS_FETCH_TIMEOUT_MS = 3500
-const INSTALL_FLAGS = new Set(['--confirm', '--project', '--copy', '--yes', '--json', '--markdown'])
-const LIST_FLAGS = new Set(['--json', '--markdown', '--install', '--no-install', '--yes', '--project', '--copy'])
+const INSTALL_FLAGS = new Set(['--confirm', '--project', '--copy', '--yes', '--json', '--markdown', '--refresh'])
+const LIST_FLAGS = new Set(['--json', '--markdown', '--install', '--no-install', '--yes', '--project', '--copy', '--refresh'])
 
 export async function handleHotskills(args) {
   const subcommand = args[0]
-  const skills = await getHotskills()
 
   if (subcommand === '--help' || subcommand === '-h' || subcommand === 'help') {
     printHotskillsHelp()
@@ -43,11 +44,14 @@ export async function handleHotskills(args) {
   }
 
   if (!subcommand || subcommand === 'list' || subcommand.startsWith('--')) {
-    await handleSkillList(skills, subcommand === 'list' ? args.slice(1) : args)
+    const listArgs = subcommand === 'list' ? args.slice(1) : args
+    const skills = await getHotskills({ refresh: shouldRefreshList(listArgs) })
+    await handleSkillList(skills, listArgs)
     return
   }
 
   if (subcommand === 'info') {
+    const skills = await getHotskills({ refresh: shouldRefreshInfo(args.slice(2)) })
     const skill = requireSkill(skills, args[1])
     if (!skill) return
     printSkillInfo(skill, args.slice(2))
@@ -55,9 +59,10 @@ export async function handleHotskills(args) {
   }
 
   if (subcommand === 'install') {
+    const installArgs = args.slice(2)
+    const skills = await getHotskills({ refresh: shouldRefreshInstall(installArgs) })
     const skill = requireSkill(skills, args[1])
     if (!skill) return
-    const installArgs = args.slice(2)
     if (installArgs.includes('--help') || installArgs.includes('-h')) {
       printInstallHelp(skill)
       return
@@ -69,6 +74,18 @@ export async function handleHotskills(args) {
   console.error(`未知 hotskills 命令：${subcommand}`)
   printHotskillsHelp()
   process.exitCode = 2
+}
+
+function shouldRefreshList(args) {
+  return hasFlag(args, '--json') || hasFlag(args, '--refresh')
+}
+
+function shouldRefreshInfo(args) {
+  return hasFlag(args, '--json') || hasFlag(args, '--refresh')
+}
+
+function shouldRefreshInstall(args) {
+  return hasFlag(args, '--refresh')
 }
 
 async function handleSkillList(skills, args) {
@@ -105,6 +122,7 @@ function parseListArgs(args) {
   const options = {
     json: false,
     markdown: false,
+    refresh: false,
     install: false,
     noInstall: false,
     confirm: false,
@@ -148,6 +166,7 @@ function parseListArgs(args) {
     if (!LIST_FLAGS.has(arg)) return { ok: false, error: `不支持的 hotskills 参数：${arg}` }
     if (arg === '--json') options.json = true
     if (arg === '--markdown') options.markdown = true
+    if (arg === '--refresh') options.refresh = true
     if (arg === '--install') options.install = true
     if (arg === '--no-install') options.noInstall = true
     if (arg === '--yes') {
@@ -201,18 +220,73 @@ function requireSkill(skills, name) {
   return skill
 }
 
-async function getHotskills() {
-  const skills = SKILLS.map((skill) => ({ ...skill }))
+async function getHotskills({ refresh = false } = {}) {
+  const skills = await Promise.all(SKILLS.map(loadBaseSkill))
+  if (!refresh) return skills
   const updated = await Promise.all(skills.map(refreshSkillMetadata))
   return updated
 }
 
+async function loadBaseSkill(skill) {
+  if (skill.name !== 'dbskill') return { ...skill }
+  const cached = await readCachedSkill(skill.name)
+  if (cached && isCacheFreshEnough(cached, bundledDbskill)) {
+    return {
+      ...skill,
+      ...cached,
+      upstream: {
+        source: 'local-cache',
+        readme: skill.readme_url,
+        cached_at: cached.snapshot?.generated_at
+      }
+    }
+  }
+  return {
+    ...skill,
+    upstream: {
+      source: 'bundled-snapshot',
+      readme: skill.readme_url,
+      generated_at: bundledDbskill.snapshot?.generated_at
+    }
+  }
+}
+
+function isCacheFreshEnough(cached, bundled) {
+  const cachedVersion = parseVersion(cached.latest_readme_version)
+  const bundledVersion = parseVersion(bundled.latest_readme_version)
+  if (cachedVersion && bundledVersion) {
+    const comparison = compareVersions(cachedVersion, bundledVersion)
+    if (comparison !== 0) return comparison > 0
+  }
+
+  const cachedAt = Date.parse(cached.snapshot?.generated_at || '')
+  const bundledAt = Date.parse(bundled.snapshot?.generated_at || '')
+  if (Number.isFinite(cachedAt) && Number.isFinite(bundledAt)) return cachedAt >= bundledAt
+  return false
+}
+
+function parseVersion(value) {
+  const match = String(value || '').match(/^v?(\d+)\.(\d+)\.(\d+)(?:\.(\d+))?/u)
+  if (!match) return null
+  return match.slice(1).map((item) => Number(item || 0))
+}
+
+function compareVersions(left, right) {
+  const length = Math.max(left.length, right.length)
+  for (let index = 0; index < length; index += 1) {
+    const delta = (left[index] || 0) - (right[index] || 0)
+    if (delta !== 0) return delta
+  }
+  return 0
+}
+
 async function refreshSkillMetadata(skill) {
   if (skill.name !== 'dbskill') return skill
+  if (process.env.CODESOME_HOTSKILLS_NO_NETWORK === '1') return skill
   try {
     const readme = await fetchText(skill.readme_url)
     const readmeInfo = parseReadme(readme)
-    return {
+    const updated = {
       ...skill,
       title: readmeInfo.title || skill.title,
       summary: readmeInfo.summary || skill.summary,
@@ -229,14 +303,64 @@ async function refreshSkillMetadata(skill) {
         readme: skill.readme_url
       }
     }
+    await writeCachedSkill(skill.name, updated).catch(() => null)
+    return updated
   } catch {
-    return {
-      ...skill,
-      upstream: {
-        source: 'bundled-fallback'
-      }
-    }
+    return skill
   }
+}
+
+async function readCachedSkill(name) {
+  try {
+    const raw = await fs.readFile(path.join(HOTSKILLS_CACHE_DIR, `${name}.json`), 'utf8')
+    const parsed = JSON.parse(raw)
+    return isValidSkillSnapshot(parsed) ? parsed : null
+  } catch {
+    return null
+  }
+}
+
+async function writeCachedSkill(name, skill) {
+  const snapshot = snapshotFromSkill(skill, {
+    source: 'github-readme',
+    generated_at: new Date().toISOString()
+  })
+  if (!isValidSkillSnapshot(snapshot)) return
+  await fs.mkdir(HOTSKILLS_CACHE_DIR, { recursive: true })
+  await fs.writeFile(path.join(HOTSKILLS_CACHE_DIR, `${name}.json`), `${JSON.stringify(snapshot, null, 2)}\n`, 'utf8')
+}
+
+function snapshotFromSkill(skill, snapshot) {
+  return {
+    name: skill.name,
+    display_name: skill.display_name,
+    title: skill.title,
+    summary: skill.summary,
+    repo: skill.repo,
+    readme_url: skill.readme_url,
+    installer_source: skill.installer_source,
+    latest_readme_version: skill.latest_readme_version,
+    skill_count: skill.skill_count,
+    readme_lead: skill.readme_lead,
+    readme_intro: skill.readme_intro,
+    readme_updates: skill.readme_updates,
+    install_commands: skill.install_commands,
+    core_skills: skill.core_skills,
+    snapshot
+  }
+}
+
+function isValidSkillSnapshot(value) {
+  return value &&
+    typeof value === 'object' &&
+    value.name === 'dbskill' &&
+    typeof value.summary === 'string' &&
+    value.summary.length > 0 &&
+    typeof value.latest_readme_version === 'string' &&
+    Number.isInteger(value.skill_count) &&
+    value.skill_count > 0 &&
+    Array.isArray(value.core_skills) &&
+    value.core_skills.some((item) => item?.trigger === '/dbs')
 }
 
 async function fetchText(url) {
@@ -554,6 +678,7 @@ function parseInstallArgs(args) {
     yes: false,
     json: false,
     markdown: false,
+    refresh: false,
     targetDir: undefined,
     agents: []
   }
@@ -595,6 +720,7 @@ function parseInstallArgs(args) {
     if (arg === '--yes') options.yes = true
     if (arg === '--json') options.json = true
     if (arg === '--markdown') options.markdown = true
+    if (arg === '--refresh') options.refresh = true
   }
 
   return { ok: true, options }
@@ -675,7 +801,7 @@ function printInstallHelp(skill) {
   console.log(`Codesome hotskills install ${skill.name}
 
 Usage:
-  codesome hotskills install ${skill.name} [--confirm] [--agent <name>] [--project] [--target-dir <dir>] [--copy] [--yes] [--json]
+  codesome hotskills install ${skill.name} [--confirm] [--agent <name>] [--project] [--target-dir <dir>] [--copy] [--yes] [--json] [--refresh]
 
 Examples:
   codesome hotskills install ${skill.name}
@@ -690,9 +816,9 @@ function printHotskillsHelp() {
   console.log(`Codesome hotskills commands
 
 Usage:
-  codesome hotskills [--json] [--markdown] [--install|--no-install] [--yes] [--agent <name>] [--project] [--target-dir <dir>] [--copy]
-  codesome hotskills info <name> [--json] [--markdown]
-  codesome hotskills install <name> [--confirm] [--agent <name>] [--project] [--target-dir <dir>] [--copy] [--yes] [--json]
+  codesome hotskills [--json] [--markdown] [--install|--no-install] [--yes] [--agent <name>] [--project] [--target-dir <dir>] [--copy] [--refresh]
+  codesome hotskills info <name> [--json] [--markdown] [--refresh]
+  codesome hotskills install <name> [--confirm] [--agent <name>] [--project] [--target-dir <dir>] [--copy] [--yes] [--json] [--refresh]
 
 Examples:
   codesome hotskills

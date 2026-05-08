@@ -10,6 +10,7 @@ export const INSTANCES_INDEX_PATH = path.join(CODESOME_HOME, 'instances.json')
 export const SECRETS_DIR = path.join(CODESOME_HOME, 'secrets')
 export const CACHE_DIR = path.join(CODESOME_HOME, 'cache')
 export const AUTO_SYNC_STATE_PATH = path.join(CACHE_DIR, 'auto-sync.json')
+export const HOTSKILLS_CACHE_DIR = path.join(CACHE_DIR, 'hotskills')
 export const STORAGE_STATE_PATH = path.join(SESSION_DIR, 'storage-state.json')
 export const CONFIG_PATH = path.join(CODESOME_HOME, 'config.json')
 export const DEFAULT_BASE_URL = 'https://cc.codesome.ai'

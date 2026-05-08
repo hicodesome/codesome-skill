@@ -14,7 +14,7 @@ import { runCommand } from './commands/run.js'
 import { isAutoSyncWorkerArgs, maybeStartAutoSync, runAutoSyncWorker } from './services/auto-sync.js'
 import { hasFlag, printJson, getOption } from './output/format.js'
 
-const VERSION = '0.5.6'
+const VERSION = '0.5.7'
 
 export async function main(args) {
   if (isAutoSyncWorkerArgs(args)) {
