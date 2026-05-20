@@ -14,6 +14,7 @@ const SKILLS = [
     installer_source: 'dontbesilent2025/dbskill',
     latest_readme_version: undefined,
     skill_count: 0,
+    readme_lead: [],
     readme_intro: [],
     readme_updates: [],
     install_commands: [],
@@ -100,6 +101,7 @@ async function refreshSkillMetadata(skill) {
       summary: readmeInfo.summary || skill.summary,
       latest_readme_version: readmeInfo.version,
       skill_count: readmeInfo.skills.length,
+      readme_lead: readmeInfo.lead,
       readme_intro: readmeInfo.intro,
       readme_updates: readmeInfo.updates,
       install_commands: readmeInfo.installCommands,
@@ -144,6 +146,7 @@ async function fetchWithTimeout(url, options) {
 function parseReadme(readme) {
   const lines = readme.split(/\r?\n/u)
   const title = extractReadmeTitle(lines)
+  const lead = extractReadmeLead(lines)
   const intro = extractReadmeIntro(lines)
   const updates = extractReadmeUpdates(lines)
   const installCommands = extractReadmeInstallCommands(lines)
@@ -151,6 +154,7 @@ function parseReadme(readme) {
 
   return {
     title,
+    lead,
     summary: intro[0],
     version: extractReadmeVersion(readme),
     intro,
@@ -163,6 +167,25 @@ function parseReadme(readme) {
 function extractReadmeTitle(lines) {
   const heading = lines.find((line) => line.trim().startsWith('# '))
   return heading ? heading.replace(/^#\s+/u, '').trim() : undefined
+}
+
+function extractReadmeLead(lines) {
+  const lead = []
+  let inLead = false
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim()
+    if (line.startsWith('# ')) {
+      inLead = true
+      continue
+    }
+    if (!inLead) continue
+    if (line.startsWith('## 如何安装')) break
+    if (!line || line === '---' || line.startsWith('!')) continue
+    lead.push(stripMarkdown(line))
+  }
+
+  return lead
 }
 
 function extractReadmeIntro(lines) {
@@ -257,6 +280,7 @@ function publicSkill(skill) {
     installer_source: skill.installer_source,
     latest_readme_version: skill.latest_readme_version,
     skill_count: skill.skill_count,
+    readme_lead: skill.readme_lead,
     readme_intro: skill.readme_intro,
     readme_updates: skill.readme_updates,
     install_commands: skill.install_commands,
@@ -295,17 +319,8 @@ function printSkillList(skills, args) {
   for (const skill of skills) {
     console.log(`${skill.display_name}：${skill.title}`)
     console.log('')
-    for (const paragraph of skill.readme_intro) console.log(paragraph)
-    if (!skill.readme_intro.length) console.log(skill.summary)
-    console.log('')
-    if (skill.readme_updates.length) {
-      console.log('README 最新更新')
-      for (const item of skill.readme_updates.slice(0, 2)) console.log(`- ${item}`)
-      console.log('')
-    }
-    console.log('README 工具箱')
-    for (const item of skill.core_skills.slice(0, 8)) console.log(`- ${item.trigger}：${item.description}`)
-    if (skill.core_skills.length > 8) console.log(`- 另有 ${skill.core_skills.length - 8} 个 skill，详情见 README。`)
+    for (const paragraph of skill.readme_lead) console.log(paragraph)
+    if (!skill.readme_lead.length) console.log(skill.summary)
     console.log('')
     console.log(`README 解析到：${skill.skill_count} 个 skills`)
     console.log(`来源：${skill.repo}`)
@@ -328,13 +343,8 @@ function printSkillInfo(skill, args) {
     console.log('')
     console.log(skill.summary)
     console.log('')
-    console.log('## README 简介')
-    for (const item of skill.readme_intro) console.log(`- ${item}`)
-    if (skill.readme_updates.length) {
-      console.log('')
-      console.log('## README 更新')
-      for (const item of skill.readme_updates) console.log(`- ${item}`)
-    }
+    console.log('## README 顶部介绍')
+    for (const item of skill.readme_lead) console.log(`- ${item}`)
     console.log('')
     console.log('## README 工具箱')
     for (const item of skill.core_skills) console.log(`- \`${item.trigger}\`：${item.description}`)
@@ -358,13 +368,8 @@ function printSkillInfo(skill, args) {
   console.log(`README：${skill.readme_url}`)
   console.log(`README 标注版本：${skill.latest_readme_version}`)
   console.log('')
-  console.log('README 简介')
-  for (const item of skill.readme_intro) console.log(`- ${item}`)
-  if (skill.readme_updates.length) {
-    console.log('')
-    console.log('README 更新')
-    for (const item of skill.readme_updates) console.log(`- ${item}`)
-  }
+  console.log('README 顶部介绍')
+  for (const item of skill.readme_lead) console.log(`- ${item}`)
   console.log('')
   console.log('README 工具箱')
   for (const item of skill.core_skills) {
