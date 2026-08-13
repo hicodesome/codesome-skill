@@ -165,7 +165,24 @@ This uses a local mock API through the real CLI entry point. It covers:
 - clearing expiry and IP lists
 - resetting usage counters
 - deleting the temporary key
+- `key use` reading base URL from `GET /api/v1/settings/public`
 - JSON output redaction
+
+## Auto Sync Mock Test
+
+Run:
+
+```bash
+npm run test:auto-sync
+```
+
+This uses a local mock API through the real CLI entry point. It covers:
+
+- `sync refresh` writing an account snapshot
+- public settings snapshot and derived OpenAI-compatible base URL
+- `balance show --refresh` returning sync status in JSON
+- text output documenting the 10-60 second normal recharge sync delay
+- manual refresh fallback text
 
 ## Pagination And Usage Mock Test
 
@@ -195,9 +212,29 @@ This uses a local mock API through the real CLI entry point. It covers:
 - `redeem apply` dry-run preview without calling the write endpoint
 - `redeem apply --confirm` write path
 - backend payload normalization
+- confirmed redeem triggering a refresh status payload
 - `redeem history`
 - used-code failure redaction
 - JSON and text output redaction
+
+## HotSkills And Prompt Tests
+
+Run:
+
+```bash
+npm run test:hotskills-install
+npm run test:password-prompt
+```
+
+`test:hotskills-install` verifies the install command uses the explicit `npx --package skills` form expected by the public HotSkills workflow.
+
+`test:password-prompt` verifies password prompts do not echo the password value.
+
+The upstream README parser is intentionally a separate network-dependent check:
+
+```bash
+npm run test:hotskills-upstream
+```
 
 ## Account-Dependent Tests
 
@@ -206,7 +243,10 @@ These tests require a local Codesome login session:
 ```bash
 node ./bin/codesome.js auth status
 node ./bin/codesome.js balance show
+node ./bin/codesome.js balance show --refresh
+node ./bin/codesome.js sync status
 node ./bin/codesome.js key list
+node ./bin/codesome.js key use --name "<test-key>"
 ```
 
 For key configuration changes, use a disposable test key and verify both dry-run and confirmed writes:

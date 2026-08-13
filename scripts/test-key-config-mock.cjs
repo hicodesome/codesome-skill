@@ -122,6 +122,14 @@ async function handle(req, res) {
     return
   }
 
+  if (req.method === 'GET' && url.pathname === '/api/v1/settings/public') {
+    send(res, 200, {
+      site_name: 'mock-sub2api',
+      api_base_url: `${url.origin}/gateway`,
+      custom_endpoints: []
+    })
+    return
+  }
   if (req.method === 'GET' && url.pathname === '/api/v1/groups/available') {
     send(res, 200, groups)
     return
@@ -281,6 +289,11 @@ async function main() {
     const shown = await run(['key', 'show', '--name', created.key.name], env, path.join(outDir, 'show.json'), 'show')
     if (shown.key.quota !== 2) throw new Error('show did not return created quota')
 
+    const useInfo = await run(['key', 'use', '--name', created.key.name], env, path.join(outDir, 'use.json'), 'use')
+    if (useInfo.use_key.base_url !== `${baseUrl}/gateway`) throw new Error('key use did not read api_base_url from public settings')
+    if (useInfo.use_key.source.console_base_url !== baseUrl) throw new Error('key use lost console base url source')
+    if (useInfo.use_key.base_urls.openai_base_url !== `${baseUrl}/gateway/v1`) throw new Error('key use computed OpenAI base url incorrectly')
+
     const preview = await run([
       'key', 'update',
       '--name', created.key.name,
@@ -330,7 +343,7 @@ async function main() {
       ok: true,
       created: created.key.name,
       output_dir: outDir,
-      checked: ['created', 'show', 'preview', 'updated', 'cleared', 'deleted']
+      checked: ['created', 'show', 'use', 'preview', 'updated', 'cleared', 'deleted']
     }))
   } finally {
     server.close()

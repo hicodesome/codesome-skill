@@ -27,6 +27,7 @@ Use this skill to help users operate Codesome through the local `codesome` CLI. 
 4. 只有遇到验证码、二次验证、风控或用户明确要求网页登录时，才使用浏览器兜底。自定义实例必须带 `--instance <instance-id>`，例如 `codesome auth login --instance <instance-id> --browser`，否则会打开默认 Codesome 站点；缺少浏览器运行时时再执行 `codesome browser install`。
 5. 删除、禁用、切换分组、写本地配置等操作必须先确认。
 6. 查询类命令优先使用 `--json` 供 Agent 解析，然后向用户输出脱敏摘要。
+7. 充值、兑换成功或用户说余额/订阅没更新时，先用 `codesome balance show --refresh --json` 或 `codesome sync refresh --json` 手动刷新；正常同步通常 10-60 秒内完成，极端情况下等待 1-3 分钟。
 
 ## 登录运行时
 
@@ -53,8 +54,12 @@ Use this skill to help users operate Codesome through the local `codesome` CLI. 
 | 查看本机账号 | `codesome account list` 或 `codesome account current` |
 | 新增/切换本机账号 | `codesome account add --name "<alias>"` 或 `codesome account switch <alias>` |
 | 查看余额 | `codesome balance show` |
+| 充值后刷新余额 | `codesome balance show --refresh` |
 | 查看自部署实例余额 | `codesome balance show --instance <instance-id>` |
 | 查看月卡/订阅 | `codesome subscription active` 或 `codesome subscription list` |
+| 充值后刷新订阅 | `codesome subscription active --refresh` |
+| 查看自动同步状态 | `codesome sync status` |
+| 手动刷新自动同步 | `codesome sync refresh` |
 | 查看用量 | `codesome usage stats` 或 `codesome usage recent` |
 | 查看某个 Key 用量 | `codesome usage key --name "<key_name>" --days 30` |
 | 查看 API Key | `codesome key list` |
@@ -62,6 +67,7 @@ Use this skill to help users operate Codesome through the local `codesome` CLI. 
 | 确认兑换码兑换 | `codesome redeem apply --code "<code>" --confirm` |
 | 查看兑换记录 | `codesome redeem history` |
 | 查看 API Key 配置 | `codesome key show --name "<key_name>"` |
+| 查看 API Key 使用配置/Base URL | `codesome key use --name "<key_name>"` |
 | 创建 API Key | `codesome key create --name "<name>" --group "<group>"` |
 | 编辑 API Key 名称 | `codesome key update --name "<name>" --new-name "<new-name>"` |
 | 修改 Key 限额 | `codesome key update --name "<name>" --quota <usd>`，确认后追加 `--confirm` |
@@ -125,10 +131,12 @@ Key：<name> / <masked-key-if-available>
 ## 常见事实
 
 - 兑换码和 API Key 不是一回事：兑换码用于充值/权益，API Key 需要用户在后台创建。
+- 充值或确认兑换后余额/订阅可能有同步延迟：一般 10-60 秒，极端情况下等待 1-3 分钟；可用 `--refresh` 或 `sync refresh` 兜底。
 - 月卡 Key 通常应使用月卡/订阅分组。
 - 按量分组会消耗账户余额，切换前要提示费用影响。
 - Key 切换分组后，客户端通常不需要换 Key，但可能需要重启终端或客户端。
 - Claude Code/Claude 类客户端常使用 Anthropic 兼容配置；Codex/OpenAI 类客户端常使用 OpenAI 兼容配置。
+- `codesome key use` 读取公开设置里的 `api_base_url`，比手写后台地址更适合拿来配置客户端 Base URL。
 - `codesome hotskills install dbskill` 默认只做安装预检；追加 `--confirm` 才会调用 `skills` CLI。默认安装范围是全局用户目录。
 
 ## 排查提示

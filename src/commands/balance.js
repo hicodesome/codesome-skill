@@ -1,5 +1,6 @@
 ﻿import { getBalance } from '../services/balance.js'
 import { hasFlag, printJson } from '../output/format.js'
+import { AUTO_SYNC_RECHARGE_DELAY_TEXT, getAutoSyncStatus, refreshNow } from '../services/auto-sync.js'
 import { accountJson, accountServiceOptions, printAccountLine, resolveCommandAccount } from './account-context.js'
 
 function money(value) {
@@ -29,9 +30,11 @@ export async function handleBalance(args) {
 
   const json = hasFlag(args, '--json')
   const account = await resolveCommandAccount(args)
-  const data = await getBalance(accountServiceOptions(account))
+  const serviceOptions = accountServiceOptions(account)
+  const syncStatus = hasFlag(args, '--refresh') ? await refreshNow(serviceOptions) : await getAutoSyncStatus()
+  const data = await getBalance(serviceOptions)
   if (json) {
-    printJson({ account_context: accountJson(account), ...data })
+    printJson({ account_context: accountJson(account), sync: syncStatus, ...data })
     return
   }
 
@@ -42,6 +45,8 @@ export async function handleBalance(args) {
   console.log(`状态：${data.account.status}`)
   console.log(`普通按量余额：${money(data.account.balance)}`)
   console.log(`累计充值：${money(data.account.total_recharged)}`)
+  console.log(`自动同步：最近成功 ${syncStatus.last_success_at ? new Date(syncStatus.last_success_at).toLocaleString('zh-CN') : '-'}；充值后${AUTO_SYNC_RECHARGE_DELAY_TEXT}`)
+  console.log('手动刷新：codesome balance show --refresh')
   if (data.usage) {
     console.log('')
     console.log('用量概览')
@@ -56,8 +61,8 @@ export function printBalanceHelp() {
   console.log(`Codesome balance commands
 
 Usage:
-  codesome balance show [--account <alias>] [--json]
+  codesome balance show [--account <alias>] [--refresh] [--json]
 
-Shows account pay-as-you-go balance and dashboard usage summary.
+Shows account pay-as-you-go balance and dashboard usage summary. Use --refresh as a manual fallback after recharge.
 `)
 }

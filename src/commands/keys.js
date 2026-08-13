@@ -2,7 +2,7 @@ import { listKeys } from '../services/keys.js'
 import { getOption, hasFlag, printJson } from '../output/format.js'
 import { handleKeyCreate, printKeyCreateHelp } from './key-create.js'
 import { handleKeyDelete, printKeyDeleteHelp } from './key-delete.js'
-import { handleKeyShow, handleKeySwitchGroup, handleKeyUpdate, printKeyUpdateHelp } from './key-update.js'
+import { handleKeyShow, handleKeySwitchGroup, handleKeyUpdate, handleKeyUse, printKeyUpdateHelp } from './key-update.js'
 import { accountJson, accountServiceOptions, printAccountLine, resolveCommandAccount } from './account-context.js'
 
 function positiveIntegerOption(args, names, fallback) {
@@ -34,12 +34,13 @@ export async function handleKey(args) {
     return
   }
 
-  if (subcommand === 'show' || subcommand === 'update' || subcommand === 'switch-group') {
+  if (subcommand === 'show' || subcommand === 'use' || subcommand === 'update' || subcommand === 'switch-group') {
     if (hasFlag(args, '--help') || hasFlag(args, '-h')) {
       printKeyUpdateHelp()
       return
     }
     if (subcommand === 'show') await handleKeyShow(args.slice(1))
+    else if (subcommand === 'use') await handleKeyUse(args.slice(1))
     else if (subcommand === 'switch-group') await handleKeySwitchGroup(args.slice(1))
     else await handleKeyUpdate(args.slice(1))
     return
@@ -114,6 +115,7 @@ export function printKeyHelp() {
 Usage:
   codesome key list [--account <alias>] [--page 1] [--page-size 20] [--limit 20] [--search <text>] [--status active|inactive] [--json]
   codesome key show [--account <alias>] --name <name> [--group-id <id>] [--json]
+  codesome key use [--account <alias>] --name <name> [--json]
   codesome key create [--account <alias>] --name <name> --group <group-name>
   codesome key update [--account <alias>] --name <name> --quota <usd> --confirm
   codesome key update [--account <alias>] --name <name> --expires-at <iso|none> --confirm

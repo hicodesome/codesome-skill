@@ -1,5 +1,6 @@
 ﻿import { listActiveSubscriptions, listSubscriptions } from '../services/subscriptions.js'
 import { hasFlag, printJson } from '../output/format.js'
+import { AUTO_SYNC_RECHARGE_DELAY_TEXT, getAutoSyncStatus, refreshNow } from '../services/auto-sync.js'
 import { accountJson, accountServiceOptions, printAccountLine, resolveCommandAccount } from './account-context.js'
 
 function money(value) {
@@ -34,16 +35,20 @@ export async function handleSubscription(args) {
 
   const json = hasFlag(args, '--json')
   const account = await resolveCommandAccount(args)
+  const serviceOptions = accountServiceOptions(account)
+  const syncStatus = hasFlag(args, '--refresh') ? await refreshNow(serviceOptions) : await getAutoSyncStatus()
   const items = subcommand === 'active'
-    ? await listActiveSubscriptions(accountServiceOptions(account))
-    : await listSubscriptions(accountServiceOptions(account))
+    ? await listActiveSubscriptions(serviceOptions)
+    : await listSubscriptions(serviceOptions)
   if (json) {
-    printJson({ account_context: accountJson(account), items })
+    printJson({ account_context: accountJson(account), sync: syncStatus, items })
     return
   }
 
   console.log(subcommand === 'active' ? 'Codesome 当前有效月卡/订阅' : 'Codesome 月卡/订阅列表')
   printAccountLine(account)
+  console.log(`自动同步：最近成功 ${syncStatus.last_success_at ? new Date(syncStatus.last_success_at).toLocaleString('zh-CN') : '-'}；充值后${AUTO_SYNC_RECHARGE_DELAY_TEXT}`)
+  console.log(`手动刷新：codesome subscription ${subcommand} --refresh`)
   console.log('')
   if (!items.length) {
     console.log('未找到订阅。')
@@ -71,8 +76,8 @@ export function printSubscriptionHelp() {
   console.log(`Codesome subscription commands
 
 Usage:
-  codesome subscription active [--account <alias>] [--json]
-  codesome subscription list [--account <alias>] [--json]
+  codesome subscription active [--account <alias>] [--refresh] [--json]
+  codesome subscription list [--account <alias>] [--refresh] [--json]
 
 Shows monthly-card/subscription packages, limits, usage, remaining quota, and expiry.
 `)

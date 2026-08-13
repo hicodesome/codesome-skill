@@ -4,7 +4,7 @@ const file = process.argv[2]
 const mode = process.argv[3]
 
 if (!file || !mode) {
-  console.error('usage: node verify-key-config-output.cjs <json-file> <show|preview|updated|created>')
+  console.error('usage: node verify-key-config-output.cjs <json-file> <show|use|preview|updated|created>')
   process.exit(2)
 }
 
@@ -26,6 +26,7 @@ const result = {
 console.log(JSON.stringify(result))
 
 if (mode === 'show' && !data.key) process.exit(1)
+if (mode === 'use' && (!data.key || !data.use_key?.base_url || !data.use_key?.source?.public_settings)) process.exit(1)
 if (mode === 'preview' && (!data.dry_run || !data.requires_confirm)) process.exit(1)
 if (mode === 'updated' && !data.updated) process.exit(1)
 if (mode === 'created' && !data.key?.delivery) process.exit(1)
