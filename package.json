@@ -1,6 +1,6 @@
 {
     "name": "codesome-cli",
-    "version": "0.5.7",
+    "version": "0.5.8",
     "description": "Codesome CLI for Codesome and Sub2API account, token, key, and skill management.",
     "license": "Apache-2.0",
     "author": "Codesome",

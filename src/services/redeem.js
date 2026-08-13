@@ -1,5 +1,6 @@
 import { ApiError, withApiClient } from '../api/client.js'
 import { maskRedeemCode, redact } from '../output/redact.js'
+import { AIO_SITE, isAioApiKey } from '../config/aio.js'
 
 function requireCode(value) {
   const code = String(value || '').trim()
@@ -82,6 +83,25 @@ export function normalizeRedeemHistory(items) {
 
 export function previewRedeem(options = {}) {
   const code = requireCode(options.code)
+  if (isAioApiKey(code)) {
+    return {
+      action: 'aio_key_detected',
+      code: maskRedeemCode(code),
+      will_redeem: false,
+      requires_confirm: false,
+      key_system: AIO_SITE.system,
+      message: '检测到 AIO cr_ API Key。它本身就是 API key，不需要兑换；本次未调用兑换接口。',
+      sites: {
+        homepage_url: AIO_SITE.homepage_url,
+        api_stats_url: AIO_SITE.api_stats_url,
+        purchase_url: AIO_SITE.purchase_url
+      },
+      base_urls: {
+        claude_code_base_url: AIO_SITE.claude_code_base_url,
+        codex_base_url: AIO_SITE.codex_base_url
+      }
+    }
+  }
   return {
     action: 'preview',
     code: maskRedeemCode(code),
@@ -92,6 +112,9 @@ export function previewRedeem(options = {}) {
 
 export async function applyRedeem(options = {}) {
   const code = requireCode(options.code)
+  if (isAioApiKey(code)) {
+    return previewRedeem({ ...options, code })
+  }
   try {
     return await withApiClient(options, async (client) => {
       const data = await client.post('/redeem', { code })
