@@ -1,5 +1,6 @@
 import { withApiClient } from '../api/client.js'
 import { maskApiKey } from '../output/redact.js'
+import { buildAioUseKeyInfo, isAioApiKey } from '../config/aio.js'
 import { buildUseBaseUrls, getPublicSettings } from './public-settings.js'
 
 function normalizeList(value) {
@@ -82,6 +83,13 @@ export async function listKeys(options = {}) {
 }
 
 export async function getUseKeyInfo(key, options = {}) {
+  if (isAioApiKey(key?.key || key?.masked_key)) {
+    return buildAioUseKeyInfo(key.key || key.masked_key, {
+      name: key.name,
+      maskedKey: maskApiKey(key.key || key.masked_key)
+    })
+  }
+
   const publicSettings = await getPublicSettings(options)
   const baseUrls = buildUseBaseUrls(publicSettings)
 

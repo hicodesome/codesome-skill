@@ -1,5 +1,6 @@
 ﻿const SECRET_PATTERNS = [
   /sk-[A-Za-z0-9_-]{8,}/g,
+  /cr_[A-Za-z0-9_-]{8,}/g,
   /(ghp_|github_pat_|gho_|ghu_|ghs_)[A-Za-z0-9_]+/g,
   /(authorization\s*[:=]\s*bearer\s+)[^\s"']+/gi,
   /(cookie\s*[:=]\s*)[^\n]+/gi,

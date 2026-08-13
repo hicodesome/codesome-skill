@@ -14,7 +14,7 @@ import { runCommand } from './commands/run.js'
 import { isAutoSyncWorkerArgs, maybeStartAutoSync, runAutoSyncWorker } from './services/auto-sync.js'
 import { hasFlag, printJson, getOption } from './output/format.js'
 
-const VERSION = '0.5.7'
+const VERSION = '0.5.8'
 
 export async function main(args) {
   if (isAutoSyncWorkerArgs(args)) {
@@ -209,7 +209,7 @@ Commands:
   browser uninstall 删除 Codesome 专用浏览器运行时
   balance show     查询普通按量余额和用量概览
   subscription list/active
-  usage stats/recent/key
+  usage stats/recent/key/export/analyze
   key list/show/use/create/update/switch-group/delete
   group list
   redeem apply/history

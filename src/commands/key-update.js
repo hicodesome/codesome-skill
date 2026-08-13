@@ -2,15 +2,31 @@ import { getKeyDetails, previewUpdateKey, updateKey } from '../services/key-upda
 import { getUseKeyInfo } from '../services/keys.js'
 import { getOption, hasFlag, printJson } from '../output/format.js'
 import { maskApiKey } from '../output/redact.js'
+import { buildAioUseKeyInfo, normalizeAioApiKey } from '../config/aio.js'
 import { accountJson, accountServiceOptions, printAccountLine, resolveCommandAccount } from './account-context.js'
 
 function makeSafe(data) {
-  return JSON.parse(JSON.stringify(data, (key, value) => {
-    if (key === 'user') return undefined
-    if (key === 'custom_key') return undefined
-    if (key === 'key' && typeof value === 'string') return maskApiKey(value)
+  function sanitize(value, path = []) {
+    const field = path[path.length - 1]
+    const parent = path[path.length - 2]
+    if (field === 'user' || field === 'custom_key') return undefined
+    if (typeof value === 'string') {
+      if (field === 'api_key') return maskApiKey(value)
+      if (field === 'key' && parent !== 'source') return maskApiKey(value)
+      return value
+    }
+    if (Array.isArray(value)) return value.map((item, index) => sanitize(item, [...path, String(index)]))
+    if (value && typeof value === 'object') {
+      return Object.fromEntries(
+        Object.entries(value)
+          .map(([key, item]) => [key, sanitize(item, [...path, key])])
+          .filter(([, item]) => item !== undefined)
+      )
+    }
     return value
-  }))
+  }
+
+  return sanitize(data)
 }
 
 function makeOptions(args, account) {
@@ -79,18 +95,23 @@ function printUseKeyInfo(data, account) {
   const useKey = data.use_key
   const group = key.group?.name || key.group_id || '-'
   console.log(`Codesome 使用密钥：${key.name}`)
-  printAccountLine(account)
+  if (account) printAccountLine(account)
   console.log('')
   console.log(`Key：${useKey.api_key_masked || key.key || key.masked_key}`)
   console.log(`Base URL：${useKey.base_url || '-'}`)
   console.log(`分组：${group}`)
   console.log(`平台：${useKey.platform || '-'}`)
   console.log(`状态：${useKey.status || '-'}`)
+  if (useKey.site_name) console.log(`体系：${useKey.site_name}`)
+  if (useKey.base_urls?.claude_code_base_url) console.log(`Claude Code Base URL：${useKey.base_urls.claude_code_base_url}`)
+  if (useKey.base_urls?.codex_base_url) console.log(`Codex Base URL：${useKey.base_urls.codex_base_url}`)
   if (useKey.base_urls?.openai_base_url) console.log(`OpenAI Base URL：${useKey.base_urls.openai_base_url}`)
   if (useKey.base_urls?.anthropic_base_url) console.log(`Anthropic Base URL：${useKey.base_urls.anthropic_base_url}`)
   if (useKey.base_urls?.gemini_base_url) console.log(`Gemini Base URL：${useKey.base_urls.gemini_base_url}`)
   if (useKey.base_urls?.antigravity_base_url) console.log(`Antigravity Base URL：${useKey.base_urls.antigravity_base_url}`)
-  console.log(`读取来源：${useKey.source.key} + ${useKey.source.public_settings}`)
+  if (useKey.sites?.api_stats_url) console.log(`用量查询：${useKey.sites.api_stats_url}`)
+  const sources = [useKey.source?.key, useKey.source?.public_settings].filter(Boolean)
+  console.log(`读取来源：${sources.join(' + ')}`)
   for (const warning of useKey.warnings || []) console.log(`警告：${warning}`)
 }
 
@@ -115,6 +136,22 @@ export async function handleKeyShow(args) {
 
 export async function handleKeyUse(args) {
   const json = hasFlag(args, '--json')
+  const apiKey = getOption(args, '--api-key') || getOption(args, '--key')
+  if (apiKey !== undefined) {
+    const normalizedApiKey = normalizeAioApiKey(apiKey)
+    const data = buildAioUseKeyInfo(normalizedApiKey, {
+      name: getOption(args, '--name') || 'AIO API Key',
+      maskedKey: maskApiKey(normalizedApiKey)
+    })
+    const safe = makeSafe(data)
+    if (json) {
+      printJson(safe)
+      return
+    }
+    printUseKeyInfo(safe, null)
+    return
+  }
+
   const account = await resolveCommandAccount(args)
   const serviceOptions = {
     ...accountServiceOptions(account),
@@ -188,6 +225,7 @@ Usage:
   codesome key show [--account <alias>] --id <id> [--json]
   codesome key use [--account <alias>] --name <name> [--json]
   codesome key use [--account <alias>] --id <id> [--json]
+  codesome key use --api-key cr_xxx [--json]
   codesome key update [--account <alias>] --name <name> --new-name <new-name> [--confirm]
   codesome key update [--account <alias>] --name <name> --group <group-name> [--confirm]
   codesome key update [--account <alias>] --name <name> --status active|inactive [--confirm]
@@ -207,7 +245,7 @@ Options:
 
 Notes:
   Without --confirm, update and switch-group only query the current key and print a dry-run diff.
-  key use reads base_url from Sub2API public settings, the same stable source as the web "使用密钥" modal.
+  key use reads V3/Sub2API base_url from public settings. For AIO cr_ keys, --api-key prints the fixed Claude Code and Codex v5 base URLs without calling V3 APIs.
   JSON and text output always mask key values.
 `)
 }

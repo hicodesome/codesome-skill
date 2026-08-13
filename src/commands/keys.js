@@ -116,6 +116,7 @@ Usage:
   codesome key list [--account <alias>] [--page 1] [--page-size 20] [--limit 20] [--search <text>] [--status active|inactive] [--json]
   codesome key show [--account <alias>] --name <name> [--group-id <id>] [--json]
   codesome key use [--account <alias>] --name <name> [--json]
+  codesome key use --api-key cr_xxx [--json]
   codesome key create [--account <alias>] --name <name> --group <group-name>
   codesome key update [--account <alias>] --name <name> --quota <usd> --confirm
   codesome key update [--account <alias>] --name <name> --expires-at <iso|none> --confirm

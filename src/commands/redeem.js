@@ -87,17 +87,31 @@ async function handleRedeemApply(args) {
     return
   }
 
-  const account = await resolveCommandAccount(args)
   const options = {
-    ...accountServiceOptions(account),
     baseUrl: getOption(args, '--base-url'),
     code
   }
+  const preview = previewRedeem(options)
+  const account = preview.action === 'aio_key_detected'
+    ? null
+    : await resolveCommandAccount(args)
+  Object.assign(options, account ? accountServiceOptions(account) : {})
   const result = confirm ? await applyRedeem(options) : previewRedeem(options)
-  const syncStatus = confirm ? await refreshNow(options) : null
+  const syncStatus = confirm && result.action === 'redeemed' ? await refreshNow(options) : null
 
   if (json) {
-    printJson({ account: accountJson(account), sync: syncStatus, ...result })
+    printJson({ account: account ? accountJson(account) : null, sync: syncStatus, ...result })
+    return
+  }
+
+  if (result.action === 'aio_key_detected') {
+    console.log('Codesome AIO Key 识别')
+    console.log('')
+    console.log(`Key：${result.code}`)
+    console.log(result.message)
+    console.log(`Claude Code Base URL：${result.base_urls.claude_code_base_url}`)
+    console.log(`Codex Base URL：${result.base_urls.codex_base_url}`)
+    console.log(`用量查询：${result.sites.api_stats_url}`)
     return
   }
 
@@ -157,6 +171,7 @@ Usage:
   codesome redeem history [--account <alias>] [--json]
 
 Redeems Codesome redemption codes and shows redemption history. Apply runs as a dry-run preview unless --confirm is provided.
+AIO cr_ keys are API keys and do not need redeeming; the CLI detects them without calling the redeem endpoint.
 Output always masks redemption codes.
 `)
 }
@@ -169,6 +184,7 @@ Usage:
   codesome redeem apply --code <code> --confirm [--account <alias>] [--json]
 
 Without --confirm, this only previews the operation and does not call the redeem endpoint.
+AIO cr_ keys are API keys and do not need redeeming; even with --confirm, no redeem write is performed.
 `)
 }
 
