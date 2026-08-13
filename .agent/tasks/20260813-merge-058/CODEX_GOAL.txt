@@ -1,0 +1,32 @@
+Complete the implementation described in .agent/tasks/20260813-merge-058/HANDOFF.md.
+
+Read HANDOFF completely before acting. Work in execution mode only; do not enter
+Plan Mode. Pi has already inspected and planned the task. Do not stop after
+planning, explaining, or proposing changes. Directly implement the documented
+plan and continue until every acceptance criterion is satisfied, every required
+validation command passes, HANDOFF is updated, and .agent/tasks/20260813-merge-058/result.json conforms to
+.agent/tasks/20260813-merge-058/result.schema.json.
+
+Preserve every constraint, non-goal, existing user change, and repository policy.
+Resolve ordinary uncertainty from HANDOFF, repository evidence, existing
+conventions, or the safest reversible default, and record the decision in
+HANDOFF. Never wait for interactive input when a defensible repository-local
+default exists.
+
+When an approach or validation fails, inspect the new evidence, change the
+hypothesis or route, and continue. Do not repeatedly retry the same failed action
+without a materially different hypothesis. A completed turn is not completion of
+this Goal. Code written without passing validation and valid terminal artifacts
+is not complete.
+
+Mark the Goal blocked only when an external action is strictly required, all
+repository-local alternatives are exhausted, and the same blocking condition
+has prevented progress for at least three Goal turns. Record the exact blocker,
+attempts, evidence, unblock action, and resume point in HANDOFF and result.json.
+Difficulty, slowness, or uncertainty alone is not a blocker.
+
+At terminal completion, remove runner_sentinel from HANDOFF, set HANDOFF status
+to exactly success, blocked, or failed, and atomically replace result.json with
+the matching result. Do not push, publish, deploy, modify user-global
+configuration, access credentials, expand permissions, or request
+danger-full-access.

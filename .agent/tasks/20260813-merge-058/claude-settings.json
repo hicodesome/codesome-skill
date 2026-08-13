@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "defaultMode": "dontAsk",
+    "allow": [
+      "Read",
+      "Glob",
+      "Grep",
+      "Edit",
+      "Write",
+      "Bash(cp *)",
+      "Bash(diff *)",
+      "Bash(node *)",
+      "Bash(npm run *)",
+      "Bash(npm pack *)",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(npm *)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./真实测试用凭据.txt)",
+      "Read(./token-search-results.json)",
+      "Read(./token-validation-results.json)",
+      "Bash(git push *)",
+      "Bash(git tag *)",
+      "Bash(rm -rf *)",
+      "Bash(sudo *)",
+      "Bash(npm publish *)",
+      "Bash(npm install *)"
+    ]
+  }
+}

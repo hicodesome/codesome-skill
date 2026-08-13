@@ -1,0 +1,84 @@
+{
+  "generated_by": "wp/scripts/discover_executors.py",
+  "probed": true,
+  "host": "local",
+  "agents": [
+    {
+      "name": "claude",
+      "path": "/usr/local/bin/claude",
+      "vendor": "anthropic",
+      "tier": "frontier",
+      "tiers_available": [
+        "frontier",
+        "balanced",
+        "fast"
+      ],
+      "background_recipe": "IS_SANDBOX=1 claude --dangerously-skip-permissions",
+      "version": "2.1.220 (Claude Code)",
+      "health": "available",
+      "probe_ms": 2559,
+      "notes": []
+    },
+    {
+      "name": "codex",
+      "path": "/usr/local/bin/codex",
+      "vendor": "openai",
+      "tier": "frontier",
+      "tiers_available": [
+        "frontier",
+        "balanced"
+      ],
+      "background_recipe": "codex in a bypass/full-auto approval+sandbox mode (never interactive default)",
+      "version": "codex-cli 0.145.0",
+      "health": "available",
+      "probe_ms": 3729,
+      "notes": []
+    },
+    {
+      "name": "pi",
+      "path": "/usr/bin/pi",
+      "vendor": "multi",
+      "tier": "balanced",
+      "tiers_available": [
+        "frontier",
+        "balanced",
+        "fast"
+      ],
+      "background_recipe": "pi (auto-approves by default)",
+      "version": "0.84.1",
+      "health": "available",
+      "probe_ms": 2304,
+      "notes": []
+    },
+    {
+      "name": "grok",
+      "path": "/home/joe/.grok/bin/grok",
+      "vendor": "xai",
+      "tier": "frontier",
+      "tiers_available": [
+        "frontier",
+        "fast"
+      ],
+      "background_recipe": null,
+      "version": "grok 1.0.3 (1a29d5bc12)",
+      "health": "available",
+      "probe_ms": 4556,
+      "notes": []
+    },
+    {
+      "name": "kimi",
+      "path": "/home/joe/.kimi-code/bin/kimi",
+      "vendor": "moonshot",
+      "tier": "balanced",
+      "tiers_available": [
+        "frontier",
+        "balanced"
+      ],
+      "background_recipe": "kimi -p (non-interactive prompt mode; tool calls auto-approved)",
+      "version": "0.34.0",
+      "health": "available",
+      "probe_ms": 6165,
+      "notes": []
+    }
+  ]
+}
